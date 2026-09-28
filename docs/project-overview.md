@@ -5,7 +5,7 @@
 | Учасник | Група | Зона відповідальності (попередній розподіл) |
 |---|---|---|
 | Петренко Богдан Олександрович | ІПС-22 | Team Lead, System Architect, Security Analyst, Backend Developer (ЦА, агент), DevOps |
-| Бояр Володимир Олександрович | ІПС-22 | Backend Developer (Агент) |
+| Бояр Володимир Олександрович | ІПС-22 | Backend Developer (Агент), System Architect |
 | Синенко Дмитро Вячеславович | ІПС-22 | Frontend Developer (Discord бот) |
 | Денисенко Любов Володимирівна | ІПС-22 | Frontend Developer (Веб-панель, ЦА) |
 
