@@ -18,15 +18,15 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 91 (67 класів, 9 інтерфейсів, 6 структур, 9 enum) | ✅ |
-| Поля | ≥ 15 | 124 (103 поля стану, 21 константа й статичне поле) | ✅ |
-| Нетривіальні методи | ≥ 25 | 135 | ✅ |
+| Класи та подібні типи | ≥ 9 | 100 (75 класів, 10 інтерфейсів, 6 структур, 9 enum) | ✅ |
+| Поля | ≥ 15 | 134 (113 полів стану, 21 константа й статичне поле) | ✅ |
+| Нетривіальні методи | ≥ 25 | 142 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (9, 3, 5, 5 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 5 з клієнтським кодом (3 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9).
 
-Не враховано: тимчасові `DevEnvironmentEndpoints` і `DevAccessEndpoints` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
+Не враховано: тимчасові `DevEnvironmentEndpoints`, `DevAccessEndpoints` і `DevUserAuthenticationHandler` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
 
 #### Класи та подібні типи
 
@@ -44,9 +44,9 @@
 | `Common` | `IRepository<TEntity, TId>`, `IUnitOfWork` (інтерфейси), `NotFoundException` |
 | `Agents` | `IAgentChannel` (інтерфейс), `ContainerSnapshot`, `ContainerState` (enum), `AgentException` (абстрактний клас), `AgentOfflineException`, `AgentDisconnectedException`, `AgentTimeoutException`, `AgentCommandFailedException`, `AgentErrorKind` (enum), `AgentCredentials`, `AgentEnrollmentService` |
 | `Environments` | `IEnvironmentRepository` (інтерфейс), `EnvironmentService`, `EnrollmentToken`, `EnvironmentCreated`, `EnvironmentSummary` |
-| `Access` | `IUserRepository`, `IRoleAssignmentRepository` (інтерфейси), `AccessDeniedException` |
+| `Access` | `IUserRepository`, `IRoleAssignmentRepository`, `ICurrentUser` (інтерфейси), `AccessDeniedException`, `UnauthenticatedException`, `CurrentActor` |
 | `Stacks` | `IStackRepository` (інтерфейс) |
-| `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum) |
+| `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer` |
 | — | `DependencyInjection` (статичний клас) |
 
 | Простір імен `ContainerForest.Aggregator.Infrastructure.*` | Типи |
@@ -60,6 +60,9 @@
 |---|---|
 | `Grpc` | `AgentGatewayService` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
+| `Access` | `ClaimsCurrentUser` |
+| `Contracts` | `LoginRequest`, `MeResponse` |
+| `Endpoints` | `MeEndpoints` |
 
 #### Поля
 
@@ -83,13 +86,17 @@
 | `AgentGatewayOptions` | `CommandTimeout`, `HelloTimeout`, `IdleTimeout` | `SectionName` |
 | `ContainerCommandContext` | `Actor`, `Environment`, `Container`, `Stack` | |
 | `StoppingContainerCommand` | `StopTimeout` | `DefaultStopTimeout`, `MaxStopTimeout` |
+| `CurrentActor` | `actor` | |
+| `VisibleContainer` | `Container`, `CanControl` | |
+| `LoginRequest`, `MeResponse` | `UserName`, `Password`, `RememberMe`; `Id`, `UserName`, `IsAdmin` | |
+| `EnvironmentSummary` (PR #9) | `Role` | |
 | `AgentSession` | `writer`, `logger`, `writeLock`, `pending`, `closed`, `closing`, `EnvironmentId`, `SessionId`, `ConnectedAt`, `LastMessageAt` | |
 | `AgentRegistry` | `sessions` | |
 | `EfRepository<TEntity, TId>` | `Db` | |
 | `EnvironmentConfiguration`, `RoleAssignmentConfiguration` | | `Sha256HexLength`; `EnvironmentScope`, `StackScope` |
 | `Infrastructure.DependencyInjection`, `AgentGatewayService` | | `ConnectionStringName`; `AgentIdHeader`, `AgentSecretHeader` |
 
-#### Нетривіальні методи (135)
+#### Нетривіальні методи (142)
 
 | Тип | Методи |
 |---|---|
@@ -107,7 +114,7 @@
 | `User` (4) | `Rename`, `GrantAdmin`, `EnsureActive`, `NormalizeUserName` |
 | `RoleAssignment` та підкласи (8) | `ChangeRole`, `EnsureDefined`; `Covers`, `CoversWholeEnvironment`, `Reveals` в `EnvironmentRoleAssignment` і `StackRoleAssignment` (по 3) |
 | `AccessPolicy` (8) | `CanSee(User, DockerEnvironment, …)`, `EffectiveRole` для стеку, `EffectiveRole` для середовища, `CanPerform` для стеку, `CanPerform` для середовища, `Highest`, `OwnAssignments`, `EnsureSameEnvironment` |
-| `EnvironmentService` (4) | `CreateAsync`, `IssueEnrollmentTokenAsync`, `ListAsync`, `IssueToken` |
+| `EnvironmentService` (4) | `CreateAsync`, `IssueEnrollmentTokenAsync`, `ListVisibleAsync`, `IssueToken` |
 | `AgentEnrollmentService` (4) | `EnrollAsync`, `AuthenticateAsync`, `RecordConnectedAsync`, `RecordDisconnectedAsync` |
 | `Application.DependencyInjection` (1) | `AddApplication` |
 | `AggregatorDbContext` (2) | `OnModelCreating`, `ConfigureConventions` |
@@ -115,7 +122,7 @@
 | 8 конфігурацій EF (8) | `Configure` у кожній |
 | `EfRepository<TEntity, TId>` (2) | `FindAsync`, `GetAsync` |
 | `EnvironmentRepository` (3) | `FindByEnrollmentTokenHashAsync`, `ListAsync`, `NameExistsAsync` |
-| `StackRepository`, `UserRepository`, `RoleAssignmentRepository` (3) | `FindByNameAsync`, `FindByUserNameAsync`, `ListForUserAsync` |
+| `StackRepository`, `UserRepository`, `RoleAssignmentRepository` (4) | `FindByNameAsync`, `ListByEnvironmentAsync`, `FindByUserNameAsync`, `ListForUserAsync` |
 | `DatabaseMigrator`, `DesignTimeDbContextFactory` (2) | `StartAsync`, `CreateDbContext` |
 | `AgentGatewayOptions` (1) | `IsValid` |
 | `AgentSession` (5) | `RequestAsync`, `WriteAsync`, `RecordActivity`, `Complete`, `Close` |
@@ -129,6 +136,10 @@
 | `StoppingContainerCommand` (1) | `ValidateTimeout` |
 | `AuthorizedCommand` (1) | `ExecuteAsync` |
 | `ContainerCommandService` (2) | `ExecuteAsync`, `Create` |
+| `CurrentActor` (2) | `GetAsync`, `GetAdministratorAsync` |
+| `ContainerQueryService` (2) | `ListAsync`, `Can` |
+| `ClaimsCurrentUser` (1) | `Id` (читає й розбирає claim) |
+| `MeEndpoints` (1) | `MapMeEndpoints` |
 
 Не враховано як тривіальні: фабрики `Queue*`, `Create*` у `Stack`, `User` і `RoleAssignment`, методи `MakePrivate`, `MakePublic`, `RemoveAccessToken`, `ChangeSource`, `RevokeAdmin`, `Activate`, `Deactivate`, методи-делегатори (`RecordHeartbeat`, `CanSee` для стеку, `CanPerform` для операції, `IsActiveAdmin`, `Equals(object)`, `EfRepository.Add`/`Remove`, `AgentRegistry.IsOnline`, `GrpcAgentChannel.IsOnline`, `NullIfEmpty`, `StronglyTypedIdConverter.Create`) і методи структур ID.
 
@@ -154,8 +165,8 @@
 
 - `tests/Aggregator/Domain`, 101 тест: value objects, реєстрація агента, стан-машина деплою, правила системних стеків, ефективна роль і видимість середовищ.
 - `tests/Aggregator/Infrastructure`, 10 тестів: зіставлення запитів і відповідей у `AgentSession`, закриття сесії, таймаут, заборона паралельного запису в стрім, заміна сесії в `AgentRegistry`.
-- `tests/Aggregator/Application`, 20 тестів: команди контейнерів — дозволені стани, системні стеки, таймаут зупинки, права через роль на середовищі й на стеку, адміністратор, деактивований користувач, приховування чужого середовища без звернення до агента.
-- `tests/Aggregator/Api`, 11 інтеграційних тестів: ЦА в пам'яті, фейковий агент через gRPC. Реєстрація, повторне використання токена, невірний секрет, Hello першим повідомленням, список контейнерів, команда до офлайн-агента, помилка агента, обрив з'єднання, перезапуск контейнера через агента, 403 і 401 для dev-користувачів.
+- `tests/Aggregator/Application`, 33 тести: команди контейнерів — дозволені стани, системні стеки, таймаут зупинки, права через роль на середовищі й на стеку, адміністратор, деактивований і анонімний користувач, приховування чужого середовища без звернення до агента; `CurrentActor`; фільтрація середовищ і контейнерів за видимістю; керування середовищами лише для адміністраторів.
+- `tests/Aggregator/Api`, 15 інтеграційних тестів: ЦА в пам'яті, фейковий агент через gRPC. Реєстрація, повторне використання токена, невірний секрет, Hello першим повідомленням, список контейнерів, команда до офлайн-агента, помилка агента, обрив з'єднання, перезапуск контейнера через агента, 403 і 401 для dev-користувачів, `/api/me`, приховане приватне середовище, заборона створювати середовища звичайному користувачу.
 
 ### Лаба 2
 
