@@ -2,12 +2,12 @@
 
 ## Команда
 
-| Учасник | Група | Роль |
-|---|---|---|
-| Петренко Богдан Олександрович | ІПС-22 | Team Lead, System Architect, Security Analyst, Backend Developer (ЦА, агент), DevOps |
-| Бояр Володимир Олександрович | ІПС-22 | Backend Developer (агент), System Architect |
-| Синенко Дмитро Вячеславович | ІПС-22 | Frontend Developer (Discord-бот)\* |
-| Денисенко Любов Володимирівна | ІПС-22 | Frontend Developer (веб-панель, ЦА)\* |
+| Учасник | GitHub | Група | Роль |
+|---|---|---|---|
+| Петренко Богдан Олександрович | [@lepterion](https://github.com/lepterion) | ІПС-22 | Team Lead, System Architect, Security Analyst, Backend Developer (ЦА, агент), DevOps |
+| Бояр Володимир Олександрович | [@volodaboyar1-star](https://github.com/volodaboyar1-star) | ІПС-22 | Backend Developer (агент), System Architect |
+| Синенко Дмитро Вячеславович | [@Dmyt-S](https://github.com/Dmyt-S) | ІПС-22 | Frontend Developer (Discord-бот)\* |
+| Денисенко Любов Володимирівна | [@denysenkoliubov](https://github.com/denysenkoliubov) | ІПС-22 | Frontend Developer (веб-панель, ЦА)\* |
 
 \* Ролі остаточно не визначені й можуть змінитися до дедлайну першого етапу.
 
