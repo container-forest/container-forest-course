@@ -152,7 +152,7 @@
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
 | gRPC для .NET (`Grpc.AspNetCore`, `Grpc.Tools`, `Google.Protobuf`), почато в PR #6 | Генерація коду з `.proto` окремо для сервера й клієнта; двонапрямлений стрім `Connect`; автентифікація через metadata; коди статусу (`Unauthenticated`, `InvalidArgument`, `DeadlineExceeded`); `Grpc.Net.Client` з `TestServer` в інтеграційних тестах | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
-| EF Core + SQLite, почато в PR #6. ⚠️ Пакет Microsoft, зарахування уточнити | Мапінг доменних класів без окремих моделей; міграції й застосування при старті; конвертери значень для ID і value objects; конвенції (`ConfigureConventions`); TPH-успадкування з дискримінатором; фільтровані унікальні індекси; колація `NOCASE` | [docs/retro/ef-core.md](docs/retro/ef-core.md), чернетка |
+| EF Core + SQLite, почато в PR #6 | Мапінг доменних класів без окремих моделей; міграції й застосування при старті; конвертери значень для ID і value objects; конвенції (`ConfigureConventions`); TPH-успадкування з дискримінатором; фільтровані унікальні індекси; колація `NOCASE` | [docs/retro/ef-core.md](docs/retro/ef-core.md), чернетка |
 
 ## Бояр Володимир Олександрович
 

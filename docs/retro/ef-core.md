@@ -1,7 +1,6 @@
 # Ретроспектива: Entity Framework Core
 
 - Пакети: `Microsoft.EntityFrameworkCore.Sqlite`, `Microsoft.EntityFrameworkCore.Design`, інструмент `dotnet-ef`
-- ⚠️ Пакет Microsoft: чи зараховується він у лабу 3, треба підтвердити у викладача.
 
 Кожен учасник, що працював із бібліотекою, пише свій розділ за питаннями з умови лаби 3.
 
