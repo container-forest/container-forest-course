@@ -183,7 +183,114 @@
 
 Зона: агент (обробники команд `IAgentCommandHandler`, робота з Docker і Docker Compose).
 
-Ще немає.
+### Лаба 1
+
+| Вимога | Потрібно | Є | Стан |
+|---|---|---|---|
+| Класи та подібні типи | ≥ 9 | 34 (30 класів, з них 3 статичні й 1 record; 4 інтерфейси) | ✅ |
+| Поля | ≥ 15 | 58 (42 поля стану, 16 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 47 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (6 класів на трьох рівнях; 7 класів) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 5 з клієнтським кодом (4 динамічні, 1 статичний) | ✅ |
+
+Код: `src/Agent` (PR «агент: реєстрація, з'єднання, команди контейнерів»).
+
+Не враховано: `Program.cs`, згенерований з proto код.
+
+#### Класи та подібні типи
+
+| Простір імен `ContainerForest.Agent.*` | Типи |
+|---|---|
+| — | `AgentInfo` (статичний клас), `FatalAgentException`, `DependencyInjection` (статичний клас) |
+| `Configuration` | `AgentOptions` |
+| `Enrollment` | `AgentCredentials` (record), `CredentialStore`, `AgentEnroller` |
+| `Platform` | `IBootIdProvider` (інтерфейс), `LinuxBootIdProvider`, `UptimeBootIdProvider` |
+| `Docker` | `IDockerGateway` (інтерфейс), `DockerDotNetGateway`, `ContainerInfoMapper` (статичний клас) |
+| `Commands` | `IAgentCommandHandler`, `ICommandProgress` (інтерфейси), `AgentCommandHandler<TCommand>` (абстрактний клас), `ContainerActionHandler<TCommand>` (абстрактний клас), `ListContainersHandler`, `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`, `CommandDispatcher`, `AgentCommandException` (абстрактний клас), `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException` |
+| `Connection` | `AgentStreamWriter`, `StreamCommandProgress`, `ReconnectBackoff`, `AgentSessionRunner`, `AgentWorker` |
+
+#### Поля
+
+Поля, що зберігаються з параметрів первинного конструктора, враховано як поля стану.
+
+| Тип | Поля стану | Константи та статичні поля |
+|---|---|---|
+| `AgentOptions` | `ControllerUrl`, `EnrollmentToken`, `DataDirectory`, `HeartbeatInterval` | `SectionName` |
+| `AgentCredentials` | `AgentId`, `AgentSecret` | |
+| `CredentialStore` | `options` | `FileName`, `Json` |
+| `AgentEnroller` | `store`, `options`, `logger` | |
+| `AgentInfo` | | `Version` |
+| `LinuxBootIdProvider` | `path` | `DefaultPath` |
+| `UptimeBootIdProvider` | `time`, `uptime` | |
+| `AgentCommandException` та підкласи | `Code`; `ContainerNotFoundException.ContainerId`; `DockerTimeoutException.Timeout` | |
+| `DockerDotNetGateway` | `client` | `RequestTimeout` |
+| `ContainerInfoMapper` | | `ProjectLabel`, `ServiceLabel` |
+| `AgentCommandHandler<TCommand>` | `logger` | `CommandField` |
+| `ContainerActionHandler<TCommand>` | `Docker` | `MaxContainerIdLength` |
+| `ListContainersHandler` | `docker` | |
+| `CommandDispatcher` | `handlers`, `logger` | |
+| `AgentStreamWriter` | `stream`, `writeLock` | |
+| `StreamCommandProgress` | `requestId`, `writer` | |
+| `ReconnectBackoff` | `random`, `Attempts` | `BaseDelay`, `MaxDelay`, `StableSession`, `MaxExponent` |
+| `AgentSessionRunner` | `dispatcher`, `docker`, `bootIds`, `options`, `time`, `logger` | `AgentIdHeader`, `AgentSecretHeader` |
+| `AgentWorker` | `enroller`, `credentialStore`, `runner`, `options`, `lifetime`, `time`, `logger`, `backoff` | |
+
+#### Нетривіальні методи (47)
+
+| Тип | Методи |
+|---|---|
+| `AgentOptions` (2) | `DefaultDataDirectory` (залежить від ОС), `IsValid` |
+| `AgentCredentials` (1) | `ToString` (не виводить секрет) |
+| `CredentialStore` (2) | `LoadAsync` (перевірка вмісту), `SaveAsync` (атомарний запис, права 0600 від створення) |
+| `AgentEnroller` (1) | `GetCredentialsAsync` |
+| `AgentInfo` (1) | `ReadVersion` |
+| `LinuxBootIdProvider`, `UptimeBootIdProvider` (2) | `GetBootId` у кожному |
+| `AgentCommandException` (1) | `ToCommandError` |
+| `DockerDotNetGateway` (7) | `GetVersionAsync`, `ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync`, `CallAsync` (бюджет часу й трансляція помилок Docker.DotNet), `DescribeApiError` |
+| `ContainerInfoMapper` (5) | `ToContainerInfo`, `ToState`, `ToName`, `Label`, `ToUnixMilliseconds` |
+| `AgentCommandHandler<TCommand>` (1) | `HandleAsync` (шаблонний метод) |
+| `ContainerActionHandler<TCommand>` (3) | `ExecuteAsync`, `ToStopTimeout`, `ValidateContainerId` |
+| `ListContainersHandler` (1) | `ExecuteAsync` |
+| `StopContainerHandler`, `RestartContainerHandler` (2) | `RunAsync` у кожному |
+| `CommandDispatcher` (3) | конструктор (таблиця обробників, перевірка дублікатів), `DispatchAsync`, `Unsupported` |
+| `AgentStreamWriter` (1) | `WriteAsync` |
+| `StreamCommandProgress` (1) | `ReportAsync` |
+| `ReconnectBackoff` (2) | `NextDelay`, `SessionEnded` |
+| `AgentSessionRunner` (5) | `RunAsync`, `CreateHelloAsync`, `SendHeartbeatsAsync`, `RunCommandAsync`, `IsSessionCancellation` |
+| `AgentWorker` (5) | `ExecuteAsync`, `EnrollAsync`, `KeepConnectedAsync`, `CreateChannel`, `Describe` |
+| `DependencyInjection` (1) | `AddAgent` |
+
+Не враховано як тривіальні: `ContainerIdOf` в обробниках, `StartContainerHandler.RunAsync` (лише делегує), `ReconnectBackoff.Reset`, `DockerDotNetGateway.Seconds` і `Dispose`, `AgentStreamWriter.Dispose`, властивості `Handles`, `FilePath`, `SupportedCommands`.
+
+#### Ієрархії успадкування
+
+1. `AgentCommandHandler<TCommand>` → `ListContainersHandler`, `ContainerActionHandler<TCommand>` → `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`. Це 6 класів на трьох рівнях (плюс інтерфейс `IAgentCommandHandler`).
+2. `AgentCommandException` → `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException`. Це 7 класів.
+
+#### Поліморфізм
+
+| # | Вид | Поліморфний інтерфейс | Клієнтський код |
+|---|---|---|---|
+| 1 | Динамічний (інтерфейс) | `IAgentCommandHandler.HandleAsync` | `CommandDispatcher.DispatchAsync` виконує будь-яку команду через таблицю обробників, не знаючи їхніх типів ✅ |
+| 2 | Статичний (generics) | `AgentCommandHandler<TCommand>`: поле `oneof` і тип команди визначаються з `TCommand` | `HandleAsync` один раз реалізує витяг команди, `request_id` і перетворення помилок для `ListContainers`, `StartContainer`, `StopContainer`, `RestartContainer` ✅ |
+| 3 | Динамічний (шаблонний метод) | `ContainerActionHandler<TCommand>.ContainerIdOf`, `RunAsync` | `ContainerActionHandler.ExecuteAsync` однаково перевіряє id контейнера для старту, зупинки й перезапуску ✅ |
+| 4 | Динамічний (стратегія) | `IBootIdProvider`: `LinuxBootIdProvider`, `UptimeBootIdProvider` | `AgentSessionRunner.CreateHelloAsync` бере boot_id, не знаючи ОС ✅ |
+| 5 | Динамічний (адаптер) | `IDockerGateway`: `DockerDotNetGateway` (і фейк у тестах) | обробники команд і `AgentSessionRunner` працюють із Docker без залежності від Docker.DotNet ✅ |
+
+#### Тести (не входять в облік)
+
+- `tests/Agent`, 62 тести (2 з них лише на Linux): зіставлення міток compose і станів контейнерів; обробники — `request_id` у результаті, коди помилок, передача таймауту зупинки, відхилення небезпечних id контейнерів; диспетчер — непідтримувані й невідомі команди, `CancelRequest` без результату; backoff — межі, jitter, скидання після довгої сесії; послідовний запис у стрім; сесія — облікові дані в metadata, Hello першим, відповіді на команди, heartbeat, `Unauthenticated`; збереження облікових даних і реєстрація; boot_id.
+
+### Лаба 2
+
+Ще немає. Заплановано: середовища та статус агентів, реєстрація агента, контейнери, логи контейнера.
+
+### Лаба 3
+
+| Бібліотека | Що використано | Ретроспектива |
+|---|---|---|
+| Docker.DotNet (`Docker.DotNet.Enhanced`) | `DockerClientBuilder` з визначенням endpoint як у docker CLI; `System.GetVersionAsync`; `Containers.ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync` з `WaitBeforeKillSeconds`; типізовані винятки (`DockerContainerNotFoundException`, `DockerApiException`) | [docs/retro/docker-dotnet.md](docs/retro/docker-dotnet.md), чернетка |
+| gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`) | Клієнт двонапрямленого стріму `Connect`; metadata виклику; коди статусу (`Unauthenticated`, `Unavailable`); HTTP/2 keepalive-пінги через `SocketsHttpHandler`; дескриптори protobuf для зіставлення типу команди з полем `oneof`; фейковий клієнт у тестах через віртуальні методи згенерованого класу | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
 
 ## Синенко Дмитро Вячеславович (@Dmyt-S)
 
