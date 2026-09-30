@@ -219,7 +219,9 @@
 
 ### Лаба 2
 
-Ще немає. Заплановано: список стеків, редактор стеку, історія деплоїв, ключі середовищ.
+Екранів ще немає. Заплановано: список стеків, редактор стеку, історія деплоїв, ключі середовищ.
+
+Каркас панелі `src/Web` (PR #23): Vite, маршрутизація й шар даних, клієнт API з OpenAPI, shadcn/ui на Tailwind CSS, образ nginx, job у CI. Це спільна інфраструктура, а не екрани, тому в облік лаби 2 не входить; згенеровані компоненти `src/components/ui` не зараховуються нікому.
 
 ### Лаба 3
 
@@ -229,6 +231,8 @@
 | EF Core + SQLite, почато в PR #6 | Мапінг доменних класів без окремих моделей; міграції й застосування при старті; конвертери значень для ID і value objects; конвенції (`ConfigureConventions`); TPH-успадкування з дискримінатором; фільтровані унікальні індекси; колація `NOCASE`; owned-колекція (`OwnsMany`) для логу деплою; проєкції без завантаження логу | [docs/retro/ef-core.md](docs/retro/ef-core.md), чернетка |
 | LibGit2Sharp, почато в PR #13 | Bare-клон як кеш; fetch однієї гілки з refspec і `Prune`; читання файлів із дерева коміту без checkout (`Tree`, `Blob`, `Mode`); скасування через колбек прогресу | [docs/retro/libgit2sharp.md](docs/retro/libgit2sharp.md), чернетка |
 | YamlDotNet, почато в PR #13 | Дерево вузлів `YamlStream` / `YamlMappingNode` замість типізованої моделі; якорі й merge-ключі; позиція помилки з `YamlException.Start` | [docs/retro/yamldotnet.md](docs/retro/yamldotnet.md), чернетка |
+| TanStack Router, почато в PR #23 | Маршрути з файлів з генерацією дерева; pathless layout `_authed` з `beforeLoad` і redirect на 401; контекст роутера; `validateSearch` зі схемою Zod | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md), чернетка |
+| TanStack Query, почато в PR #23 | `queryOptions`-фабрики як єдине джерело ключів; `ensureQueryData` у `beforeLoad`; політика повторів без 401 | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md), чернетка |
 
 ## Бояр Володимир Олександрович (@volodaboyar1-star)
 
