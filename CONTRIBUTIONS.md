@@ -408,13 +408,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 18 (15 класів, з них 3 record і 2 статичні; 1 інтерфейс; 2 enum) | ✅ |
-| Поля | ≥ 15 | 29 (24 поля стану, 5 констант) | ✅ |
-| Нетривіальні методи | ≥ 25 | 14 | ⏳ команди бота — наступний PR |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 1 (8 класів) | ⏳ ієрархія команд бота — наступний PR |
-| Поліморфізм | ≥ 3, серед них статичний і динамічний | 0 з клієнтським кодом | ⏳ клієнтський код — команди бота |
+| Класи та подібні типи | ≥ 9 | 43 (38 класів, з них 8 record і 4 статичні; 2 інтерфейси; 1 структура; 2 enum) | ✅ |
+| Поля | ≥ 15 | 80 (66 полів стану, 14 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 44 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (8 класів на трьох рівнях; 8 класів) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 5 з клієнтським кодом (4 динамічні, 1 статичний) | ✅ |
 
-Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR «feat(bot): gRPC client for the aggregator»).
+Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR #19); Discord-частина: slash-команди, автодоповнення, прив'язка акаунта (PR «feat(bot): Discord slash commands»).
 
 Не враховано: `Program.cs`, згенерований з proto код.
 
@@ -423,8 +423,10 @@
 | Простір імен `ContainerForest.DiscordBot.*` | Типи |
 |---|---|
 | — | `DependencyInjection` (статичний клас) |
-| `Configuration` | `BotOptions` |
+| `Configuration` | `BotOptions`, `DiscordOptions` |
 | `Forest` | `IForestClient` (інтерфейс), `ForestCaller`, `ForestEnvironment`, `ForestContainer` (record), `ContainerState`, `ContainerAction` (enum), `ForestException` (абстрактний клас), `AccountNotLinkedException`, `ForestAccessDeniedException`, `ForestNotFoundException`, `ForestRequestRejectedException`, `AgentUnavailableException`, `AgentFailedException`, `ForestUnavailableException`, `RpcErrorMapper` (статичний клас), `GrpcForestClient` |
+| `Commands` | `ICommandInteraction` (інтерфейс), `BotUser`, `BotReply`, `ContainerList`, `ContainerActionArgs`, `Suggestion` (record), `NoArgs` (структура), `BotCommand<TArgs, TResult>` (абстрактний клас), `EnvironmentsCommand`, `ContainersCommand`, `ContainerActionCommand` (абстрактний клас), `StartContainerCommand`, `StopContainerCommand`, `RestartContainerCommand`, `LinkCommand`, `EnvironmentResolver`, `AutocompleteSource`, `ReplyFormatter`, `Markdown` (статичні класи) |
+| `Interactions` | `DiscordBotService`, `ForestModule`, `DiscordInteraction`, `EnvironmentAutocompleteHandler`, `ContainerAutocompleteHandler` |
 
 #### Поля
 
@@ -433,36 +435,70 @@
 | Тип | Поля стану | Константи та статичні поля |
 |---|---|---|
 | `BotOptions` | `ControllerUrl`, `ServiceToken`, `QueryTimeout`, `ActionTimeout` | `SectionName` |
+| `DiscordOptions` | `Token`, `DevGuildId` | `SectionName` |
 | `ForestCaller` | `UserId`, `UserName`, `IsAdmin`, `IsActive` | |
 | `ForestEnvironment` | `Id`, `Name`, `Online` | |
 | `ForestContainer` | `Id`, `Name`, `State`, `Image`, `StackName`, `ServiceName`, `StatusText`, `CanControl` | |
 | `ForestUnavailableException` | `Diagnostic` | |
 | `RpcErrorMapper` | | `ReasonTrailer`, `InvalidBotTokenReason`, `AccountNotLinkedReason` |
 | `GrpcForestClient` | `gateway`, `options`, `time`, `logger` | `BotTokenHeader` |
+| `BotUser`, `BotReply` | `Id`, `UserName`; `Content`, `IsError` | |
+| `BotCommand<TArgs, TResult>` | `logger` | `UnexpectedErrorMessage` |
+| `EnvironmentsCommand`, `LinkCommand` | `forest` у кожному | |
+| `ContainersCommand`, `ContainerActionCommand` | `forest`, `environments` у кожному | |
+| `ContainerList`, `ContainerActionArgs`, `Suggestion` | `Environment`, `Containers`; `Environment`, `Container`, `TimeoutSeconds`; `Name`, `Value` | |
+| `EnvironmentResolver` | `forest` | |
+| `AutocompleteSource` | `forest`, `logger` | `MaxSuggestions`, `MaxLength`, `Budget` |
+| `ReplyFormatter` | | `MaxMessageLength` |
+| `DiscordInteraction` | `interaction`, `User` | |
+| `ForestModule` | `environments`, `containers`, `start`, `stop`, `restart`, `link`, `lifetime` | `EnvironmentDescription`, `ContainerDescription`, `TimeoutDescription` |
+| `EnvironmentAutocompleteHandler`, `ContainerAutocompleteHandler` | `source` у кожному | |
+| `DiscordBotService` | `client`, `interactions`, `services`, `options`, `environment`, `lifetime`, `logger`, `commandsRegistered` | |
 
-#### Нетривіальні методи (14)
+#### Нетривіальні методи (44)
 
 | Тип | Методи |
 |---|---|
-| `BotOptions` (1) | `IsValid` |
+| `BotOptions`, `DiscordOptions` (2) | `IsValid` у кожному (для `DiscordOptions` — з урахуванням оточення) |
 | `ForestException` (1) | `DetailOr` (повідомлення ЦА або типовий текст) |
 | `RpcErrorMapper` (1) | `ToForestException` (коди статусу й трейлер `x-cf-reason` → винятки; відрізняє недоступний ЦА від офлайн-агента) |
 | `GrpcForestClient` (9) | `GetCallerAsync`, `LinkAccountAsync`, `ListEnvironmentsAsync`, `ListContainersAsync`, `ControlContainerAsync`, `CallAsync` (токен, дедлайн, скасування, перетворення помилок, лог помилок конфігурації), `ToContainer`, `ToState`, `ToProto` |
-| `DependencyInjection` (2) | `AddDiscordBot`, `CreateChannel` |
+| `DependencyInjection` (3) | `AddDiscordBot`, `AddForestClient`, `CreateChannel` |
+| `BotCommand<TArgs, TResult>` (1) | `ExecuteAsync` (шаблонний метод: defer → виклик ЦА → форматування → обробка помилок) |
+| `ContainersCommand` (1) | `CallForestAsync` (пошук середовища й список контейнерів) |
+| `ContainerActionCommand` (2) | `CallForestAsync`, `Format` |
+| `EnvironmentResolver` (2) | `ResolveAsync`, `Find` (id, точне ім'я, ім'я без урахування регістру, неоднозначність) |
+| `ReplyFormatter` (6) | `Environments`, `Containers` (групування за стеками), `ContainerLine`, `StateIcon`, `Status`, `WithinLimit` (ліміт 2000 символів із підсумком пропущеного) |
+| `Markdown` (1) | `Escape` |
+| `AutocompleteSource` (8) | `EnvironmentsAsync`, `ContainersAsync`, `SuggestEnvironments`, `SuggestContainers`, `Fits` (стани, доречні для дії), `IsIdPrefix`, `Truncate`, `WithinBudgetAsync` (бюджет 2 с, помилка → без підказок) |
+| `DiscordInteraction` (1) | `RespondAsync` (без згадок користувачів) |
+| `EnvironmentAutocompleteHandler`, `ContainerAutocompleteHandler` (2) | `GenerateSuggestionsAsync` у кожному |
+| `DiscordBotService` (4) | `ExecuteAsync` (вхід, невірний токен), `RegisterCommandsAsync` (тестовий сервер або глобально, один раз), `ReportFailureAsync`, `LogAsync` |
+
+Не враховано як тривіальні: `CallForestAsync` і `Format` у `EnvironmentsCommand` і `LinkCommand` (лише делегують), перевизначення `Action`, `Done`, `StopTimeout`, `Name`, `BotReply.Success` і `Error`, `Markdown.Code`, `ReplyFormatter.Count`, `AutocompleteSource.Matches`, `DependencyInjection.AddCommands` (лише реєстрація), `DiscordInteraction.DeferAsync`, `DiscordBotService.HandleInteractionAsync`, методи slash-команд у `ForestModule` (лише передають опції команді).
 
 #### Ієрархії успадкування
 
 1. `ForestException` → `AccountNotLinkedException`, `ForestAccessDeniedException`, `ForestNotFoundException`, `ForestRequestRejectedException`, `AgentUnavailableException`, `AgentFailedException`, `ForestUnavailableException`. Це 8 класів.
+2. `BotCommand<TArgs, TResult>` → `EnvironmentsCommand`, `ContainersCommand`, `LinkCommand`, `ContainerActionCommand` → `StartContainerCommand`, `StopContainerCommand`, `RestartContainerCommand`. Це 8 класів на трьох рівнях.
 
 #### Поліморфізм
 
 | # | Вид | Поліморфний інтерфейс | Клієнтський код |
 |---|---|---|---|
-| 1 | Динамічний (адаптер) | `IForestClient`: реалізує `GrpcForestClient` | ⏳ команди бота працюватимуть із ЦА через `IForestClient`, не знаючи про gRPC |
+| 1 | Динамічний (шаблонний метод) | `BotCommand.CallForestAsync`, `Format` | `BotCommand.ExecuteAsync` однаково відкладає відповідь, обробляє помилки й відповідає для всіх шести команд ✅ |
+| 2 | Статичний (generics) | `BotCommand<TArgs, TResult>`: типи опцій і результату виклику ЦА | `ExecuteAsync` реалізовано один раз для `NoArgs`, `string`, `ContainerActionArgs` і різних результатів; `ForestModule` викликає його для кожної команди ✅ |
+| 3 | Динамічний (адаптер) | `IForestClient`: `GrpcForestClient` (і stub у тестах) | команди, `EnvironmentResolver` і `AutocompleteSource` працюють із ЦА, не знаючи про gRPC ✅ |
+| 4 | Динамічний (адаптер) | `ICommandInteraction`: `DiscordInteraction` (і запис взаємодії в тестах) | `BotCommand.ExecuteAsync` відповідає користувачу, не знаючи про Discord.Net ✅ |
+| 5 | Динамічний (віртуальні члени) | `ContainerActionCommand.Action`, `Done`, `StopTimeout` | `ContainerActionCommand.CallForestAsync` і `Format` однакові для старту, зупинки й перезапуску; старт не надсилає таймаут зупинки ✅ |
 
 #### Тести (не входять в облік)
 
-- `tests/DiscordBot`, 32 тести. `GrpcForestClient` проти справжнього gRPC-сервера `BotGateway` у пам'яті (`TestServer`) із заготовленими відповідями: токен у metadata `x-bot-token`, Discord ID і поля запитів, перетворення середовищ, контейнерів, станів і дій, необов'язковий таймаут зупинки; кожен код помилки ЦА → свій виняток із повідомленням ЦА; неприв'язаний акаунт; невірний токен бота й недоступний ЦА — у лог, користувачу загальне повідомлення, токен не потрапляє ні в лог, ні у виняток; скасування. Перевірка конфігурації (`ValidateOnStart`).
+- `tests/DiscordBot`, 78 тестів.
+  - `GrpcForestClient` проти справжнього gRPC-сервера `BotGateway` у пам'яті (`TestServer`) із заготовленими відповідями: токен у metadata `x-bot-token`, поля запитів, перетворення відповідей, кожен код помилки ЦА → свій виняток; невірний токен і недоступний ЦА — у лог, користувачу загальне повідомлення, токен не потрапляє ні в лог, ні у виняток; скасування.
+  - Команди зі stub-реалізацією `IForestClient`: defer до виклику ЦА, пошук середовища за ім'ям і id, дії з таймаутом і без, помилки ЦА → читабельна відповідь, непередбачена помилка → у лог і загальне повідомлення, скасування без відповіді, `/link`.
+  - Форматування: групування за стеками, ліміт 2000 символів, екранування markdown. Автодоповнення: фільтр за введеним текстом і станом, ліміти 25 варіантів і 100 символів, бюджет часу, помилки ЦА.
+  - Конфігурація: `ValidateOnStart` для ЦА й Discord, тестовий сервер у `Development`, токен Discord лише з ASCII без пробілів.
 
 ### Лаба 2
 
@@ -472,6 +508,7 @@
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
+| Discord.Net 3.20.1 | `DiscordSocketClient` лише з інтентом `Guilds`; `InteractionService` з модулями через DI (`InteractionModuleBase`, `[SlashCommand]`, `[Summary]`, `[MinValue]`, `[MaxValue]`); автодоповнення (`AutocompleteHandler`, `[Autocomplete]`); `RunMode.Async`; реєстрація команд на тестовому сервері або глобально; відкладені ephemeral-відповіді (`DeferAsync`, `ModifyOriginalResponseAsync`), `AllowedMentions.None`; події `Log`, `Ready`, `InteractionCreated`, `InteractionExecuted` | [docs/retro/discord-net.md](docs/retro/discord-net.md), чернетка |
 | gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`; `Grpc.AspNetCore` у тестах) | Генерація клієнта з `bot.proto`; metadata виклику (`x-bot-token`); дедлайни й скасування через `CallOptions`; коди статусу й трейлери (`x-cf-reason`); `Status.DebugException`, щоб відрізнити помилку клієнта від відповіді сервера; сервер у пам'яті на `TestServer` у тестах, розведення згенерованих типів через `extern alias` | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
 
 ## Денисенко Любов Володимирівна (@denysenkoliubov)
