@@ -337,7 +337,75 @@
 
 Зона: Discord-бот, система сповіщень (роль остаточно не визначена).
 
-Ще немає.
+### Лаба 1
+
+| Вимога | Потрібно | Є | Стан |
+|---|---|---|---|
+| Класи та подібні типи | ≥ 9 | 18 (15 класів, з них 3 record і 2 статичні; 1 інтерфейс; 2 enum) | ✅ |
+| Поля | ≥ 15 | 29 (24 поля стану, 5 констант) | ✅ |
+| Нетривіальні методи | ≥ 25 | 14 | ⏳ команди бота — наступний PR |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 1 (8 класів) | ⏳ ієрархія команд бота — наступний PR |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 0 з клієнтським кодом | ⏳ клієнтський код — команди бота |
+
+Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR «feat(bot): gRPC client for the aggregator»).
+
+Не враховано: `Program.cs`, згенерований з proto код.
+
+#### Класи та подібні типи
+
+| Простір імен `ContainerForest.DiscordBot.*` | Типи |
+|---|---|
+| — | `DependencyInjection` (статичний клас) |
+| `Configuration` | `BotOptions` |
+| `Forest` | `IForestClient` (інтерфейс), `ForestCaller`, `ForestEnvironment`, `ForestContainer` (record), `ContainerState`, `ContainerAction` (enum), `ForestException` (абстрактний клас), `AccountNotLinkedException`, `ForestAccessDeniedException`, `ForestNotFoundException`, `ForestRequestRejectedException`, `AgentUnavailableException`, `AgentFailedException`, `ForestUnavailableException`, `RpcErrorMapper` (статичний клас), `GrpcForestClient` |
+
+#### Поля
+
+Поля, що зберігаються з параметрів первинного конструктора, враховано як поля стану.
+
+| Тип | Поля стану | Константи та статичні поля |
+|---|---|---|
+| `BotOptions` | `ControllerUrl`, `ServiceToken`, `QueryTimeout`, `ActionTimeout` | `SectionName` |
+| `ForestCaller` | `UserId`, `UserName`, `IsAdmin`, `IsActive` | |
+| `ForestEnvironment` | `Id`, `Name`, `Online` | |
+| `ForestContainer` | `Id`, `Name`, `State`, `Image`, `StackName`, `ServiceName`, `StatusText`, `CanControl` | |
+| `ForestUnavailableException` | `Diagnostic` | |
+| `RpcErrorMapper` | | `ReasonTrailer`, `InvalidBotTokenReason`, `AccountNotLinkedReason` |
+| `GrpcForestClient` | `gateway`, `options`, `time`, `logger` | `BotTokenHeader` |
+
+#### Нетривіальні методи (14)
+
+| Тип | Методи |
+|---|---|
+| `BotOptions` (1) | `IsValid` |
+| `ForestException` (1) | `DetailOr` (повідомлення ЦА або типовий текст) |
+| `RpcErrorMapper` (1) | `ToForestException` (коди статусу й трейлер `x-cf-reason` → винятки; відрізняє недоступний ЦА від офлайн-агента) |
+| `GrpcForestClient` (9) | `GetCallerAsync`, `LinkAccountAsync`, `ListEnvironmentsAsync`, `ListContainersAsync`, `ControlContainerAsync`, `CallAsync` (токен, дедлайн, скасування, перетворення помилок, лог помилок конфігурації), `ToContainer`, `ToState`, `ToProto` |
+| `DependencyInjection` (2) | `AddDiscordBot`, `CreateChannel` |
+
+#### Ієрархії успадкування
+
+1. `ForestException` → `AccountNotLinkedException`, `ForestAccessDeniedException`, `ForestNotFoundException`, `ForestRequestRejectedException`, `AgentUnavailableException`, `AgentFailedException`, `ForestUnavailableException`. Це 8 класів.
+
+#### Поліморфізм
+
+| # | Вид | Поліморфний інтерфейс | Клієнтський код |
+|---|---|---|---|
+| 1 | Динамічний (адаптер) | `IForestClient`: реалізує `GrpcForestClient` | ⏳ команди бота працюватимуть із ЦА через `IForestClient`, не знаючи про gRPC |
+
+#### Тести (не входять в облік)
+
+- `tests/DiscordBot`, 32 тести. `GrpcForestClient` проти справжнього gRPC-сервера `BotGateway` у пам'яті (`TestServer`) із заготовленими відповідями: токен у metadata `x-bot-token`, Discord ID і поля запитів, перетворення середовищ, контейнерів, станів і дій, необов'язковий таймаут зупинки; кожен код помилки ЦА → свій виняток із повідомленням ЦА; неприв'язаний акаунт; невірний токен бота й недоступний ЦА — у лог, користувачу загальне повідомлення, токен не потрапляє ні в лог, ні у виняток; скасування. Перевірка конфігурації (`ValidateOnStart`).
+
+### Лаба 2
+
+Ще немає. Заплановано: прив'язка Discord-акаунта, канали сповіщень, правила сповіщень, історія сповіщень.
+
+### Лаба 3
+
+| Бібліотека | Що використано | Ретроспектива |
+|---|---|---|
+| gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`; `Grpc.AspNetCore` у тестах) | Генерація клієнта з `bot.proto`; metadata виклику (`x-bot-token`); дедлайни й скасування через `CallOptions`; коди статусу й трейлери (`x-cf-reason`); `Status.DebugException`, щоб відрізнити помилку клієнта від відповіді сервера; сервер у пам'яті на `TestServer` у тестах, розведення згенерованих типів через `extern alias` | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
 
 ## Денисенко Любов Володимирівна (@denysenkoliubov)
 
