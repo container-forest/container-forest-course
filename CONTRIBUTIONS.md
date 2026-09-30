@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 100 (75 класів, 10 інтерфейсів, 6 структур, 9 enum) | ✅ |
+| Класи та подібні типи | ≥ 9 | 101 (76 класів, 10 інтерфейсів, 6 структур, 9 enum) | ✅ |
 | Поля | ≥ 15 | 134 (113 полів стану, 21 константа й статичне поле) | ✅ |
-| Нетривіальні методи | ≥ 25 | 142 | ✅ |
+| Нетривіальні методи | ≥ 25 | 143 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (9, 3, 5, 5 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 5 з клієнтським кодом (3 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12).
 
 Не враховано: тимчасові `DevEnvironmentEndpoints`, `DevAccessEndpoints` і `DevUserAuthenticationHandler` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
 
@@ -46,7 +46,7 @@
 | `Environments` | `IEnvironmentRepository` (інтерфейс), `EnvironmentService`, `EnrollmentToken`, `EnvironmentCreated`, `EnvironmentSummary` |
 | `Access` | `IUserRepository`, `IRoleAssignmentRepository`, `ICurrentUser` (інтерфейси), `AccessDeniedException`, `UnauthenticatedException`, `CurrentActor` |
 | `Stacks` | `IStackRepository` (інтерфейс) |
-| `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer` |
+| `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer`, `ContainerLookup` (статичний клас) |
 | — | `DependencyInjection` (статичний клас) |
 
 | Простір імен `ContainerForest.Aggregator.Infrastructure.*` | Типи |
@@ -96,7 +96,7 @@
 | `EnvironmentConfiguration`, `RoleAssignmentConfiguration` | | `Sha256HexLength`; `EnvironmentScope`, `StackScope` |
 | `Infrastructure.DependencyInjection`, `AgentGatewayService` | | `ConnectionStringName`; `AgentIdHeader`, `AgentSecretHeader` |
 
-#### Нетривіальні методи (142)
+#### Нетривіальні методи (143)
 
 | Тип | Методи |
 |---|---|
@@ -138,6 +138,7 @@
 | `ContainerCommandService` (2) | `ExecuteAsync`, `Create` |
 | `CurrentActor` (2) | `GetAsync`, `GetAdministratorAsync` |
 | `ContainerQueryService` (2) | `ListAsync`, `Can` |
+| `ContainerLookup` (1) | `Find`: повний id, точне ім'я, унікальний префікс id |
 | `ClaimsCurrentUser` (1) | `Id` (читає й розбирає claim) |
 | `MeEndpoints` (1) | `MapMeEndpoints` |
 
@@ -165,7 +166,7 @@
 
 - `tests/Aggregator/Domain`, 101 тест: value objects, реєстрація агента, стан-машина деплою, правила системних стеків, ефективна роль і видимість середовищ.
 - `tests/Aggregator/Infrastructure`, 10 тестів: зіставлення запитів і відповідей у `AgentSession`, закриття сесії, таймаут, заборона паралельного запису в стрім, заміна сесії в `AgentRegistry`.
-- `tests/Aggregator/Application`, 33 тести: команди контейнерів — дозволені стани, системні стеки, таймаут зупинки, права через роль на середовищі й на стеку, адміністратор, деактивований і анонімний користувач, приховування чужого середовища без звернення до агента; `CurrentActor`; фільтрація середовищ і контейнерів за видимістю; керування середовищами лише для адміністраторів.
+- `tests/Aggregator/Application`, 41 тест: пошук контейнера за id, ім'ям і префіксом; команди контейнерів — дозволені стани, системні стеки, таймаут зупинки, права через роль на середовищі й на стеку, адміністратор, деактивований і анонімний користувач, приховування чужого середовища без звернення до агента; `CurrentActor`; фільтрація середовищ і контейнерів за видимістю; керування середовищами лише для адміністраторів.
 - `tests/Aggregator/Api`, 15 інтеграційних тестів: ЦА в пам'яті, фейковий агент через gRPC. Реєстрація, повторне використання токена, невірний секрет, Hello першим повідомленням, список контейнерів, команда до офлайн-агента, помилка агента, обрив з'єднання, перезапуск контейнера через агента, 403 і 401 для dev-користувачів, `/api/me`, приховане приватне середовище, заборона створювати середовища звичайному користувачу.
 
 ### Лаба 2
