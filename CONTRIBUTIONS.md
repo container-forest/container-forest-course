@@ -534,6 +534,76 @@
 
 ## Денисенко Любов Володимирівна (@denysenkoliubov)
 
-Зона: API для вебпанелі, аудит (роль остаточно не визначена).
+Зона: вхід у систему, керування користувачами й журнал аудиту — бекенд у ЦА й екрани панелі.
+
+### Лаба 1
+
+| Вимога | Потрібно | Є | Стан |
+|---|---|---|---|
+| Класи та подібні типи | ≥ 9 | 8 (3 статичні класи) | ⏳ |
+| Поля | ≥ 15 | 19 (10 полів стану, 9 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 7 | ⏳ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 0 | ⏳ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 0 | ⏳ |
+
+Код: вхід за паролем у ЦА (PR «feat(auth): password sign-in with the cf_session cookie»).
+
+Не враховано: зміни в `Program.cs`, `AggregatorDbContext` і `ProblemDetailsExceptionHandler` (спільний код), міграція `Accounts`, згенерований `schema.gen.ts`.
+
+#### Класи та подібні типи
+
+| Простір імен `ContainerForest.Aggregator.*` | Типи |
+|---|---|
+| `Infrastructure.Accounts` | `AccountUser`, `AccountPolicy` (статичний клас), `BootstrapOptions`, `AdminBootstrapper` |
+| `Application.Access` | `PasswordRejectedException` |
+| `Api.Access` | `AuthenticationSetup` (статичний клас), `PasswordSignIn` |
+| `Api.Endpoints` | `AuthEndpoints` (статичний клас) |
+
+#### Поля
+
+Поля, що зберігаються з параметрів первинного конструктора, враховано як поля стану.
+
+| Тип | Поля стану | Константи та статичні поля |
+|---|---|---|
+| `AccountPolicy` | | `MinPasswordLength`, `MaxFailedSignIns`, `LockoutDuration` |
+| `BootstrapOptions` | `AdminUserName`, `AdminPassword` | `SectionName` |
+| `AdminBootstrapper` | `scopeFactory`, `options`, `time`, `logger` | |
+| `PasswordRejectedException` | `Reasons` | |
+| `AuthenticationSetup` | | `SessionCookieName`, `DevOrCookieScheme` |
+| `PasswordSignIn` | `signInManager`, `users`, `currentActor` | `IncorrectPassword`, `DecoyAccount`, `decoyHash` |
+
+#### Нетривіальні методи (7)
+
+| Тип | Методи |
+|---|---|
+| `AccountPolicy` (1) | `Configure` (політика паролів і lockout) |
+| `BootstrapOptions` (1) | `IsValid` (ім'я й пароль задаються разом або жодне) |
+| `AdminBootstrapper` (1) | `StartAsync` (перший адміністратор лише в порожній базі, атомарно з обліковим записом) |
+| `AuthenticationSetup` (1) | `AddSessionAuthentication` (cookie `cf_session`, 401/403 замість редіректів, security stamp, policy-схема з dev-заголовком) |
+| `PasswordSignIn` (2) | `SignInAsync` (перевірка пароля з lockout, деактивований користувач, decoy-хеш для невідомого імені), `ChangePasswordAsync` (зміна пароля, завершення інших сесій, перевидача поточної) |
+| `AuthEndpoints` (1) | `MapAuthEndpoints` |
+
+Не враховано як тривіальні: `PasswordSignIn.SignOutAsync`, `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`.
+
+#### Ієрархії успадкування
+
+Ще немає. `AccountUser : IdentityUser<Guid>` успадковує клас бібліотеки й власною ієрархією не вважається. Заплановано: способи входу (пароль, Google OIDC, Discord OAuth2).
+
+#### Поліморфізм
 
 Ще немає.
+
+#### Тести (не входять в облік)
+
+- `tests/Aggregator/Api/AuthTests.cs`, 11 тестів: вхід і `/api/me`, атрибути cookie, `RememberMe`, неправильний пароль, невідоме ім'я з тією самою відповіддю, деактивований користувач, lockout, logout, зміна пароля завершує інші сесії й лишає поточну, неправильний поточний пароль, закороткий новий пароль із причиною. Адміністратора тестів тепер створює `AdminBootstrapper`.
+
+### Лаба 2
+
+Ще немає. Заплановано: вхід, користувачі, призначення прав, журнал аудиту.
+
+### Лаба 3
+
+| Бібліотека | Що використано | Ретроспектива |
+|---|---|---|
+| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля); `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
+| EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
