@@ -546,7 +546,7 @@
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 1 (8 класів на трьох рівнях) | ⏳ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 2 з клієнтським кодом (обидва динамічні) | ⏳ |
 
-Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR «feat(users): user management API»).
+Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31).
 
 Не враховано: зміни в `Program.cs`, `AggregatorDbContext`, `ProblemDetailsExceptionHandler` і `UserRepository` (спільний код; у `UserRepository` — однорядкові запити `ListAsync` і `CountActiveAdministratorsAsync`), міграція `Accounts`, згенерований `schema.gen.ts`.
 
@@ -629,7 +629,7 @@
 | Обробники подій | ≥ 10 | 3 | ⏳ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` (PR «feat(web): login screen and sign-out»). Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`) в облік не йдуть.
+Код: `src/Web` (PR #30). Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`) в облік не йдуть.
 
 - **Екрани:** вхід (`src/routes/login.tsx`).
 - **Елементи керування:** поле імені користувача, поле пароля, прапорець «Запам'ятати мене», кнопка «Увійти» (екран входу); кнопка «Вийти» в шапці (`src/routes/_authed.tsx`).
@@ -646,5 +646,5 @@
 | Zod 4.6.5 | Схема форми входу (`z.object`, `trim`, `min` з повідомленнями), `z.infer` для типу форми | [docs/retro/zod.md](docs/retro/zod.md), чернетка |
 | TanStack Query | `useMutation` для входу й виходу, `setQueryData` і `removeQueries` для кешу поточного користувача | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
 | TanStack Router | `Route.useSearch` для `redirect`, `useNavigate` (`href`, `replace`) | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
-| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля); `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
+| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
 | EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
