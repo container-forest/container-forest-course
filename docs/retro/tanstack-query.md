@@ -45,3 +45,20 @@ _Дописати автору._
 - Документація: https://tanstack.com/query/latest/docs/framework/react/overview
 - `queryOptions`: https://tanstack.com/query/latest/docs/framework/react/guides/query-options
 - Інтеграція з TanStack Router: https://tanstack.com/router/latest/docs/framework/react/guide/external-data-loading
+
+## Денисенко Л. В.
+
+Статус: **чернетка.** Факти заповнено; розділи з оцінками — дописати автору.
+
+### Які задачі розв'язує бібліотека
+
+- Вхід і вихід як мутації (`useMutation` у `src/Web/src/api/auth.ts`): стан «надсилається» блокує кнопку, помилка показується на формі.
+- Кеш поточного користувача: після входу відповідь ЦА кладеться в `meQuery` (`setQueryData`), тож `_authed` не робить зайвого запиту `/api/me`; кеш попереднього користувача прибирається (`removeQueries`), як і після виходу.
+
+### Проблеми, що виникли
+
+- `queryClient.clear()` після виходу чистить і кеш мутацій, тож колбек переходу на `/login` міг би не спрацювати; замість нього — `removeQueries()`.
+
+### Документація, плюси й мінуси, що змінили б
+
+_Дописати._

@@ -621,11 +621,30 @@
 
 ### Лаба 2
 
-Ще немає. Заплановано: вхід, користувачі, призначення прав, журнал аудиту.
+| Вимога | Потрібно | Є | Стан |
+|---|---|---|---|
+| Екрани | ≥ 4 | 1 | ⏳ |
+| Елементи керування | ≥ 20 | 5 | ⏳ |
+| Контейнерні елементи | ≥ 1 | 0 | ⏳ |
+| Обробники подій | ≥ 10 | 3 | ⏳ |
+| Логіка окремо від GUI | так | так | ✅ |
+
+Код: `src/Web` (PR «feat(web): login screen and sign-out»). Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`) в облік не йдуть.
+
+- **Екрани:** вхід (`src/routes/login.tsx`).
+- **Елементи керування:** поле імені користувача, поле пароля, прапорець «Запам'ятати мене», кнопка «Увійти» (екран входу); кнопка «Вийти» в шапці (`src/routes/_authed.tsx`).
+- **Обробники подій:** надсилання форми входу (перевірка Zod, вхід, перехід на `redirect`), зміна прапорця «Запам'ятати мене», натискання «Вийти» (вихід і перехід на `/login`).
+- **Логіка окремо від GUI:** запити й робота з кешем — `src/api/auth.ts` (`useLoginMutation`, `useLogoutMutation`); правила форми — схема Zod; компоненти лише показують стан і викликають мутації.
+
+Заплановано: користувачі, призначення прав, журнал аудиту.
 
 ### Лаба 3
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
+| React Hook Form 7.89.0 (з `@hookform/resolvers`) | `useForm` з `zodResolver`, `register` для полів, `Controller` для прапорця Radix (не нативний `input`), `formState.errors`, `handleSubmit` | [docs/retro/react-hook-form.md](docs/retro/react-hook-form.md), чернетка |
+| Zod 4.6.5 | Схема форми входу (`z.object`, `trim`, `min` з повідомленнями), `z.infer` для типу форми | [docs/retro/zod.md](docs/retro/zod.md), чернетка |
+| TanStack Query | `useMutation` для входу й виходу, `setQueryData` і `removeQueries` для кешу поточного користувача | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
+| TanStack Router | `Route.useSearch` для `redirect`, `useNavigate` (`href`, `replace`) | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
 | ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля); `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
 | EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
