@@ -123,6 +123,7 @@
 - Автентифікація бота сервісним токеном у metadata `x-bot-token` кожного виклику; Discord ID користувача — поле запиту.
 - Помилки ЦА — коди статусу gRPC, а для `Unauthenticated` ще й трейлер `x-cf-reason`; бот перетворює їх на винятки з текстом для користувача (`RpcErrorMapper`).
 - Тести: справжній gRPC-сервер `BotGateway` у пам'яті (`TestServer`) із заготовленими відповідями.
+- Сповіщення: server streaming `WatchNotifications` і унарний `ReportDelivery` з обох боків — серверні методи в ЦА (`BotGatewayService`) і споживач потоку в боті (`GrpcNotificationSource`, `NotificationWatcher`).
 
 ### Чому саме ця бібліотека
 
@@ -139,6 +140,10 @@
 3. **Скасування — не `OperationCanceledException`.** gRPC повідомляє про скасований виклик як `RpcException(Cancelled)`, а в гонці з обірваним стрімом — і з іншим кодом. Якщо токен скасування вже спрацював, клієнт перетворює будь-яку `RpcException` на `OperationCanceledException`.
 4. **Конфлікт згенерованих типів у тестах.** Тестам потрібен серверний базовий клас `BotGateway.BotGatewayBase`, а бот генерує лише клієнт; ті самі класи повідомлень у двох збірках не компілюються (ADR-0002). Замість генерувати сервер у самому боті, як зробили в ЦА (`GrpcServices="Both"`), тестовий проєкт генерує сервер сам, а бота підключає з `Aliases="bot"`: типи бота доступні лише через `extern alias bot;` і не конфліктують зі своїми.
 5. **`TestServer` і дедлайни.** Сервер у пам'яті сам застосовує дедлайн, переданий клієнтом, і скидає запит раніше, ніж спрацьовує таймер клієнта, тож клієнт бачить `Internal` замість `DeadlineExceeded`. Справжній дедлайн так не перевірити; тест перевіряє обробку статусу `DeadlineExceeded` без тексту, який клієнт створює для власного дедлайну. Скасування з боку клієнта `TestServer` помічає лише після того, як сервер надіслав заголовки відповіді.
+6. **Перехоплювач не бачив потокового виклику.** `BotGatewayInterceptor` перевіряв токен бота в `UnaryServerHandler`, а базовий `Interceptor` пропускає потокові виклики без змін. Перший серверний стрім `WatchNotifications` відкрився б без токена. Тепер перехоплювач перевизначає всі чотири види викликів через одну перевірку, а інтеграційний тест відкриває потік з невірним токеном і чекає `Unauthenticated`.
+7. **Тихий потік.** Сповіщень може не бути годинами, і проксі перед ЦА закриває неактивне з'єднання. Канал бота надсилає HTTP/2 keepalive-пінги (`SocketsHttpHandler.KeepAlivePingDelay`), вони ж помічають мертве з'єднання. Дедлайну в потоку немає: він має жити, поки працює бот.
+8. **Один потік на всіх.** Контракт каже, що новий `WatchNotifications` замінює попередній. ЦА завершує старий виклик кодом `Aborted`, а бот на цей код не кидає виняток, а пише в лог підказку про другий екземпляр бота з тим самим токеном і відкриває потік знову з backoff.
+9. **Довгий виклик і `DbContext`.** Потік живе днями, а сервіси ЦА — scoped. Кожне сканування сповіщень іде у власному DI-scope (`IServiceScopeFactory`), а між скануваннями потік спить, доки диспетчер не розбудить його через `NotificationFeed`, або хвилину.
 
 ### Плюси й мінуси
 
@@ -164,3 +169,6 @@
 - Обробка помилок і коди статусу: https://learn.microsoft.com/aspnet/core/grpc/error-handling
 - Тестування gRPC-сервісів: https://learn.microsoft.com/aspnet/core/grpc/test-services
 - Extern alias: https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/extern-alias
+- Перехоплювачі: https://learn.microsoft.com/aspnet/core/grpc/interceptors
+- Потокові виклики: https://learn.microsoft.com/aspnet/core/grpc/services#server-streaming-method
+- Keepalive-пінги: https://learn.microsoft.com/aspnet/core/grpc/performance#keep-alive-pings

@@ -13,6 +13,7 @@
 - Реєстрація команд у Discord: на тестовому сервері в `Development`, глобально в інших оточеннях.
 - Автодоповнення середовищ і контейнерів (`AutocompleteHandler`).
 - Відповіді: відкладена ephemeral-відповідь (`DeferAsync`) і її заміна результатом (`ModifyOriginalResponseAsync`).
+- Сповіщення в каналах: пошук каналу (`GetChannelAsync`), повідомлення з embed (`EmbedBuilder`: заголовок, колір за важливістю, поля, час події), відмови Discord як причина невдачі для панелі.
 
 ### Чому саме ця бібліотека
 
@@ -39,6 +40,9 @@ NetCord і Remora.Discord мають меншу спільноту, тож ві�
 7. **Тестованість.** Типи Discord.Net (`SocketInteraction`, контексти) важко створити в тестах. Логіка команд працює з власним інтерфейсом `ICommandInteraction`, а Discord.Net бачить лише тонкий адаптер `DiscordInteraction`; тести записують, що команда зробила з взаємодією.
 8. **Конфлікт імен.** У Discord.Net є тип `Discord.BotGateway`, як і згенерований з `bot.proto` `BotGateway`; у `DependencyInjection` він підключається через alias. Простір імен бота для Discord-частини названо `Interactions`, а не `Discord`, щоб не затінити простір імен бібліотеки.
 9. **Невірний токен.** `LoginAsync` перевіряє лише формат токена, а 401 приходить уже під час підключення до gateway, яке Discord.Net повторює нескінченно. Це з'ясувалося лише під час запуску Docker-образу з вигаданим токеном. Тепер після входу бот робить справжній запит (`GetApplicationInfoAsync`), а подія `Disconnected` з 401 чи кодом закриття 4004 (токен скинули під час роботи) теж зупиняє бота: у лог — підказка про `CF_DISCORD__TOKEN`, код виходу 1.
+10. **Відмови Discord як текст для адміністратора.** Якщо бот не може писати в канал сповіщень, панель має пояснити, яке право дати. `HttpException.DiscordCode` містить JSON-код помилки Discord (10003 — каналу немає, 50001 — бот не бачить канал, 50013 — бракує прав), але назви членів `DiscordErrorCode` не задокументовані, тож бот порівнює числові коди з таблицею з документації Discord. Канал з `GetChannelAsync` може бути не текстовим: перед надсиланням перевіряється `IMessageChannel`.
+11. **Публікувати можна лише після входу.** Споживач сповіщень стартує разом із ботом, але до події `Ready` кешу серверів і каналів ще немає. `DiscordNotificationPoster` підписується на `Ready` ще до входу й відкриває потік сповіщень лише після неї.
+12. **Ліміти embed.** Значення поля — до 1024 символів, а причина невдалого деплою — до 2000. Помилка обрізається з «…», а її власні потрійні зворотні лапки замінюються, щоб не закрити блок коду раніше.
 
 ### Плюси й мінуси
 
@@ -65,3 +69,5 @@ NetCord і Remora.Discord мають меншу спільноту, тож ві�
 - Автодоповнення: https://docs.discordnet.dev/guides/int_framework/autocompletion.html
 - Отримання взаємодій і відповіді на них (3 секунди, defer, ephemeral): https://discord.com/developers/docs/interactions/receiving-and-responding
 - Команди застосунку й автодоповнення (ліміти): https://discord.com/developers/docs/interactions/application-commands
+- JSON-коди помилок Discord: https://discord.com/developers/docs/topics/opcodes-and-status-codes#json-json-error-codes
+- Ліміти embed: https://discord.com/developers/docs/resources/message#embed-object-embed-limits
