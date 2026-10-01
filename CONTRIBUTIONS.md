@@ -540,13 +540,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 25 (20 класів, з них 4 статичні й 2 абстрактні; 4 record; 1 інтерфейс) | ✅ |
-| Поля | ≥ 15 | 44 (35 полів стану, 9 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 29 | ✅ |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 1 (8 класів на трьох рівнях) | ⏳ |
-| Поліморфізм | ≥ 3, серед них статичний і динамічний | 2 з клієнтським кодом (обидва динамічні) | ⏳ |
+| Класи та подібні типи | ≥ 9 | 29 (24 класи, з них 4 статичні й 3 абстрактні; 4 record; 1 інтерфейс) | ✅ |
+| Поля | ≥ 15 | 49 (35 полів стану, 14 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 38 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (8 класів на трьох рівнях; 4 класи) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 4 з клієнтським кодом (3 динамічні, 1 статичний) | ✅ |
 
-Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31).
+Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR «feat(auth): NIST password rules»).
 
 Не враховано: зміни в `Program.cs`, `AggregatorDbContext`, `ProblemDetailsExceptionHandler` і `UserRepository` (спільний код; у `UserRepository` — однорядкові запити `ListAsync` і `CountActiveAdministratorsAsync`), міграція `Accounts`, згенерований `schema.gen.ts`.
 
@@ -554,7 +554,7 @@
 
 | Простір імен `ContainerForest.Aggregator.*` | Типи |
 |---|---|
-| `Infrastructure.Accounts` | `AccountUser`, `AccountPolicy` (статичний клас), `BootstrapOptions`, `AdminBootstrapper`, `IdentityAccountStore` |
+| `Infrastructure.Accounts` | `AccountUser`, `AccountPolicy` (статичний клас), `BootstrapOptions`, `AdminBootstrapper`, `IdentityAccountStore`, `PasswordRule` (абстрактний клас), `MaximumLengthRule`, `RepetitiveOrSequentialRule`, `ContextWordsRule` |
 | `Application.Access` | `PasswordRejectedException`, `IAccountStore` (інтерфейс), `UserActionContext` (record), `UserAccountAction`, `AdministratorRemovingAction` (абстрактні класи), `DeactivateUserAction`, `RevokeAdminAction`, `ActivateUserAction`, `GrantAdminAction`, `RenameUserAction`, `ResetPasswordAction`, `UnlockUserAction`, `UserManagementService`, `UserSummary`, `RoleAssignmentView`, `UserDetails` (record) |
 | `Api.Access` | `AuthenticationSetup` (статичний клас), `PasswordSignIn` |
 | `Api.Endpoints` | `AuthEndpoints`, `UserEndpoints` (статичні класи) |
@@ -578,8 +578,11 @@
 | `UserSummary` | `User`, `LockedOutUntil` | |
 | `RoleAssignmentView` | `Id`, `EnvironmentId`, `EnvironmentName`, `StackId`, `StackName`, `Role`, `GrantedAt` | |
 | `UserDetails` | `User`, `RoleAssignments` | |
+| `MaximumLengthRule` | | `MaxLength` |
+| `RepetitiveOrSequentialRule` | | `MaxRepeatedChunk`, `KeyboardRows` |
+| `ContextWordsRule` | | `MinUserNameLength`, `ServiceNames` |
 
-#### Нетривіальні методи (29)
+#### Нетривіальні методи (38)
 
 | Тип | Методи |
 |---|---|
@@ -594,15 +597,20 @@
 | `AdministratorRemovingAction` (1) | `CheckAsync` (останній активний адміністратор лишається) |
 | `RenameUserAction` (2) | `CheckAsync` (зайняте ім'я без урахування регістру, крім власного), `ApplyAsync` (доменне ім'я й ім'я облікового запису) |
 | `UserManagementService` (10) | `ListAsync`, `GetAsync` (ролі за середовищем і стеком), `CreateAsync` (зайняте ім'я, відкат при відхиленому паролі), `GrantRoleAsync` (стек того самого середовища, одна роль на область), `ChangeRoleAsync`, `RevokeRoleAsync`, `RunAsync` (виконання дії з перевіркою адміністратора), `SummarizeAsync`, `GetAssignmentAsync` (чуже призначення — 404), `ViewAsync` (назви середовища й стеку) |
-| `UserEndpoints` (2) | `MapUserEndpoints` (12 ендпоінтів), `ToResponse` для призначення (область за наявністю стеку) |
+| `UserEndpoints` (4) | `MapUserEndpoints` (12 ендпоінтів), `MapUserChange<TRequest>` (ендпоінт зміни користувача з тілом будь-якого типу), `MapUserChange` (без тіла), `ToResponse` для призначення (область за наявністю стеку) |
+| `PasswordRule` (1) | `ValidateAsync` (шаблонний метод: перевірка правила → помилка Identity з кодом `Password…`) |
+| `MaximumLengthRule` (1) | `Check` |
+| `RepetitiveOrSequentialRule` (4) | `Check`, `IsRepetitive` (повтор шматка до 4 символів), `IsSequential` (послідовні цифри з переходом 9 → 0 або літери), `IsKeyboardRow` |
+| `ContextWordsRule` (1) | `Check` (ім'я користувача від 3 символів, назва системи) |
 
-Не враховано як тривіальні: `PasswordSignIn.SignOutAsync`, `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`, `IdentityAccountStore.CreateAsync` і `FindAsync`, `ApplyAsync` дій, що лише викликають один доменний метод чи метод `IAccountStore`, однорядкові `RenameAsync`, `DeactivateAsync`, `ActivateAsync`, `SetAdminAsync`, `ResetPasswordAsync`, `UnlockAsync` сервісу, `UserEndpoints.ToResponse` для користувача.
+Не враховано як тривіальні: `PasswordSignIn.SignOutAsync`, `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`, `IdentityAccountStore.CreateAsync` і `FindAsync`, `ApplyAsync` дій, що лише викликають один доменний метод чи метод `IAccountStore`, однорядкові `RenameAsync`, `DeactivateAsync`, `ActivateAsync`, `SetAdminAsync`, `ResetPasswordAsync`, `UnlockAsync` сервісу, `UserEndpoints.ToResponse` для користувача, властивості `Code` правил паролів, `RepetitiveOrSequentialRule.Steps`.
 
 #### Ієрархії успадкування
 
 1. `UserAccountAction` → `ActivateUserAction`, `GrantAdminAction`, `RenameUserAction`, `ResetPasswordAction`, `UnlockUserAction`, `AdministratorRemovingAction` → `DeactivateUserAction`, `RevokeAdminAction`. Це 8 класів на трьох рівнях.
+2. `PasswordRule` → `MaximumLengthRule`, `RepetitiveOrSequentialRule`, `ContextWordsRule`. Це 4 класи.
 
-Ще потрібна друга. `AccountUser : IdentityUser<Guid>` успадковує клас бібліотеки й власною ієрархією не вважається. Заплановано: способи входу (пароль, Google OIDC, Discord OAuth2).
+`AccountUser : IdentityUser<Guid>` успадковує клас бібліотеки й власною ієрархією не вважається.
 
 #### Поліморфізм
 
@@ -610,14 +618,15 @@
 |---|---|---|---|
 | 1 | Динамічний (шаблонний метод) | `UserAccountAction.CheckAsync`, `ApplyAsync`, `EndsSessions` | `UserAccountAction.ExecuteAsync` і `UserManagementService.RunAsync` однаково виконують сім різних дій над користувачем ✅ |
 | 2 | Динамічний (адаптер) | `IAccountStore`: `IdentityAccountStore` (і `FakeAccountStore` у тестах) | `UserManagementService`, дії й `AdminBootstrapper` керують обліковими записами, не знаючи про ASP.NET Identity ✅ |
-
-Ще потрібен статичний (generics).
+| 3 | Динамічний (віртуальний метод) | `PasswordRule.Check` через `IPasswordValidator<AccountUser>` | `PasswordRule.ValidateAsync` однаково перетворює відмову будь-якого правила на помилку Identity; `IdentityAccountStore.SetPasswordAsync` перебирає всі валідатори, не знаючи, які це правила ✅ |
+| 4 | Статичний (generics) | `MapUserChange<TRequest>`: тип тіла запиту — параметр типу | `MapUserEndpoints` будує ним ендпоінти з `RenameUserRequest` і `SetAdminRequest`; обробник, відповідь і 404 описані один раз ✅ |
 
 #### Тести (не входять в облік)
 
 - `tests/Aggregator/Api/AuthTests.cs`, 11 тестів: вхід і `/api/me`, атрибути cookie, `RememberMe`, неправильний пароль, невідоме ім'я з тією самою відповіддю, деактивований користувач, lockout, logout, зміна пароля завершує інші сесії й лишає поточну, неправильний поточний пароль, закороткий новий пароль із причиною. Адміністратора тестів створює `AdminBootstrapper`.
 - `tests/Aggregator/Application/Access/UserManagementServiceTests.cs`, 20 тестів: лише адміністратори, список із блокуваннями, створення й відкат при відхиленому паролі, зайняте ім'я, останній активний адміністратор, які дії завершують сесії, перейменування, розблокування, ролі на середовищі й стеку, одна роль на область, чужий стек і чуже призначення.
-- `tests/Aggregator/Api/UserManagementTests.cs`, 11 тестів через HTTP: створений користувач входить, 403 для не-адміністратора, 409 і 400 при створенні, останній адміністратор, деактивація й скидання пароля завершують сесію, перейменування, блокування й розблокування, роль відкриває приватне середовище і після відкликання ховає його.
+- `tests/Aggregator/Infrastructure/Accounts/PasswordRulesTests.cs`, 19 тестів: повтори, послідовності й рядки клавіатури, звичайні паролі проходять, ім'я користувача й назва системи, короткі імена не шукаються, межа довжини, відмова правила → помилка Identity з кодом `Password…`.
+- `tests/Aggregator/Api/UserManagementTests.cs`, 12 тестів через HTTP: легкий для вгадування пароль відхиляється з усіма причинами, створений користувач входить, 403 для не-адміністратора, 409 і 400 при створенні, останній адміністратор, деактивація й скидання пароля завершують сесію, перейменування, блокування й розблокування, роль відкриває приватне середовище і після відкликання ховає його.
 
 ### Лаба 2
 
@@ -646,5 +655,5 @@
 | Zod 4.6.5 | Схема форми входу (`z.object`, `trim`, `min` з повідомленнями), `z.infer` для типу форми | [docs/retro/zod.md](docs/retro/zod.md), чернетка |
 | TanStack Query | `useMutation` для входу й виходу, `setQueryData` і `removeQueries` для кешу поточного користувача | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
 | TanStack Router | `Route.useSearch` для `redirect`, `useNavigate` (`href`, `replace`) | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
-| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
+| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); власні `IPasswordValidator` (`AddPasswordValidator`) для правил NIST; `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
 | EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
