@@ -8,6 +8,7 @@
 | [Discord.Net](discord-net.md) | Синенко Д. В. |
 | [Docker.DotNet](docker-dotnet.md) | Бояр В. О. |
 | [EF Core](ef-core.md) | Петренко Б. О., Бояр В. О., Денисенко Л. В. |
+| [i18next](i18next.md) | Петренко Б. О. |
 | [gRPC для .NET](grpc.md) | Петренко Б. О., Бояр В. О., Синенко Д. В. |
 | [LibGit2Sharp](libgit2sharp.md) | Петренко Б. О. |
 | [React Hook Form](react-hook-form.md) | Денисенко Л. В. |

@@ -224,6 +224,8 @@
 
 Екранів ще немає. Заплановано: список стеків, редактор стеку, історія деплоїв, ключі середовищ.
 
+Інтернаціоналізація панелі (PR #36): `src/i18n` (ініціалізація, вибір мови, словники uk/en) і перемикач мови `LanguageSwitcher` — елемент керування з обробником натискання (`src/components/language-switcher.tsx`), у шапці й на екрані входу. Тексти екранів інших учасників перенесено в словники; екрани й елементи лишаються за їхніми авторами.
+
 Каркас панелі `src/Web` (PR #23): Vite, маршрутизація й шар даних, клієнт API з OpenAPI, shadcn/ui на Tailwind CSS, образ nginx, job у CI. Це спільна інфраструктура, а не екрани, тому в облік лаби 2 не входить; згенеровані компоненти `src/components/ui` не зараховуються нікому.
 
 ### Лаба 3
@@ -236,6 +238,7 @@
 | YamlDotNet, почато в PR #13 | Дерево вузлів `YamlStream` / `YamlMappingNode` замість типізованої моделі; якорі й merge-ключі; позиція помилки з `YamlException.Start` | [docs/retro/yamldotnet.md](docs/retro/yamldotnet.md) |
 | TanStack Router, почато в PR #23 | Маршрути з файлів з генерацією дерева; pathless layout `_authed` з `beforeLoad` і redirect на 401; контекст роутера; `validateSearch` зі схемою Zod | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
 | TanStack Query, почато в PR #23 | `queryOptions`-фабрики як єдине джерело ключів; `ensureQueryData` у `beforeLoad`; політика повторів без 401 | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
+| i18next (`i18next`, `react-i18next`, `i18next-browser-languagedetector`), PR #36 | Вбудовані словники з типізованими ключами (`CustomTypeOptions`); `useTranslation`; детектор мови з `localStorage` і браузера; запасна мова; `changeLanguage` і подія `languageChanged` | [docs/retro/i18next.md](docs/retro/i18next.md) |
 
 ## Бояр Володимир Олександрович (@volodaboyar1-star)
 
