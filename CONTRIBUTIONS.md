@@ -230,12 +230,12 @@
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
-| gRPC для .NET (`Grpc.AspNetCore`, `Grpc.Tools`, `Google.Protobuf`), почато в PR #6 | Генерація коду з `.proto` окремо для сервера й клієнта; двонапрямлений стрім `Connect`; автентифікація через metadata; коди статусу (`Unauthenticated`, `InvalidArgument`, `DeadlineExceeded`); `Grpc.Net.Client` з `TestServer` в інтеграційних тестах | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
-| EF Core + SQLite, почато в PR #6 | Мапінг доменних класів без окремих моделей; міграції й застосування при старті; конвертери значень для ID і value objects; конвенції (`ConfigureConventions`); TPH-успадкування з дискримінатором; фільтровані унікальні індекси; колація `NOCASE`; owned-колекція (`OwnsMany`) для логу деплою; проєкції без завантаження логу | [docs/retro/ef-core.md](docs/retro/ef-core.md), чернетка |
-| LibGit2Sharp, почато в PR #13 | Bare-клон як кеш; fetch однієї гілки з refspec і `Prune`; читання файлів із дерева коміту без checkout (`Tree`, `Blob`, `Mode`); скасування через колбек прогресу | [docs/retro/libgit2sharp.md](docs/retro/libgit2sharp.md), чернетка |
-| YamlDotNet, почато в PR #13 | Дерево вузлів `YamlStream` / `YamlMappingNode` замість типізованої моделі; якорі й merge-ключі; позиція помилки з `YamlException.Start` | [docs/retro/yamldotnet.md](docs/retro/yamldotnet.md), чернетка |
-| TanStack Router, почато в PR #23 | Маршрути з файлів з генерацією дерева; pathless layout `_authed` з `beforeLoad` і redirect на 401; контекст роутера; `validateSearch` зі схемою Zod | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md), чернетка |
-| TanStack Query, почато в PR #23 | `queryOptions`-фабрики як єдине джерело ключів; `ensureQueryData` у `beforeLoad`; політика повторів без 401 | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md), чернетка |
+| gRPC для .NET (`Grpc.AspNetCore`, `Grpc.Tools`, `Google.Protobuf`), почато в PR #6 | Генерація коду з `.proto` окремо для сервера й клієнта; двонапрямлений стрім `Connect`; автентифікація через metadata; коди статусу (`Unauthenticated`, `InvalidArgument`, `DeadlineExceeded`); `Grpc.Net.Client` з `TestServer` в інтеграційних тестах | [docs/retro/grpc.md](docs/retro/grpc.md) |
+| EF Core + SQLite, почато в PR #6 | Мапінг доменних класів без окремих моделей; міграції й застосування при старті; конвертери значень для ID і value objects; конвенції (`ConfigureConventions`); TPH-успадкування з дискримінатором; фільтровані унікальні індекси; колація `NOCASE`; owned-колекція (`OwnsMany`) для логу деплою; проєкції без завантаження логу | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
+| LibGit2Sharp, почато в PR #13 | Bare-клон як кеш; fetch однієї гілки з refspec і `Prune`; читання файлів із дерева коміту без checkout (`Tree`, `Blob`, `Mode`); скасування через колбек прогресу | [docs/retro/libgit2sharp.md](docs/retro/libgit2sharp.md) |
+| YamlDotNet, почато в PR #13 | Дерево вузлів `YamlStream` / `YamlMappingNode` замість типізованої моделі; якорі й merge-ключі; позиція помилки з `YamlException.Start` | [docs/retro/yamldotnet.md](docs/retro/yamldotnet.md) |
+| TanStack Router, почато в PR #23 | Маршрути з файлів з генерацією дерева; pathless layout `_authed` з `beforeLoad` і redirect на 401; контекст роутера; `validateSearch` зі схемою Zod | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
+| TanStack Query, почато в PR #23 | `queryOptions`-фабрики як єдине джерело ключів; `ensureQueryData` у `beforeLoad`; політика повторів без 401 | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
 
 ## Бояр Володимир Олександрович (@volodaboyar1-star)
 
@@ -251,7 +251,7 @@
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (10 класів на трьох рівнях; 13 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 9 з клієнтським кодом (8 динамічних, 1 статичний) | ✅ |
 
-Код: `src/Agent` (PR «агент: реєстрація, з'єднання, команди контейнерів»; PR «обробники стеків на агенті й креди registry»); у ЦА — креди registry (той самий PR).
+Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21).
 
 Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` з їхніми DTO (прибираються, коли з'явиться API панелі).
 
@@ -418,12 +418,13 @@
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
-| Docker.DotNet (`Docker.DotNet.Enhanced`) | `DockerClientBuilder` з визначенням endpoint як у docker CLI; `System.GetVersionAsync`; `Containers.ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync` з `WaitBeforeKillSeconds`; типізовані винятки (`DockerContainerNotFoundException`, `DockerApiException`) | [docs/retro/docker-dotnet.md](docs/retro/docker-dotnet.md), чернетка |
-| gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`) | Клієнт двонапрямленого стріму `Connect`; metadata виклику; коди статусу (`Unauthenticated`, `Unavailable`); HTTP/2 keepalive-пінги через `SocketsHttpHandler`; дескриптори protobuf для зіставлення типу команди з полем `oneof`; фейковий клієнт у тестах через віртуальні методи згенерованого класу | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
+| Docker.DotNet (`Docker.DotNet.Enhanced`) | `DockerClientBuilder` з визначенням endpoint як у docker CLI; `System.GetVersionAsync`; `Containers.ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync` з `WaitBeforeKillSeconds`; типізовані винятки (`DockerContainerNotFoundException`, `DockerApiException`) | [docs/retro/docker-dotnet.md](docs/retro/docker-dotnet.md) |
+| gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`) | Клієнт двонапрямленого стріму `Connect`; metadata виклику; коди статусу (`Unauthenticated`, `Unavailable`); HTTP/2 keepalive-пінги через `SocketsHttpHandler`; дескриптори protobuf для зіставлення типу команди з полем `oneof`; фейковий клієнт у тестах через віртуальні методи згенерованого класу | [docs/retro/grpc.md](docs/retro/grpc.md) |
+| EF Core | Конфігурація сутності `RegistryCredential` (зовнішній ключ з каскадним видаленням, унікальний індекс «середовище + registry»), міграція `RegistryCredentials` | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
 
 ## Синенко Дмитро Вячеславович (@Dmyt-S)
 
-Зона: Discord-бот, система сповіщень (роль остаточно не визначена).
+Зона: Discord-бот, система сповіщень.
 
 ### Лаба 1
 
@@ -435,7 +436,7 @@
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (8 класів на трьох рівнях; 8 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 5 з клієнтським кодом (4 динамічні, 1 статичний) | ✅ |
 
-Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR #19); Discord-частина: slash-команди, автодоповнення, прив'язка акаунта (PR «feat(bot): Discord slash commands»).
+Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR #19); Discord-частина: slash-команди, автодоповнення, прив'язка акаунта (PR #20); Docker-образ бота (PR #25).
 
 Не враховано: `Program.cs`, згенерований з proto код.
 
@@ -529,8 +530,8 @@
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
-| Discord.Net 3.20.1 | `DiscordSocketClient` лише з інтентом `Guilds`; `InteractionService` з модулями через DI (`InteractionModuleBase`, `[SlashCommand]`, `[Summary]`, `[MinValue]`, `[MaxValue]`); автодоповнення (`AutocompleteHandler`, `[Autocomplete]`); `RunMode.Async`; реєстрація команд на тестовому сервері або глобально; відкладені ephemeral-відповіді (`DeferAsync`, `ModifyOriginalResponseAsync`), `AllowedMentions.None`; події `Log`, `Ready`, `InteractionCreated`, `InteractionExecuted` | [docs/retro/discord-net.md](docs/retro/discord-net.md), чернетка |
-| gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`; `Grpc.AspNetCore` у тестах) | Генерація клієнта з `bot.proto`; metadata виклику (`x-bot-token`); дедлайни й скасування через `CallOptions`; коди статусу й трейлери (`x-cf-reason`); `Status.DebugException`, щоб відрізнити помилку клієнта від відповіді сервера; сервер у пам'яті на `TestServer` у тестах, розведення згенерованих типів через `extern alias` | [docs/retro/grpc.md](docs/retro/grpc.md), чернетка |
+| Discord.Net 3.20.1 | `DiscordSocketClient` лише з інтентом `Guilds`; `InteractionService` з модулями через DI (`InteractionModuleBase`, `[SlashCommand]`, `[Summary]`, `[MinValue]`, `[MaxValue]`); автодоповнення (`AutocompleteHandler`, `[Autocomplete]`); `RunMode.Async`; реєстрація команд на тестовому сервері або глобально; відкладені ephemeral-відповіді (`DeferAsync`, `ModifyOriginalResponseAsync`), `AllowedMentions.None`; події `Log`, `Ready`, `InteractionCreated`, `InteractionExecuted` | [docs/retro/discord-net.md](docs/retro/discord-net.md) |
+| gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`; `Grpc.AspNetCore` у тестах) | Генерація клієнта з `bot.proto`; metadata виклику (`x-bot-token`); дедлайни й скасування через `CallOptions`; коди статусу й трейлери (`x-cf-reason`); `Status.DebugException`, щоб відрізнити помилку клієнта від відповіді сервера; сервер у пам'яті на `TestServer` у тестах, розведення згенерованих типів через `extern alias` | [docs/retro/grpc.md](docs/retro/grpc.md) |
 
 ## Денисенко Любов Володимирівна (@denysenkoliubov)
 
@@ -546,7 +547,7 @@
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (8 класів на трьох рівнях; 4 класи) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 4 з клієнтським кодом (3 динамічні, 1 статичний) | ✅ |
 
-Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR «feat(auth): NIST password rules»).
+Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR #33).
 
 Не враховано: зміни в `Program.cs`, `AggregatorDbContext`, `ProblemDetailsExceptionHandler` і `UserRepository` (спільний код; у `UserRepository` — однорядкові запити `ListAsync` і `CountActiveAdministratorsAsync`), міграція `Accounts`, згенерований `schema.gen.ts`.
 
@@ -651,9 +652,9 @@
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
-| React Hook Form 7.89.0 (з `@hookform/resolvers`) | `useForm` з `zodResolver`, `register` для полів, `Controller` для прапорця Radix (не нативний `input`), `formState.errors`, `handleSubmit` | [docs/retro/react-hook-form.md](docs/retro/react-hook-form.md), чернетка |
-| Zod 4.6.5 | Схема форми входу (`z.object`, `trim`, `min` з повідомленнями), `z.infer` для типу форми | [docs/retro/zod.md](docs/retro/zod.md), чернетка |
+| React Hook Form 7.89.0 (з `@hookform/resolvers`) | `useForm` з `zodResolver`, `register` для полів, `Controller` для прапорця Radix (не нативний `input`), `formState.errors`, `handleSubmit` | [docs/retro/react-hook-form.md](docs/retro/react-hook-form.md) |
+| Zod 4.6.5 | Схема форми входу (`z.object`, `trim`, `min` з повідомленнями), `z.infer` для типу форми | [docs/retro/zod.md](docs/retro/zod.md) |
 | TanStack Query | `useMutation` для входу й виходу, `setQueryData` і `removeQueries` для кешу поточного користувача | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
 | TanStack Router | `Route.useSearch` для `redirect`, `useNavigate` (`href`, `replace`) | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
-| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); власні `IPasswordValidator` (`AddPasswordValidator`) для правил NIST; `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md), чернетка |
+| ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); власні `IPasswordValidator` (`AddPasswordValidator`) для правил NIST; `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md) |
 | EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
