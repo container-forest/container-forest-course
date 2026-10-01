@@ -19,8 +19,8 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 185 (141 клас, 20 інтерфейсів, 9 структур, 15 enum) | ✅ |
-| Поля | ≥ 15 | 300 (254 поля стану, 46 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 229 | ✅ |
+| Поля | ≥ 15 | 301 (255 полів стану, 46 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 230 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
@@ -116,14 +116,14 @@
 | `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 9 + 4 | `DeploymentService.HistoryLimit` |
 | `DeploymentOptions`, `GitOptions` | `MaxBundleBytes`, `AgentTimeout`, `MaxConcurrentDeployments`; `CacheDirectory` | `SectionName` в обох |
 | `DeployContext` | `source`, `bundle`, `Deployment`, `Stack`, `Environment`, `Repository` | |
-| `DeployPipeline` | `steps` | |
+| `DeployPipeline` | `steps`, `observers` | |
 | `StackBundle`, `BundleFile` | `StackName`, `Commit`, `Files`, `Pull`; `Path`, `Content`, `Mode` | `ComposeFileName`; `RegularMode`, `ExecutableMode` |
 | `LibGit2SharpGitSource`, `TreeReader` | `locks`; `totalBytes`, `Files`, `Skipped` | `RemoteName` |
 | `YamlComposeParser`, `DeploymentRepository` | | `MergeKey`; `Unfinished` |
 | `DeploymentQueue`, `AgentSession.PendingRequest` | `channel`; `Completion`, `OnProgress` | |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (181)
+#### Нетривіальні методи (230)
 
 | Тип | Методи |
 |---|---|
@@ -173,7 +173,7 @@
 | `CurrentActor` (2) | `GetAsync`, `GetAdministratorAsync` |
 | `ContainerQueryService` (2) | `ListAsync`, `Can` |
 | `ContainerLookup` (1) | `Find`: повний id, точне ім'я, унікальний префікс id |
-| `DeployPipeline` (2) | `RunAsync`, `Describe` |
+| `DeployPipeline` (3) | `RunAsync`, `Describe`, `NotifyObserversAsync` (спостерігачі після збереження результату; помилка одного не зупиняє інших) |
 | `GitFetchStep`, `BuildBundleStep`, `SendToAgentStep` (3) | `ExecuteAsync` у кожному |
 | `ValidateComposeStep` (3) | `ExecuteAsync`, `Check`, `Decode` |
 | `DeploymentService` (4) | `QueueAsync`, `ListAsync`, `GetAsync`, `LoadVisibleStackAsync` |
@@ -560,7 +560,7 @@
 | 6 | Динамічний (адаптер) | `INotificationSource`: `GrpcNotificationSource` (і фейк у тестах) | `NotificationWatcher` отримує сповіщення й звітує про них, не знаючи про gRPC ✅ |
 | 7 | Динамічний (адаптер) | `INotificationPoster`: `DiscordNotificationPoster` (і фейк у тестах) | `NotificationWatcher` публікує сповіщення, не знаючи про Discord.Net ✅ |
 | 8 | Динамічний (абстрактний член) | ЦА: `NotificationDetails.Fits` | `NotificationEvent.EnsureValid` перевіряє, що деталі описують подію, для будь-якого виду деталей; через нього — `NotificationDispatcher` і `Notification.Create` ✅ |
-| 9 | Динамічний (спостерігач) | ЦА: `IDeploymentObserver`: `DeploymentNotifier` | `DeployPipeline` після збереження результату — ⏳ виклик додає Петренко Б. О. |
+| 9 | Динамічний (спостерігач) | ЦА: `IDeploymentObserver`: `DeploymentNotifier` | `DeployPipeline` після збереження результату повідомляє всі зареєстровані `IDeploymentObserver`, не знаючи їхніх типів (виклик — Петренко Б. О., PR #40) ✅ |
 
 #### Тести (не входять в облік)
 
