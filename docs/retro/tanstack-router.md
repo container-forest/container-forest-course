@@ -45,3 +45,20 @@ _Дописати автору._
 - Документація: https://tanstack.com/router/latest/docs
 - Автентифіковані маршрути: https://tanstack.com/router/latest/docs/framework/react/guide/authenticated-routes
 - Валідація search params: https://tanstack.com/router/latest/docs/framework/react/guide/search-params
+
+## Денисенко Л. В.
+
+Статус: **чернетка.** Факти заповнено; розділи з оцінками — дописати автору.
+
+### Які задачі розв'язує бібліотека
+
+- Екран `/login` читає перевірений search param `redirect` (`Route.useSearch`) і після входу повертає користувача туди, звідки його відправив `_authed`.
+- Перехід після входу й виходу — `useNavigate`.
+
+### Проблеми, що виникли
+
+- `redirect` — це шлях разом із search (`location.href`), а не відомий маршрут, тож `navigate({ to })` його не приймає за типами; використали `navigate({ href, replace: true })`. `replace`, щоб «Назад» не повертав на форму входу.
+
+### Документація, плюси й мінуси, що змінили б
+
+_Дописати._
