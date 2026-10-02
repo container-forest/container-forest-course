@@ -535,8 +535,8 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 95 (82 класи, з них 35 record і 8 статичних; 5 інтерфейсів; 1 структура; 7 enum) | ✅ |
-| Поля | ≥ 15 | 250 (204 поля стану, 46 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 117 | ✅ |
+| Поля | ≥ 15 | 253 (205 полів стану, 48 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 118 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (8 класів на трьох рівнях; 8 класів; 7 record; 6 record; 2 класи) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 11, усі з клієнтським кодом (9 динамічних, 2 статичних) | ✅ |
 
@@ -606,7 +606,7 @@
 | `EnvironmentsRoute`, `StacksRoute`, `StackRoute`, `ConfirmRoute`, `RunRoute`, `DeploymentRoute` | `Page`; `EnvironmentId`, `Page`; `EnvironmentId`, `StackId`, `StacksPage`; `Operation`, `EnvironmentId`, `StackId`, `StacksPage` (у двох); `EnvironmentId`, `StackId`, `DeploymentId`, `StacksPage` | `Name` у кожному |
 | `PageOf<T>`, `ContainerCount`, `Notice`, `StackRow` | `Items`, `Number`, `Count`, `Total`; `Running`, `Total`; `Kind`, `Text`, `Output`; `Stack`, `Containers` | |
 | `EnvironmentsScreen`, `StacksScreen`, `StackScreen`, `ConfirmScreen`, `ErrorScreen` | `Environments`; `Environment`, `Stacks`; `Environment`, `Stack`, `Containers`, `StacksPage`, `Notice`, `DeploymentId`, `Busy`; `Environment`, `Stack`, `Operation`, `StacksPage`; `Message`, `Back` | |
-| `DashboardService` | `forest`, `logger` | `PageSize`, `MaxContainerLines` |
+| `DashboardService` | `forest`, `time`, `logger` | `PageSize`, `MaxContainerLines`, `FollowInterval`, `FollowLimit` |
 | `DashboardRenderer` | | `Accent`, `ErrorAccent`, `MaxTextLength`, `MaxNoticeLength`, `NoPreviousId`, `NoNextId` |
 | `DashboardModule` | `dashboard`, `lifetime` | |
 | Поля, додані в чужі класи для `/dashboard` | `ForestStack.CanDeploy` (Бояр В. О.); ЦА: `BotGatewayService.deployments` (Петренко Б. О.) | |
@@ -620,7 +620,7 @@
 | ЦА: `NotificationDetailsConverter`, `StoredDetails` | `Type`, `DeploymentId`, `StackId`, `StackName`, `Commit`, `PulledImages`, `Error` | `DeploymentType`, `Options` |
 | ЦА: поля, додані в класи Петренка Б. О. | `Notification.Details`, `NotificationEvent.Details`; `BotGatewayService.notificationDelivery`, `notificationFeed`, `scopeFactory` | `BotGatewayService.NotificationRescanInterval` |
 
-#### Нетривіальні методи (117)
+#### Нетривіальні методи (118)
 
 | Тип | Методи |
 |---|---|
@@ -656,7 +656,7 @@
 | `DashboardRoute` (4) | `ToCustomId` (перевірка ліміту 100 символів), `TryParse` (лише id, які бот сам записав), `Encode` для GUID (22 символи base64url) і для операції |
 | `DashboardRoute.PartReader` (3) | `Page` (лише канонічне число в межах), `Guid` (base64url → 16 байтів), `Operation` |
 | `PageOf<T>`, `ContainerCount`, `StackScreen` (3) | `PageOf.Of` (сторінка в межах списку, що зменшився), `ContainerCount.Of`, `StackScreen.Operations` (дії за правами) |
-| `DashboardService` (11) | `ShowAsync` (маршрут → екран, помилки ЦА → екран помилки з дорогою назад), `BackFrom`, `EnvironmentsAsync`, `StacksAsync` (кількість контейнерів кожного стеку), `StackAsync`, `RunAsync` (redeploy у чергу; restart і down — екран прогресу, дія, свіжі дані), `DeploymentAsync`, `DescribeDeployment`, `FindEnvironmentAsync`, `FindStackAsync`, `TryListContainersAsync` (офлайн-агент — без кількості, а не помилка) |
+| `DashboardService` (12) | `ShowAsync` (маршрут → екран, помилки ЦА → екран помилки з дорогою назад), `BackFrom`, `EnvironmentsAsync`, `StacksAsync` (кількість контейнерів кожного стеку), `StackAsync`, `RunAsync` (redeploy у чергу; restart і down — екран прогресу, дія, свіжі дані), `FollowAsync` (стан деплою оновлюється в тому самому повідомленні, лише коли змінився; межа 13 хв), `FollowDeploymentAsync`, `DescribeDeployment`, `FindEnvironmentAsync`, `FindStackAsync`, `TryListContainersAsync` (офлайн-агент — без кількості, а не помилка) |
 | `DashboardRenderer` (11) | `Environments`, `Stacks`, `Stack` (кнопки за правами, вимкнені для офлайн-агента й під час дії), `Confirm`, `Error`, `StackSummary`, `Deployed`, `ContainersLine`, `NoticeText` (кінець виводу compose в межах ліміту тексту), `TrimToEnd`, `Pager` (вимкнені кнопки з унікальними id) |
 | `DashboardModule` (2) | `NavigateAsync` (невідомий id → список середовищ), `DrawAsync` (Components V2, без згадок) |
 | ЦА: методи, додані в `BotGatewayService` Петренка Б. О. (2) | `DeployStack` (стек за назвою серед видимих, далі `DeploymentService.QueueAsync`), `GetDeployment` |
@@ -689,8 +689,8 @@
 
 #### Тести (не входять в облік)
 
-- `tests/DiscordBot`, 177 тестів (увесь проєкт тестів бота, разом із тестами команд стеків Бояра В. О.).
-  - `/dashboard`, 60 тестів: маршрути (кожен переживає `custom_id`, найдовший уміщається в 100 символів, чужі й зіпсовані id відхиляються); сервіс із заглушкою ЦА (сортування й сторінки, сторінка за межею — остання, кількість контейнерів стеку, офлайн-агент без звернення до нього, зниклий стек — помилка з дорогою назад, неприв'язаний акаунт, непередбачена помилка в лог, restart спершу показує прогрес і потім свіжі дані, помилка compose з виводом, redeploy і redeploy with pull ставлять деплой у чергу й стежать за ним, стани деплою); рендерер (повна сторінка в межах 40 компонентів і 4000 символів, унікальні id, кнопки за правами, вимкнені для офлайн-агента й під час дії, підтвердження, екранування); маршрутизація натискань справжнім `InteractionService` Discord.Net.
+- `tests/DiscordBot`, 180 тестів (увесь проєкт тестів бота, разом із тестами команд стеків Бояра В. О.).
+  - `/dashboard`, 63 тести: маршрути (кожен переживає `custom_id`, найдовший уміщається в 100 символів, чужі й зіпсовані id відхиляються); сервіс із заглушкою ЦА (сортування й сторінки, сторінка за межею — остання, кількість контейнерів стеку, офлайн-агент без звернення до нього, зниклий стек — помилка з дорогою назад, неприв'язаний акаунт, непередбачена помилка в лог, restart спершу показує прогрес і потім свіжі дані, помилка compose з виводом, redeploy і redeploy with pull ставлять деплой у чергу, а стан оновлюється в тому самому повідомленні лише при зміні, з вимкненими кнопками; довгий деплой — до межі 13 хв; «Refresh» стежить знову; стани деплою); рендерер (повна сторінка в межах 40 компонентів і 4000 символів, унікальні id, кнопки за правами, вимкнені для офлайн-агента й під час дії, підтвердження, екранування); маршрутизація натискань справжнім `InteractionService` Discord.Net.
   - Нові виклики `GrpcForestClient`, 6 тестів: `can_deploy`, `DeployStack` з `pull`, офлайн-агент → `AgentUnavailableException`, `GetDeployment` для завершеного й незавершеного деплою.
   - Сповіщення: `GrpcNotificationSource` проти сервера в пам'яті (поля й деталі з `oneof`, токен, тихе завершення при заміні потоку, відхилений токен, звіти); `NotificationWatcher` з фейками (публікація й звіт, очікування Discord, помилка бота як невдача, повторне відкриття потоку, невдалий звіт не зупиняє доставку); embed (поля, екранування, обрізання помилки до ліміту поля, кольори); backoff.
   - `GrpcForestClient` проти справжнього gRPC-сервера `BotGateway` у пам'яті (`TestServer`) із заготовленими відповідями: токен у metadata `x-bot-token`, поля запитів, перетворення відповідей, кожен код помилки ЦА → свій виняток; невірний токен і недоступний ЦА — у лог, користувачу загальне повідомлення, токен не потрапляє ні в лог, ні у виняток; скасування.
