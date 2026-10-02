@@ -297,7 +297,7 @@
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 4 (11 класів на трьох рівнях; 14 класів; 3 класи; 3 класи) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 12 з клієнтським кодом (11 динамічних, 1 статичний) | ✅ |
 
-Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37), API панелі для середовищ і контейнерів (PR #42); читання логів контейнера на агенті (`StreamContainerLogs`, гілка `feat/container-logs`).
+Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37), API панелі для середовищ і контейнерів (PR #42); читання логів контейнера на агенті (`StreamContainerLogs`, PR #49).
 
 Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` і ендпоінт restart/down у `DevStackEndpoints` (прибрані PR #45 і #48, замість них — API панелі); `EnvironmentResponse` і `ContainerResponse` в `Api/Contracts/EnvironmentContracts.cs` (REST DTO за рішенням команди зараховуються Петренку Б. О.).
 
@@ -508,7 +508,7 @@
 | Обробники подій | ≥ 10 | 22 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` і API панелі в ЦА (PR #42): `GET /api/environments`, `GET /api/environments/{id}/containers`, `POST …/containers/{container}/start|stop|restart` (`Api/Endpoints/EnvironmentEndpoints.cs`, контракт — `Api/Contracts/EnvironmentContracts.cs`). Екран логів контейнера — на готовому `GET /api/environments/{id}/containers/{container}/logs` (PR #44, Петренко Б. О.), гілка `feat/container-logs`. Згенеровані `src/components/ui/{table,select,badge}.tsx` не враховано.
+Код: `src/Web` і API панелі в ЦА (PR #42): `GET /api/environments`, `GET /api/environments/{id}/containers`, `POST …/containers/{container}/start|stop|restart` (`Api/Endpoints/EnvironmentEndpoints.cs`, контракт — `Api/Contracts/EnvironmentContracts.cs`). Екран логів контейнера — на готовому `GET /api/environments/{id}/containers/{container}/logs` (PR #44, Петренко Б. О.), PR #49. Згенеровані `src/components/ui/{table,select,badge}.tsx` не враховано.
 
 - **Екрани:** контейнери середовища (`src/routes/_authed/containers.tsx`, `/containers`); логи контейнера (`src/routes/_authed/containers_.$environmentId.$containerId.logs.tsx`, `/containers/<середовище>/<контейнер>/logs`).
 - **Елементи керування:** вибір середовища; фільтри «Стек» і «Стан»; поле пошуку за назвою, образом або id; кнопки «Скинути фільтри» й «Оновити»; у кожному рядку кнопки «Запустити», «Зупинити», «Перезапустити»; у діалозі підтвердження — поле тайм-ауту зупинки, «Скасувати» й кнопка дії; посилання «Контейнери» в шапці (`src/routes/_authed.tsx`); у кожному рядку таблиці — кнопка «Логи». Екран логів: посилання «До контейнерів»; вибір кількості рядків; фільтр потоку (stdout/stderr); поле пошуку в тексті; кнопки «Скинути фільтри», «Оновити» й «Копіювати»; перемикачі «Автооновлення», «Переносити рядки», «Показувати час».
