@@ -291,13 +291,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 95 (83 класи, з них 7 статичних і 13 record; 8 інтерфейсів; 1 структура; 3 enum) | ✅ |
-| Поля | ≥ 15 | 198 (158 полів стану, 40 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 144 | ✅ |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 4 (10 класів на трьох рівнях; 13 класів; 3 класи; 3 класи) | ✅ |
-| Поліморфізм | ≥ 3, серед них статичний і динамічний | 11 з клієнтським кодом (10 динамічних, 1 статичний) | ✅ |
+| Класи та подібні типи | ≥ 9 | 102 (89 класів, з них 8 статичних і 13 record; 9 інтерфейсів; 1 структура; 3 enum) | ✅ |
+| Поля | ≥ 15 | 219 (171 поле стану, 48 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 157 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 4 (11 класів на трьох рівнях; 14 класів; 3 класи; 3 класи) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 12 з клієнтським кодом (11 динамічних, 1 статичний) | ✅ |
 
-Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37), API панелі для середовищ і контейнерів (PR #42).
+Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37), API панелі для середовищ і контейнерів (PR #42); читання логів контейнера на агенті (`StreamContainerLogs`, гілка `feat/container-logs`).
 
 Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` і ендпоінт restart/down у `DevStackEndpoints` (прибрані PR #45 і #48, замість них — API панелі); `EnvironmentResponse` і `ContainerResponse` в `Api/Contracts/EnvironmentContracts.cs` (REST DTO за рішенням команди зараховуються Петренку Б. О.).
 
@@ -309,8 +309,8 @@
 | `Configuration` | `AgentOptions` |
 | `Enrollment` | `AgentCredentials` (record), `CredentialStore`, `AgentEnroller` |
 | `Platform` | `IBootIdProvider` (інтерфейс), `LinuxBootIdProvider`, `UptimeBootIdProvider` |
-| `Docker` | `IDockerGateway` (інтерфейс), `DockerDotNetGateway`, `ContainerInfoMapper` (статичний клас) |
-| `Commands` | `IAgentCommandHandler`, `ICommandProgress` (інтерфейси), `AgentCommandHandler<TCommand>` (абстрактний клас), `ContainerActionHandler<TCommand>` (абстрактний клас), `ListContainersHandler`, `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`, `StackCommandHandler<TCommand>` (абстрактний клас), `DeployStackHandler`, `RestartStackHandler`, `DownStackHandler`, `StopTimeout` (статичний клас), `CommandDispatcher`, `RunningCommands`, `RunningCommands.RunningCommand`, `AgentCommandException` (абстрактний клас), `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException`, `StackNotFoundException`, `StackBusyException`, `ComposeUnavailableException`, `ComposeFailedException`, `ComposeTimeoutException`, `StackFileConflictException` |
+| `Docker` | `IDockerGateway` (інтерфейс), `DockerDotNetGateway`, `ContainerInfoMapper` (статичний клас), `ContainerLogParser`, `ContainerLogParser.LineBuffer` |
+| `Commands` | `IAgentCommandHandler`, `ICommandProgress`, `ILogSink` (інтерфейси), `AgentCommandHandler<TCommand>` (абстрактний клас), `ContainerActionHandler<TCommand>` (абстрактний клас), `ContainerIds` (статичний клас), `ListContainersHandler`, `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`, `StreamContainerLogsHandler`, `LogBatcher`, `StackCommandHandler<TCommand>` (абстрактний клас), `DeployStackHandler`, `RestartStackHandler`, `DownStackHandler`, `StopTimeout` (статичний клас), `CommandDispatcher`, `RunningCommands`, `RunningCommands.RunningCommand`, `AgentCommandException` (абстрактний клас), `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException`, `UnsupportedOptionException`, `StackNotFoundException`, `StackBusyException`, `ComposeUnavailableException`, `ComposeFailedException`, `ComposeTimeoutException`, `StackFileConflictException` |
 | `Stacks` | `StackName` (статичний клас), `StackLayout`, `StackLayoutFile` (record), `StackLocks`, `StackLocks.Lease`, `IStackFileStore` (інтерфейс), `StackFileStore`, `StackFileStore.PlannedFile` (record), `StackManifest` (record), `StackManifestEntry` (record) |
 | `Compose` | `ComposeInvocation`, `IComposeRunner` (інтерфейс), `DockerComposeCli`, `RegistryConfigWriter`, `TemporaryRegistryConfig` |
 | `Connection` | `AgentStreamWriter`, `StreamCommandProgress`, `ReconnectBackoff`, `AgentSessionRunner`, `AgentWorker` |
@@ -352,8 +352,13 @@
 | `DockerDotNetGateway` | `client` | `RequestTimeout` |
 | `ContainerInfoMapper` | | `ProjectLabel`, `ServiceLabel` |
 | `AgentCommandHandler<TCommand>` | `logger` | `CommandField` |
-| `ContainerActionHandler<TCommand>` | `Docker` | `MaxContainerIdLength` |
+| `ContainerActionHandler<TCommand>` | `Docker` | |
+| `ContainerIds` | | `MaxLength` |
 | `ListContainersHandler` | `docker` | |
+| `StreamContainerLogsHandler` | `docker`, `time` | |
+| `LogBatcher` | `sink`, `time`, `lines`, `bytes`, `firstLineAt`, `SentLines` | `MaxLines`, `MaxBytes`, `MaxDelay` |
+| `ContainerLogParser` | `stdout`, `stderr` | `MaxLineBytes`, `TruncationMark`, `MaxTimestampLength`, `TimestampFormats`, `Utf8` |
+| `ContainerLogParser.LineBuffer` | `bytes`, `length`, `truncated` | |
 | `StackCommandHandler<TCommand>` | `locks` | |
 | `DeployStackHandler` | `store`, `compose`, `registryConfigs` | |
 | `RestartStackHandler`, `DownStackHandler` | `store`, `compose`, `options` у кожному | |
@@ -400,7 +405,7 @@
 | ЦА: поля, додані в класи Петренка Б. О. | `DeployContext.compose`, `StackBundle.RegistryLogins`, `AgentGatewayOptions.StackCommandTimeout`, `StackSummary.CanRestart` | `AgentSession.CancelWriteTimeout` |
 | Бот: поля, додані в класи Синенка Д. В. | `BotOptions.StackActionTimeout` | `ForestModule.StackDescription`, `StackTimeoutDescription` |
 
-#### Нетривіальні методи (144)
+#### Нетривіальні методи (157)
 
 | Тип | Методи |
 |---|---|
@@ -411,11 +416,15 @@
 | `AgentInfo` (1) | `ReadVersion` |
 | `LinuxBootIdProvider`, `UptimeBootIdProvider` (2) | `GetBootId` у кожному |
 | `AgentCommandException` (1) | `ToCommandError` |
-| `DockerDotNetGateway` (7) | `GetVersionAsync`, `ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync`, `CallAsync` (бюджет часу й трансляція помилок Docker.DotNet), `DescribeApiError` |
+| `DockerDotNetGateway` (9) | `GetVersionAsync`, `ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync`, `ReadContainerLogsAsync` (бюджет лише на відкриття, читання до кінця потоку з розбором), `FormatSince` (межа з мілісекундами), `CallAsync` (бюджет часу й трансляція помилок Docker.DotNet), `DescribeApiError` |
+| `ContainerLogParser` (7) | `Append` (окремий незавершений рядок для stdout і stderr), `Flush`, `ParseLine` (час, `` TTY, обрізання), `TryParseTimestamp` (наносекунди), `WholeCharacters` (обрізання без половини символу UTF-8), `LineBuffer.Write` (ліміт 16 КБ), `LineBuffer.TakeLine` |
 | `ContainerInfoMapper` (5) | `ToContainerInfo`, `ToState`, `ToName`, `Label`, `ToUnixMilliseconds` |
 | `AgentCommandHandler<TCommand>` (1) | `HandleAsync` (шаблонний метод) |
-| `ContainerActionHandler<TCommand>` (2) | `ExecuteAsync`, `ValidateContainerId` |
+| `ContainerActionHandler<TCommand>` (1) | `ExecuteAsync` |
+| `ContainerIds` (1) | `Validate` |
 | `ListContainersHandler` (1) | `ExecuteAsync` |
+| `StreamContainerLogsHandler` (1) | `ExecuteAsync` (перевірки до звернення до Docker, `follow` не підтримується, вміст логів не логується) |
+| `LogBatcher` (2) | `AddAsync` (пачка за кількістю, розміром або часом), `FlushAsync` |
 | `StopContainerHandler`, `RestartContainerHandler` (2) | `RunAsync` у кожному |
 | `StackCommandHandler<TCommand>` (1) | `ExecuteAsync` (перевірка імені, один запуск на стек) |
 | `DeployStackHandler` (3) | `RunAsync` (усі перевірки до першого запису, секрети після успішного up), `ValidateEnvironment`, `Describe` |
@@ -433,7 +442,7 @@
 | `CommandDispatcher` (3) | конструктор (таблиця обробників, перевірка дублікатів), `DispatchAsync` (реєстрація й скасування команд), `Unsupported` |
 | `RunningCommands` (3) | `Begin` (відмова для дубліката), `Cancel` (гонка із завершенням), `RunningCommand.Dispose` (видаляє лише свою реєстрацію) |
 | `AgentStreamWriter` (1) | `WriteAsync` |
-| `StreamCommandProgress` (1) | `ReportAsync` |
+| `StreamCommandProgress` (2) | `ReportAsync`, `SendAsync` (`LogBatch` з request_id) |
 | `ReconnectBackoff` (2) | `NextDelay`, `SessionEnded` |
 | `AgentSessionRunner` (5) | `RunAsync`, `CreateHelloAsync`, `SendHeartbeatsAsync`, `RunCommandAsync`, `IsSessionCancellation` |
 | `AgentWorker` (5) | `ExecuteAsync`, `EnrollAsync`, `KeepConnectedAsync`, `CreateChannel`, `Describe` |
@@ -459,8 +468,8 @@
 
 #### Ієрархії успадкування
 
-1. `AgentCommandHandler<TCommand>` → `ListContainersHandler`, `ContainerActionHandler<TCommand>` → `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`, `StackCommandHandler<TCommand>` → `DeployStackHandler`, `RestartStackHandler`, `DownStackHandler`. Це 10 класів на трьох рівнях (плюс інтерфейс `IAgentCommandHandler`).
-2. `AgentCommandException` → `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException`, `StackNotFoundException`, `StackBusyException`, `ComposeUnavailableException`, `ComposeFailedException`, `ComposeTimeoutException`, `StackFileConflictException`. Це 13 класів.
+1. `AgentCommandHandler<TCommand>` → `ListContainersHandler`, `StreamContainerLogsHandler`, `ContainerActionHandler<TCommand>` → `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`, `StackCommandHandler<TCommand>` → `DeployStackHandler`, `RestartStackHandler`, `DownStackHandler`. Це 11 класів на трьох рівнях (плюс інтерфейс `IAgentCommandHandler`).
+2. `AgentCommandException` → `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException`, `UnsupportedOptionException`, `StackNotFoundException`, `StackBusyException`, `ComposeUnavailableException`, `ComposeFailedException`, `ComposeTimeoutException`, `StackFileConflictException`. Це 14 класів.
 3. ЦА: `StackCommand` → `RestartStackCommand`, `DownStackCommand`. Це 3 класи.
 4. Бот: `StackActionCommand` → `RestartStackCommand`, `DownStackCommand` (під `BotCommand<TArgs, TResult>` Синенка Д. В., як і `StacksCommand`). Це 3 класи.
 
@@ -479,10 +488,12 @@
 | 9 | Динамічний (адаптер) | `IStackFileStore`: `StackFileStore` (і фейк у тестах) | обробники стеків пишуть файли й прибирають секрети, не знаючи про маніфест, tmpfs і посилання ✅ |
 | 10 | Динамічний (шаблонний метод) | ЦА: `StackCommand.Operation`, `Name`, `SendAsync` | `StackCommandService.ExecuteAsync` перевіряє роль і запускає restart і down через базовий клас, а `StackCommand.ExecuteAsync` однаково перевіряє заборони для стеку й збирає вивід ✅ |
 | 11 | Динамічний (шаблонний метод) | Бот: `StackActionCommand.Action`, `Done` | `BotCommand.ExecuteAsync` виконує `/stack-restart` і `/stack-down` через `CallForestAsync` і `Format` базового `StackActionCommand`, які беруть дію й текст відповіді з підкласу ✅ |
+| 12 | Динамічний (адаптер) | `ILogSink`: `StreamCommandProgress` (і фейк у тестах) | `LogBatcher` і `StreamContainerLogsHandler` надсилають пачки рядків логу, не знаючи про gRPC-стрім і `AgentStreamWriter` ✅ |
 
 #### Тести (не входять в облік)
 
-- `tests/Agent`, 166 тестів (частина лише на Linux): зіставлення міток compose і станів контейнерів; обробники — `request_id` у результаті, коди помилок, передача таймауту зупинки, відхилення небезпечних id контейнерів; диспетчер — непідтримувані й невідомі команди, `CancelRequest` без результату; backoff — межі, jitter, скидання після довгої сесії; послідовний запис у стрім; сесія — облікові дані в metadata, Hello першим, відповіді на команди, heartbeat, `Unauthenticated`; збереження облікових даних і реєстрація; boot_id; стеки — ім'я стеку, шляхи поза каталогом стеку, дублікати, режими файлів, аргументи compose без `-f` для restart/down, `BUSY`, `NOT_FOUND`, секрети не потрапляють у прогрес і помилки, тимчасовий `DOCKER_CONFIG`; справжній процес (`/bin/sh` замість docker) — вивід обох потоків, код виходу, тайм-аут, скасування, фільтр `CF_*`; запис файлів — дані контейнерів лишаються, застарілі файли й порожні каталоги прибираються, `.prev`, режими 0644/0755, секрет лежить у каталозі секретів, а в каталозі стеку — посилання на нього, вміст секретів не потрапляє на диск, `.prev` секретів до успішного up, посилання після перезавантаження, підкладене контейнером посилання не використовується для запису й видалення; скасування — `CancelRequest` зупиняє команду з `ERROR_CODE_CANCELLED`, дублікат request_id, скасований деплой лишає `.prev` секретів і звільняє стек.
+- `tests/Agent`, 204 тести (частина лише на Linux): зіставлення міток compose і станів контейнерів; обробники — `request_id` у результаті, коди помилок, передача таймауту зупинки, відхилення небезпечних id контейнерів; логи — пачки `LogBatch` з request_id перед результатом, `tail` і `since` доходять до Docker, `follow` — `UNSUPPORTED`, `NOT_FOUND`, `DOCKER_UNAVAILABLE` без деталей, скасування читання; пачки за кількістю, часом і розміром; розбір логів — час із наносекундами й зсувом, рядок без часу, окремі незавершені рядки stdout і stderr, символ UTF-8 на межі шматків, невалідні байти, `
+` TTY, обрізання до 16 КБ без половини символу; межа `since` з мілісекундами; диспетчер — непідтримувані й невідомі команди, `CancelRequest` без результату; backoff — межі, jitter, скидання після довгої сесії; послідовний запис у стрім; сесія — облікові дані в metadata, Hello першим, відповіді на команди, heartbeat, `Unauthenticated`; збереження облікових даних і реєстрація; boot_id; стеки — ім'я стеку, шляхи поза каталогом стеку, дублікати, режими файлів, аргументи compose без `-f` для restart/down, `BUSY`, `NOT_FOUND`, секрети не потрапляють у прогрес і помилки, тимчасовий `DOCKER_CONFIG`; справжній процес (`/bin/sh` замість docker) — вивід обох потоків, код виходу, тайм-аут, скасування, фільтр `CF_*`; запис файлів — дані контейнерів лишаються, застарілі файли й порожні каталоги прибираються, `.prev`, режими 0644/0755, секрет лежить у каталозі секретів, а в каталозі стеку — посилання на нього, вміст секретів не потрапляє на диск, `.prev` секретів до успішного up, посилання після перезавантаження, підкладене контейнером посилання не використовується для запису й видалення; скасування — `CancelRequest` зупиняє команду з `ERROR_CODE_CANCELLED`, дублікат request_id, скасований деплой лишає `.prev` секретів і звільняє стек.
 - `tests/Aggregator`: правило хоста registry для образів і нормалізація адрес, `RegistryCredential`, сервіс кредів (лише адміністратор, заміна логіну, ізоляція середовищ), крок `ResolveRegistryAuthStep` (лише потрібні креди, `${VAR}`, нерозшифровуваний пароль), Data Protection (перезапуск, пошкоджене значення, втрачений key ring), інтеграційний тест: креди через dev-ендпоінт доходять до агента в `DeployStack`; `AgentSession` надсилає `CancelRequest` після тайм-ауту й скасування викликача, але не після результату чи закриття сесії; restart і down стеку — роль Operator для restart і Editor для down, невидимий стек — 404 без звернення до агента, системний стек і незавершений деплой — 409, межі тайм-ауту зупинки, помилка compose як результат із виводом, лише останні рядки виводу, скасування викликача не доходить до агента, стек за назвою в середовищі (невідома, некоректна назва й стек іншого середовища — 404), успішний down забуває розгорнутий коміт, невдалий down і restart — ні, `Stack.RecordTakenDown` для системного стеку — помилка; інтеграційні тести: `RestartStack`/`DownStack` з тайм-аутом доходять до агента, вивід і помилка compose у відповіді, `NOT_FOUND` агента — 404, після деплою й down у списку стеків немає розгорнутого коміту; шлюз бота — `ListStacks` з правами на дії, `ControlStack` доходить до агента й повертає помилку compose з виводом, Viewer — `PERMISSION_DENIED`, невідомий стек — `NOT_FOUND`.
 - `tests/DiscordBot`: `/stack-restart` і `/stack-down` — defer до виклику, назва стеку й тайм-аут у запиті, вивід compose в блоці коду, помилка compose як відповідь-помилка, відмова ЦА; `/stacks` — рядки зі станом деплою й доступними діями; підказки стеків за дією; вивід у межах 2000 символів зі зміщенням до останніх рядків, compose не може закрити блок коду; `GrpcForestClient` — перетворення `ListStacks`, поля `ControlStack`, тайм-аут не задано, статус → `ForestException`.
 
@@ -510,7 +521,7 @@
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
-| Docker.DotNet (`Docker.DotNet.Enhanced`) | `DockerClientBuilder` з визначенням endpoint як у docker CLI; `System.GetVersionAsync`; `Containers.ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync` з `WaitBeforeKillSeconds`; типізовані винятки (`DockerContainerNotFoundException`, `DockerApiException`) | [docs/retro/docker-dotnet.md](docs/retro/docker-dotnet.md) |
+| Docker.DotNet (`Docker.DotNet.Enhanced`) | `DockerClientBuilder` з визначенням endpoint як у docker CLI; `System.GetVersionAsync`; `Containers.ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync` з `WaitBeforeKillSeconds`; `Containers.GetContainerLogsAsync` (`ContainerLogsParameters`: `Timestamps`, `Tail`, `Since`) і `MultiplexedStream.ReadOutputAsync` з `TargetStream` для stdout/stderr; типізовані винятки (`DockerContainerNotFoundException`, `DockerApiException`) | [docs/retro/docker-dotnet.md](docs/retro/docker-dotnet.md) |
 | gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`) | Клієнт двонапрямленого стріму `Connect`; metadata виклику; коди статусу (`Unauthenticated`, `Unavailable`); HTTP/2 keepalive-пінги через `SocketsHttpHandler`; дескриптори protobuf для зіставлення типу команди з полем `oneof`; фейковий клієнт у тестах через віртуальні методи згенерованого класу | [docs/retro/grpc.md](docs/retro/grpc.md) |
 | Discord.Net | Slash-команди `/stacks`, `/stack-restart`, `/stack-down` (`[SlashCommand]`, `[Summary]`, `[MinValue]`, `[MaxValue]`), власний `AutocompleteHandler` для стеків, що читає вже вибране середовище й назву команди з `IAutocompleteInteraction.Data` | [docs/retro/discord-net.md](docs/retro/discord-net.md) |
 | EF Core | Конфігурація сутності `RegistryCredential` (зовнішній ключ з каскадним видаленням, унікальний індекс «середовище + registry»), міграція `RegistryCredentials` | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
