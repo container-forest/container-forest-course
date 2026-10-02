@@ -727,28 +727,45 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Екрани | ≥ 4 | 1 | ⏳ |
-| Елементи керування | ≥ 20 | 5 | ⏳ |
-| Контейнерні елементи | ≥ 1 | 0 | ⏳ |
-| Обробники подій | ≥ 10 | 3 | ⏳ |
+| Екрани | ≥ 4 | 4 | ✅ |
+| Елементи керування | ≥ 20 | 34 | ✅ |
+| Контейнерні елементи | ≥ 1 | 2 (таблиці) | ✅ |
+| Обробники подій | ≥ 10 | 19 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` (PR #30). Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`) в облік не йдуть.
+Код: `src/Web` — вхід (PR #30), керування користувачами й власний обліковий запис (PR «feat(web): user management screens»). Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`, `table`, `dialog`, `alert-dialog`, `select`, `badge`) в облік не йдуть.
 
-- **Екрани:** вхід (`src/routes/login.tsx`).
-- **Елементи керування:** поле імені користувача, поле пароля, прапорець «Запам'ятати мене», кнопка «Увійти» (екран входу); кнопка «Вийти» в шапці (`src/routes/_authed.tsx`).
-- **Обробники подій:** надсилання форми входу (перевірка Zod, вхід, перехід на `redirect`), зміна прапорця «Запам'ятати мене», натискання «Вийти» (вихід і перехід на `/login`).
-- **Логіка окремо від GUI:** запити й робота з кешем — `src/api/auth.ts` (`useLoginMutation`, `useLogoutMutation`); правила форми — схема Zod; компоненти лише показують стан і викликають мутації.
+- **Екрани:**
+  1. вхід (`src/routes/login.tsx`, `/login`);
+  2. користувачі (`src/routes/_authed/users/index.tsx`, `/users`);
+  3. картка користувача з ролями (`src/routes/_authed/users/$userId.tsx`, `/users/$userId`);
+  4. мій обліковий запис (`src/routes/_authed/account.tsx`, `/account`).
+- **Елементи керування (34):**
+  - вхід: поле імені, поле пароля, прапорець «Запам'ятати мене», кнопка «Увійти»;
+  - шапка (`src/routes/_authed.tsx`): кнопка «Вийти», посилання «Користувачі» (лише для адміністраторів), посилання на власний обліковий запис;
+  - користувачі: поле пошуку, список «Стан», кнопка «Новий користувач», посилання на картку в кожному рядку; діалог «Новий користувач» (`src/components/users/create-user-dialog.tsx`): поле імені, поле пароля, прапорець «Адміністратор», кнопки «Скасувати» й «Створити»;
+  - картка: посилання «Усі користувачі», поле імені й кнопка «Зберегти», кнопки «Розблокувати», «Деактивувати» / «Активувати», «Зробити адміністратором» / «Зняти права адміністратора», «Скинути пароль»; діалог скидання пароля (`src/components/users/reset-password-dialog.tsx`): поле нового пароля, кнопки «Скасувати» й «Задати пароль»; діалог підтвердження (`src/components/confirm-action.tsx`): кнопки підтвердження й «Скасувати»; у таблиці ролей — список ролі й кнопка «Відкликати» в кожному рядку;
+  - мій обліковий запис: поля поточного пароля, нового пароля й повтору, кнопка «Змінити пароль».
+- **Контейнерні елементи:** таблиця користувачів, таблиця ролей користувача.
+- **Обробники подій (19):**
+  - вхід: надсилання форми, зміна прапорця, «Вийти»;
+  - користувачі: введення в пошук і вибір стану (фільтри в URL через `validateSearch`, `replace`), відкриття й закриття діалогу (скидання форми й помилки), надсилання форми нового користувача (перехід на його картку);
+  - картка: надсилання перейменування, підтвердження деактивації, «Активувати», підтвердження зняття прав адміністратора, «Зробити адміністратором», «Розблокувати», відкриття й закриття діалогу скидання пароля, надсилання нового пароля, вибір ролі (зміна ролі), підтвердження відкликання ролі;
+  - мій обліковий запис: надсилання форми, зміна будь-якого поля (ховає попередній результат).
+- **Логіка окремо від GUI:**
+  - запити й робота з кешем — `src/api/queries.ts` (`usersQuery`, `userQuery`), `src/api/users.ts` (мутації користувача й ролей з інвалідацією списку й картки), `src/api/auth.ts` (`useChangePasswordMutation`);
+  - стан користувача й фільтрація — `src/lib/users.ts` (`userStatus`, `filterUsers`, правило імені як у ЦА), формат дат — `src/lib/format.ts`;
+  - правила форм — схеми Zod, помилки ЦА за статусом → перекладені повідомлення, причини відхилення пароля — `src/components/form-messages.tsx`.
 
-Заплановано: користувачі, призначення прав, журнал аудиту.
+Заплановано: форма видачі ролі (чекає API зі списком середовищ і стеків), журнал аудиту.
 
 ### Лаба 3
 
 | Бібліотека | Що використано | Ретроспектива |
 |---|---|---|
-| React Hook Form 7.89.0 (з `@hookform/resolvers`) | `useForm` з `zodResolver`, `register` для полів, `Controller` для прапорця Radix (не нативний `input`), `formState.errors`, `handleSubmit` | [docs/retro/react-hook-form.md](docs/retro/react-hook-form.md) |
-| Zod 4.6.5 | Схема форми входу (`z.object`, `trim`, `min` з повідомленнями), `z.infer` для типу форми | [docs/retro/zod.md](docs/retro/zod.md) |
-| TanStack Query | `useMutation` для входу й виходу, `setQueryData` і `removeQueries` для кешу поточного користувача | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
-| TanStack Router | `Route.useSearch` для `redirect`, `useNavigate` (`href`, `replace`) | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
+| React Hook Form 7.89.0 (з `@hookform/resolvers`) | `useForm` з `zodResolver`, `register` для полів (зокрема з власним `onChange`), `Controller` для прапорця Radix (не нативний `input`), `formState.errors` і `isDirty`, `handleSubmit`, `reset` після закриття діалогу й успішної зміни пароля | [docs/retro/react-hook-form.md](docs/retro/react-hook-form.md) |
+| Zod 4.6.5 | Схеми форм входу, нового користувача, перейменування, скидання й зміни пароля (`z.object`, `trim`, `min`, `regex` з правилом імені як у ЦА, `refine` для повтору пароля з `path`), повідомлення — ключі перекладу; `z.enum` і `catch` для search params списку користувачів; `z.infer` для типів форм | [docs/retro/zod.md](docs/retro/zod.md) |
+| TanStack Query | `useMutation` для входу, виходу, зміни пароля й усіх змін користувача; `setQueryData` і `removeQueries` для кешу поточного користувача; `useSuspenseQuery` з `queryOptions`-фабриками (`usersQuery`, `userQuery(id)`); `invalidateQueries` за префіксом ключа, щоб зміна користувача оновлювала і список, і картку | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
+| TanStack Router | `Route.useSearch` для `redirect` і фільтрів, `validateSearch` зі схемою Zod, `useNavigate` (`href`, `replace`, функція оновлення `search`), `loader` з `ensureQueryData`, параметри маршруту (`$userId`), `errorComponent` для 403 і 404 | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
 | ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`), зарахування уточнюється | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); власні `IPasswordValidator` (`AddPasswordValidator`) для правил NIST; `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md) |
 | EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
