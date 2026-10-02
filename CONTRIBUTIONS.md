@@ -18,15 +18,15 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 192 (147 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
-| Поля | ≥ 15 | 316 (268 полів стану, 48 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 236 | ✅ |
+| Класи та подібні типи | ≥ 9 | 203 (158 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
+| Поля | ≥ 15 | 370 (322 поля стану, 48 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 243 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45).
 
-Не враховано: тимчасові `DevEnvironmentEndpoints`, `DevAccessEndpoints`, `DevStackEndpoints` і `DevUserAuthenticationHandler` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
+Не враховано: тимчасові `DevEnvironmentEndpoints`, `DevAccessEndpoints` і `DevUserAuthenticationHandler` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
 
 #### Класи та подібні типи
 
@@ -68,8 +68,8 @@
 | `Grpc` | `AgentGatewayService`, `BotGatewayService`, `BotGatewayInterceptor`, `BotGatewayOptions` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
 | `Access` | `ClaimsCurrentUser` |
-| `Contracts` | `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
-| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints` |
+| `Contracts` | `RepositoryResponse`, `CreateRepositoryRequest`, `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
+| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints` |
 
 #### Поля
 
@@ -113,7 +113,7 @@
 | `ImageReference` (PR #13) | `Name`, `Tag`, `Digest` | `ImplicitTag` |
 | `Deployment` (PR #13), `DeploymentLogLine` | `log`; `Sequence`, `At`, `Level`, `Text` | `MaxLogLines`, `MaxLogLineLength` |
 | `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService` | 3 + 3 + 1 + 4 | |
-| `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 9 + 4 | `DeploymentService.HistoryLimit` |
+| `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 11 + 4 | `DeploymentService.HistoryLimit` |
 | `DeploymentOptions`, `GitOptions` | `MaxBundleBytes`, `AgentTimeout`, `MaxConcurrentDeployments`; `CacheDirectory` | `SectionName` в обох |
 | `DeployContext` | `source`, `bundle`, `Deployment`, `Stack`, `Environment`, `Repository` | |
 | `DeployPipeline` | `steps`, `observers` | |
@@ -121,10 +121,11 @@
 | `LibGit2SharpGitSource`, `TreeReader` | `locks`; `totalBytes`, `Files`, `Skipped` | `RemoteName` |
 | `YamlComposeParser`, `DeploymentRepository` | | `MergeKey`; `Unfinished` |
 | `DeploymentQueue`, `AgentSession.PendingRequest` | `channel`; `Completion`, `OnProgress`, `OnLogs` | |
+| DTO стеків і деплоїв (PR #45) | `RepositoryResponse` 4, `CreateRepositoryRequest` 2, `CreateStackRequest` 4, `ChangeStackSourceRequest` 3, `StackResponse` 12, `StackCommandResponse` 3, `DeployRequest` 1, `DeploymentResponse` 9, `DeploymentDetailsResponse` 11, `DeploymentLogLineResponse` 3 | |
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (236)
+#### Нетривіальні методи (243)
 
 | Тип | Методи |
 |---|---|
@@ -182,7 +183,8 @@
 | `DeploymentService` (4) | `QueueAsync`, `ListAsync`, `GetAsync`, `LoadVisibleStackAsync` |
 | `DeploymentRunner` (2) | `RunAsync`, `FailInterruptedAsync` |
 | `DeploymentOptions` (1) | `IsValid` |
-| `RepositoryService`, `StackService` (4) | `CreateAsync`, `ListAsync`; `CreateAsync`, `ListVisibleAsync` |
+| `RepositoryService`, `StackService` (9) | `CreateAsync`, `ListAsync` (адміністратори й редактори); `CreateAsync`, `ListVisibleAsync`, `GetAsync`, `ChangeSourceAsync` (Editor, не під час деплою), `Summarize` (права на дії), `RepositoryNamesAsync`, `LoadVisibleAsync` |
+| `StackEndpoints` (2) | `MapStackEndpoints`, `MapStackAction` |
 | `LibGit2SharpGitSource` (5) | `FetchAsync` (дві версії), `Fetch`; `TreeReader.Read`, `TreeReader.ReadBlob` |
 | `YamlComposeParser` (2) | `Parse`, `Find` (з merge-ключами) |
 | `DeploymentWorker` (3) | `StartAsync`, `ExecuteAsync`, `RunAsync` |
@@ -225,7 +227,40 @@
 
 ### Лаба 2
 
-Екранів ще немає. Заплановано: список стеків, редактор стеку, історія деплоїв, ключі середовищ.
+| Вимога | Потрібно | Є | Стан |
+|---|---|---|---|
+| Екрани | ≥ 4 | 5 | ✅ |
+| Елементи керування | ≥ 20 | 37 | ✅ |
+| Контейнерні елементи | ≥ 1 | 4 (2 таблиці, 2 списки) | ✅ |
+| Обробники подій | ≥ 10 | 19 | ✅ |
+| Логіка окремо від GUI | так | так | ✅ |
+
+Код: `src/Web` — стеки, деплої й репозиторії (PR #45). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
+
+- **Екрани** (замість запланованих «ключів середовищ», які чекають SOPS, — репозиторії):
+  1. стеки середовища (`src/routes/_authed/stacks/index.tsx`, `/stacks`);
+  2. стек: дії й редактор джерела (`src/routes/_authed/stacks/$stackId/index.tsx`, `/stacks/$stackId`);
+  3. історія деплоїв стеку (`src/routes/_authed/stacks/$stackId/deployments.tsx`, `/stacks/$stackId/deployments`);
+  4. деплой із логом (`src/routes/_authed/deployments/$deploymentId.tsx`, `/deployments/$deploymentId`);
+  5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`).
+- **Елементи керування (37):**
+  - шапка: посилання «Стеки» й «Репозиторії» (друге — лише для адміністраторів);
+  - стеки: список «Середовище», кнопка «Новий стек», посилання на стек у кожному рядку, кнопка «Оновити»; діалог «Новий стек» (`src/components/stacks/create-stack-dialog.tsx`): поле назви, список репозиторіїв, поля гілки й compose-файлу, кнопки «Скасувати» й «Створити»;
+  - стек: посилання «Усі стеки», кнопки «Деплой», «Деплой з оновленням образів», «Перезапустити», «Down»; редактор джерела: список репозиторіїв, поля гілки й compose-файлу, кнопки «Зберегти» й «Скасувати зміни»; посилання на останні деплої й «Уся історія»;
+  - історія: посилання на стек, список «Стан», кнопка «Оновити», посилання на деплой у кожному рядку;
+  - деплой: посилання на історію, прапорці «Лише попередження й помилки» і «Стежити за новими рядками»;
+  - репозиторії: поле пошуку, кнопка «Додати репозиторій»; діалог (`src/components/stacks/add-repository-dialog.tsx`): поля назви й адреси, кнопки «Скасувати» й «Додати».
+- **Контейнерні елементи:** таблиця стеків, таблиця деплоїв; список останніх деплоїв стеку, рядки логу деплою.
+- **Обробники подій (19):**
+  - стеки: вибір середовища (у URL через `validateSearch`), відкриття й закриття діалогу (скидання форми й помилки), вибір репозиторію, надсилання форми (перехід на сторінку стеку), «Оновити»;
+  - стек: «Деплой» і «Деплой з оновленням образів» (перехід на сторінку деплою), підтвердження перезапуску й down (вивід compose під кнопками), вибір репозиторію, надсилання джерела, «Скасувати зміни»;
+  - історія: вибір стану (у URL), «Оновити»;
+  - деплой: прапорці фільтра й стеження;
+  - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, надсилання форми.
+- **Логіка окремо від GUI:**
+  - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts`;
+  - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
+  - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться.
 
 Інтернаціоналізація панелі (PR #36): `src/i18n` (ініціалізація, вибір мови, словники uk/en) і перемикач мови `LanguageSwitcher` — елемент керування з обробником натискання (`src/components/language-switcher.tsx`), у шапці й на екрані входу. Тексти екранів інших учасників перенесено в словники; екрани й елементи лишаються за їхніми авторами.
 
