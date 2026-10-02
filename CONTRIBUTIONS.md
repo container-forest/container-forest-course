@@ -18,15 +18,15 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 214 (169 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
-| Поля | ≥ 15 | 415 (364 поля стану, 51 константа й статичне поле) | ✅ |
-| Нетривіальні методи | ≥ 25 | 262 | ✅ |
+| Класи та подібні типи | ≥ 9 | 220 (175 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
+| Поля | ≥ 15 | 434 (383 поля стану, 51 константа й статичне поле) | ✅ |
+| Нетривіальні методи | ≥ 25 | 268 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48).
 
-Не враховано: тимчасові `DevEnvironmentEndpoints`, `DevAccessEndpoints` і `DevUserAuthenticationHandler` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
+Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
 #### Класи та подібні типи
 
@@ -68,7 +68,7 @@
 | `Grpc` | `AgentGatewayService`, `BotGatewayService`, `BotGatewayInterceptor`, `BotGatewayOptions` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
 | `Access` | `ClaimsCurrentUser` |
-| `Contracts` | `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
+| `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
 | `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints` |
 
 #### Поля
@@ -121,12 +121,13 @@
 | `LibGit2SharpGitSource`, `TreeReader` | `locks`; `totalBytes`, `Files`, `Skipped` | `RemoteName` |
 | `YamlComposeParser`, `DeploymentRepository` | | `MergeKey`; `Unfinished` |
 | `DeploymentQueue`, `AgentSession.PendingRequest` | `channel`; `Completion`, `OnProgress`, `OnLogs` | |
+| Керування середовищами (PR #48): DTO, `EnvironmentSummary` | `CreateEnvironmentRequest` 2, `UpdateEnvironmentRequest` 2, `EnvironmentCreatedResponse` 4, `EnrollmentTokenResponse` 2, `SetRegistryCredentialRequest` 3, `RegistryCredentialResponse` 5; `EnrollmentTokenExpiresAt` | |
 | Сповіщення в панелі (PR #47): `NotificationRuleView`, `NotificationHistoryEntry`, DTO | 3 + 2; `NotificationChannelResponse` 6, `CreateNotificationChannelRequest` 2, `UpdateNotificationChannelRequest` 3, `NotificationRuleResponse` 9, `CreateNotificationRuleRequest` 3, `UpdateNotificationRuleRequest` 2, `NotificationResponse` 12 | `NotificationSettingsService.DefaultHistoryLimit`, `MaxHistoryLimit`; `NotificationEndpoints.SingleKinds` |
 | DTO стеків і деплоїв (PR #45) | `RepositoryResponse` 4, `CreateRepositoryRequest` 2, `CreateStackRequest` 4, `ChangeStackSourceRequest` 3, `StackResponse` 12, `StackCommandResponse` 3, `DeployRequest` 1, `DeploymentResponse` 9, `DeploymentDetailsResponse` 11, `DeploymentLogLineResponse` 3 | |
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (262)
+#### Нетривіальні методи (268)
 
 | Тип | Методи |
 |---|---|
@@ -146,7 +147,7 @@
 | `DiscordLink` (4) | `IssueCode`, `HashCode` (регістр, пробіли й дефіси не важать), `CompleteLink` (строк дії коду), `NormalizeDiscordUserName` |
 | `RoleAssignment` та підкласи (8) | `ChangeRole`, `EnsureDefined`; `Covers`, `CoversWholeEnvironment`, `Reveals` в `EnvironmentRoleAssignment` і `StackRoleAssignment` (по 3) |
 | `AccessPolicy` (8) | `CanSee(User, DockerEnvironment, …)`, `EffectiveRole` для стеку, `EffectiveRole` для середовища, `CanPerform` для стеку, `CanPerform` для середовища, `Highest`, `OwnAssignments`, `EnsureSameEnvironment` |
-| `EnvironmentService` (4) | `CreateAsync`, `IssueEnrollmentTokenAsync`, `ListVisibleAsync`, `IssueToken` |
+| `EnvironmentService` (7) | `CreateAsync`, `IssueEnrollmentTokenAsync`, `ListVisibleAsync`, `IssueToken`, `UpdateAsync` (унікальність назви без збігу із собою), `RevokeAgentAsync` (забути облікові дані, потім обірвати з'єднання), `Summarize` |
 | `AgentEnrollmentService` (4) | `EnrollAsync`, `AuthenticateAsync`, `RecordConnectedAsync`, `RecordDisconnectedAsync` |
 | `Application.DependencyInjection` (1) | `AddApplication` |
 | `AggregatorDbContext` (2) | `OnModelCreating`, `ConfigureConventions` |
@@ -163,7 +164,8 @@
 | `DatabaseMigrator`, `DesignTimeDbContextFactory` (2) | `StartAsync`, `CreateDbContext` |
 | `AgentGatewayOptions` (1) | `IsValid` |
 | `AgentSession` (7) | `RequestAsync`, `WriteAsync`, `RecordActivity`, `ReportProgress`, `ReportLogs`, `Complete`, `Close` |
-| `AgentRegistry` (3) | `Open`, `Remove`, `TryGet` |
+| `AgentRegistry` (4) | `Open`, `Remove`, `TryGet`, `Close` |
+| `EnvironmentEndpoints` (PR #48, 2) | `MapEnvironmentAdministration`, `MapRegistryCredentials` |
 | `GrpcAgentChannel` (11) | `ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync`, `DeployStackAsync`, `ReadContainerLogsAsync`, `SendAsync`, `WaitFor`, `ToSnapshot`, `ToState`, `ToErrorKind` |
 | `Infrastructure.DependencyInjection` (1) | `AddInfrastructure` |
 | `AgentGatewayService` (9) | `Enroll`, `Connect`, `AuthenticateAsync`, `ReadHelloAsync`, `ReceiveAsync`, `Dispatch`, `RecordDisconnectedAsync`, `WithEnrollmentAsync` (дві версії) |
@@ -297,7 +299,7 @@
 
 Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37), API панелі для середовищ і контейнерів (PR #42).
 
-Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` з їхніми DTO і ендпоінт restart/down у `DevStackEndpoints` із `StackCommandResponse` (прибираються, коли з'явиться API панелі); `EnvironmentResponse` і `ContainerResponse` в `Api/Contracts/EnvironmentContracts.cs` (REST DTO за рішенням команди зараховуються Петренку Б. О.).
+Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` і ендпоінт restart/down у `DevStackEndpoints` (прибрані PR #45 і #48, замість них — API панелі); `EnvironmentResponse` і `ContainerResponse` в `Api/Contracts/EnvironmentContracts.cs` (REST DTO за рішенням команди зараховуються Петренку Б. О.).
 
 #### Класи та подібні типи
 
