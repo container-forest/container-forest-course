@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 203 (158 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
-| Поля | ≥ 15 | 370 (322 поля стану, 48 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 248 | ✅ |
+| Класи та подібні типи | ≥ 9 | 214 (169 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
+| Поля | ≥ 15 | 415 (364 поля стану, 51 константа й статичне поле) | ✅ |
+| Нетривіальні методи | ≥ 25 | 262 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47).
 
 Не враховано: тимчасові `DevEnvironmentEndpoints`, `DevAccessEndpoints` і `DevUserAuthenticationHandler` (прибираються, коли з'явиться API панелі), `Program.cs`, згенерований код міграцій і proto.
 
@@ -49,7 +49,7 @@
 | `Stacks` | `IStackRepository` (інтерфейс), `StackService`, `StackSummary` |
 | `Repositories` | `IGitRepositoryRepository` (інтерфейс), `RepositoryService` |
 | `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
-| `Notifications` | `INotificationChannelRepository`, `INotificationRuleRepository`, `INotificationRepository` (інтерфейси) |
+| `Notifications` | `INotificationChannelRepository`, `INotificationRuleRepository`, `INotificationRepository` (інтерфейси), `NotificationSettingsService`, `NotificationRuleView`, `NotificationHistoryEntry` |
 | `Deployments.Steps` | `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` |
 | `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer`, `ContainerLookup` (статичний клас), `ContainerLogService` |
 | — | `DependencyInjection` (статичний клас) |
@@ -68,8 +68,8 @@
 | `Grpc` | `AgentGatewayService`, `BotGatewayService`, `BotGatewayInterceptor`, `BotGatewayOptions` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
 | `Access` | `ClaimsCurrentUser` |
-| `Contracts` | `RepositoryResponse`, `CreateRepositoryRequest`, `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
-| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints` |
+| `Contracts` | `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
+| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints` |
 
 #### Поля
 
@@ -121,11 +121,12 @@
 | `LibGit2SharpGitSource`, `TreeReader` | `locks`; `totalBytes`, `Files`, `Skipped` | `RemoteName` |
 | `YamlComposeParser`, `DeploymentRepository` | | `MergeKey`; `Unfinished` |
 | `DeploymentQueue`, `AgentSession.PendingRequest` | `channel`; `Completion`, `OnProgress`, `OnLogs` | |
+| Сповіщення в панелі (PR #47): `NotificationRuleView`, `NotificationHistoryEntry`, DTO | 3 + 2; `NotificationChannelResponse` 6, `CreateNotificationChannelRequest` 2, `UpdateNotificationChannelRequest` 3, `NotificationRuleResponse` 9, `CreateNotificationRuleRequest` 3, `UpdateNotificationRuleRequest` 2, `NotificationResponse` 12 | `NotificationSettingsService.DefaultHistoryLimit`, `MaxHistoryLimit`; `NotificationEndpoints.SingleKinds` |
 | DTO стеків і деплоїв (PR #45) | `RepositoryResponse` 4, `CreateRepositoryRequest` 2, `CreateStackRequest` 4, `ChangeStackSourceRequest` 3, `StackResponse` 12, `StackCommandResponse` 3, `DeployRequest` 1, `DeploymentResponse` 9, `DeploymentDetailsResponse` 11, `DeploymentLogLineResponse` 3 | |
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (248)
+#### Нетривіальні методи (262)
 
 | Тип | Методи |
 |---|---|
@@ -185,6 +186,8 @@
 | `DeploymentOptions` (1) | `IsValid` |
 | `RepositoryService`, `StackService` (9) | `CreateAsync`, `ListAsync` (адміністратори й редактори); `CreateAsync`, `ListVisibleAsync`, `GetAsync`, `ChangeSourceAsync` (Editor, не під час деплою), `Summarize` (права на дії), `RepositoryNamesAsync`, `LoadVisibleAsync` |
 | `StackEndpoints` (2) | `MapStackEndpoints`, `MapStackAction` |
+| `NotificationSettingsService` (11) | `ListChannelsAsync`, `CreateChannelAsync`, `UpdateChannelAsync`, `DeleteChannelAsync`, `ListRulesAsync`, `CreateRuleAsync` (область за переданими id, стек чужого середовища), `UpdateRuleAsync`, `DeleteRuleAsync`, `ListHistoryAsync` (назви каналів, межі ліміту), `DescribeAsync`, `ParseDiscordId` |
+| `NotificationEndpoints` (3) | `MapNotificationEndpoints`, `Combine`, `Split` (список видів ↔ прапорці) |
 | `LibGit2SharpGitSource` (10) | `FetchAsync`, `ReadAsync` (по дві версії), `Fetch`, `Read` (коміт з кешу), `WithLockAsync`, `EnsureSupported`; `TreeReader.Read`, `TreeReader.ReadBlob` |
 | `YamlComposeParser` (2) | `Parse`, `Find` (з merge-ключами) |
 | `DeploymentWorker` (3) | `StartAsync`, `ExecuteAsync`, `RunAsync` |
