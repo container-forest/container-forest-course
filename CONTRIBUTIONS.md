@@ -248,15 +248,15 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 94 (82 класи, з них 6 статичних і 13 record; 8 інтерфейсів; 1 структура; 3 enum) | ✅ |
+| Класи та подібні типи | ≥ 9 | 95 (83 класи, з них 7 статичних і 13 record; 8 інтерфейсів; 1 структура; 3 enum) | ✅ |
 | Поля | ≥ 15 | 198 (158 полів стану, 40 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 141 | ✅ |
+| Нетривіальні методи | ≥ 25 | 144 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 4 (10 класів на трьох рівнях; 13 класів; 3 класи; 3 класи) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 11 з клієнтським кодом (10 динамічних, 1 статичний) | ✅ |
 
-Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37).
+Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37), API панелі для середовищ і контейнерів (PR #42).
 
-Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` з їхніми DTO і ендпоінт restart/down у `DevStackEndpoints` із `StackCommandResponse` (прибираються, коли з'явиться API панелі).
+Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` з їхніми DTO і ендпоінт restart/down у `DevStackEndpoints` із `StackCommandResponse` (прибираються, коли з'явиться API панелі); `EnvironmentResponse` і `ContainerResponse` в `Api/Contracts/EnvironmentContracts.cs` (REST DTO за рішенням команди зараховуються Петренку Б. О.).
 
 #### Класи та подібні типи
 
@@ -284,6 +284,7 @@
 | `Application.Stacks` | `StackCommand` (абстрактний клас), `RestartStackCommand`, `DownStackCommand`, `StackCommandResult` (record), `StackAction` (enum), `StackCommandService` |
 | `Infrastructure.Security` | `SecretProtectionOptions`, `DataProtectionSecretProtector` |
 | `Infrastructure.Persistence` | `RegistryCredentialConfiguration`, `RegistryCredentialRepository` |
+| `Api.Endpoints` | `EnvironmentEndpoints` (статичний клас) |
 
 | Простір імен `ContainerForest.DiscordBot.*` | Типи |
 |---|---|
@@ -356,7 +357,7 @@
 | ЦА: поля, додані в класи Петренка Б. О. | `DeployContext.compose`, `StackBundle.RegistryLogins`, `AgentGatewayOptions.StackCommandTimeout`, `StackSummary.CanRestart` | `AgentSession.CancelWriteTimeout` |
 | Бот: поля, додані в класи Синенка Д. В. | `BotOptions.StackActionTimeout` | `ForestModule.StackDescription`, `StackTimeoutDescription` |
 
-#### Нетривіальні методи (141)
+#### Нетривіальні методи (144)
 
 | Тип | Методи |
 |---|---|
@@ -403,6 +404,7 @@
 | ЦА: `RegistryCredentialConfiguration` (1) | `Configure` |
 | ЦА: `RegistryCredentialRepository` (2) | `ListByEnvironmentAsync`, `FindByServerAsync` |
 | ЦА: `StackCommand` (3) | `ExecuteAsync` (заборони для стеку, вивід compose і помилка compose як результат, без скасування викликачем), `Collect` (останні рядки виводу), `ValidateTimeout` |
+| ЦА: `EnvironmentEndpoints` (3) | `MapEnvironmentEndpoints`, `MapContainerAction` (окремий ендпоінт на дію, тайм-аут зупинки лише для stop і restart), `RunAsync` |
 | ЦА: `StackCommandService` (4) | `ExecuteAsync` за id і `ExecuteAsync` за назвою в середовищі (видимість, однакова відповідь для відсутнього й невидимого стеку), `RunAsync` (роль для операції, незавершений деплой, коміт забувається лише після успішного down), `Create` |
 | ЦА: методи, додані в класи Петренка Б. О. (6) | `Stack.RecordTakenDown` (заборонено для системного стеку); `AgentSession.CancelOnAgentAsync`; `GrpcAgentChannel.RestartStackAsync`, `DownStackAsync`; `BotGatewayService.ListStacks` (дії без системних стеків), `ControlStack` |
 | Бот: `StacksCommand` (1) | `CallForestAsync` (середовище за назвою чи id, стеки) |
@@ -410,7 +412,7 @@
 | Бот: `StackAutocompleteHandler` (1) | `GenerateSuggestionsAsync` (дія з назви команди) |
 | Бот: методи, додані в класи Синенка Д. В. (9) | `GrpcForestClient.ListStacksAsync`, `ControlStackAsync`, `ToStack`; `ReplyFormatter.Stacks`, `StackLine`, `WithOutput` (кінець виводу в блоці коду в межах 2000 символів, захист від закриття блоку); `AutocompleteSource.StacksAsync`, `SuggestStacks`, `Allows` |
 
-Не враховано як тривіальні: `ContainerIdOf` і `StackNameOf` в обробниках, `StartContainerHandler.RunAsync` і `ContainerActionHandler.ToStopTimeout` (лише делегують), `ReconnectBackoff.Reset`, `DockerDotNetGateway.Seconds` і `Dispose`, `AgentStreamWriter.Dispose`, `StackLocks.IsHeld`, `RunningCommands.Count`, `CommandDispatcher.RunningCount`, `StackFileStore.Exists`, `DiscardPreviousSecrets`, `DeleteDirectory` і шляхи (`StackDirectory`, `SecretsDirectory`, `ManifestPath`), `DataProtectionSecretProtector.Protect`, `RegistryCredentialSummary.Of`, `SendAsync` у `RestartStackCommand` і `DownStackCommand` (лише делегують), `StackCommandResult.Succeeded`, `ForestStackResult.Succeeded`, `StacksCommand.Format`, перевизначення `Name`, `Action`, `Done` у командах стеків бота, методи `/stacks`, `/stack-restart`, `/stack-down` у `ForestModule` (лише передають опції), властивості `Handles`, `FilePath`, `SupportedCommands`, `StacksRoot`, `RegularFiles`, `SecretFiles`, `DeployContext.Compose`.
+Не враховано як тривіальні: `ContainerIdOf` і `StackNameOf` в обробниках, `StartContainerHandler.RunAsync` і `ContainerActionHandler.ToStopTimeout` (лише делегують), `ReconnectBackoff.Reset`, `DockerDotNetGateway.Seconds` і `Dispose`, `AgentStreamWriter.Dispose`, `StackLocks.IsHeld`, `RunningCommands.Count`, `CommandDispatcher.RunningCount`, `StackFileStore.Exists`, `DiscardPreviousSecrets`, `DeleteDirectory` і шляхи (`StackDirectory`, `SecretsDirectory`, `ManifestPath`), `DataProtectionSecretProtector.Protect`, `RegistryCredentialSummary.Of`, `SendAsync` у `RestartStackCommand` і `DownStackCommand` (лише делегують), `StackCommandResult.Succeeded`, `EnvironmentEndpoints.WithAgentProblems` (лише перелік відповідей), `ForestStackResult.Succeeded`, `StacksCommand.Format`, перевизначення `Name`, `Action`, `Done` у командах стеків бота, методи `/stacks`, `/stack-restart`, `/stack-down` у `ForestModule` (лише передають опції), властивості `Handles`, `FilePath`, `SupportedCommands`, `StacksRoot`, `RegularFiles`, `SecretFiles`, `DeployContext.Compose`.
 
 #### Ієрархії успадкування
 
@@ -443,7 +445,23 @@
 
 ### Лаба 2
 
-Ще немає. Заплановано: середовища та статус агентів, реєстрація агента, контейнери, логи контейнера.
+| Вимога | Потрібно | Є | Стан |
+|---|---|---|---|
+| Екрани | ≥ 4 | 1 | ⏳ |
+| Елементи керування | ≥ 20 | 13 | ⏳ |
+| Контейнерні елементи | ≥ 1 | 1 (таблиця контейнерів) | ✅ |
+| Обробники подій | ≥ 10 | 12 | ✅ |
+| Логіка окремо від GUI | так | так | ✅ |
+
+Код: `src/Web` і API панелі в ЦА (PR #42): `GET /api/environments`, `GET /api/environments/{id}/containers`, `POST …/containers/{container}/start|stop|restart` (`Api/Endpoints/EnvironmentEndpoints.cs`, контракт — `Api/Contracts/EnvironmentContracts.cs`). Згенеровані `src/components/ui/{table,select,badge}.tsx` не враховано.
+
+- **Екрани:** контейнери середовища (`src/routes/_authed/containers.tsx`, `/containers`).
+- **Елементи керування:** вибір середовища; фільтри «Стек» і «Стан»; поле пошуку за назвою, образом або id; кнопки «Скинути фільтри» й «Оновити»; у кожному рядку кнопки «Запустити», «Зупинити», «Перезапустити»; у діалозі підтвердження — поле тайм-ауту зупинки, «Скасувати» й кнопка дії; посилання «Контейнери» в шапці (`src/routes/_authed.tsx`).
+- **Контейнерні елементи:** таблиця контейнерів (назва й короткий id, стек і сервіс, стан і статус Docker, образ, час створення, дії).
+- **Обробники подій:** зміна середовища (фільтр стеку скидається), стеку, стану; введення в пошук; «Скинути фільтри»; «Оновити»; натискання «Запустити» (одразу), «Зупинити» й «Перезапустити» (відкривають підтвердження); введення тайм-ауту (перевірка 0–300 на льоту); підтвердження (`onSubmit` форми діалогу); закриття діалогу (`onOpenChange`: Esc, «Скасувати»).
+- **Логіка окремо від GUI:** `src/features/containers/model.ts` — схема search params, фільтрація й сортування, варіанти фільтра стеків, доступність дії за станом (ті самі правила, що в `ContainerCommand` ЦА), розбір тайм-ауту, ключ перекладу для помилки за статусом; запити — `src/api/queries.ts` (`environmentsQuery`, `containersQuery`) і `src/api/containers.ts` (`useContainerActionMutation` з інвалідацією списку). Фільтри й вибране середовище лежать у URL (`validateSearch`), список оновлюється кожні 15 с, офлайн-агент не опитується.
+
+Заплановано: середовища та статус агентів, реєстрація агента, логи контейнера.
 
 ### Лаба 3
 
