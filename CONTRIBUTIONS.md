@@ -20,7 +20,7 @@
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 203 (158 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
 | Поля | ≥ 15 | 370 (322 поля стану, 48 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 243 | ✅ |
+| Нетривіальні методи | ≥ 25 | 248 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
@@ -125,7 +125,7 @@
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (243)
+#### Нетривіальні методи (248)
 
 | Тип | Методи |
 |---|---|
@@ -185,7 +185,7 @@
 | `DeploymentOptions` (1) | `IsValid` |
 | `RepositoryService`, `StackService` (9) | `CreateAsync`, `ListAsync` (адміністратори й редактори); `CreateAsync`, `ListVisibleAsync`, `GetAsync`, `ChangeSourceAsync` (Editor, не під час деплою), `Summarize` (права на дії), `RepositoryNamesAsync`, `LoadVisibleAsync` |
 | `StackEndpoints` (2) | `MapStackEndpoints`, `MapStackAction` |
-| `LibGit2SharpGitSource` (5) | `FetchAsync` (дві версії), `Fetch`; `TreeReader.Read`, `TreeReader.ReadBlob` |
+| `LibGit2SharpGitSource` (10) | `FetchAsync`, `ReadAsync` (по дві версії), `Fetch`, `Read` (коміт з кешу), `WithLockAsync`, `EnsureSupported`; `TreeReader.Read`, `TreeReader.ReadBlob` |
 | `YamlComposeParser` (2) | `Parse`, `Find` (з merge-ключами) |
 | `DeploymentWorker` (3) | `StartAsync`, `ExecuteAsync`, `RunAsync` |
 | `InMemoryXmlRepository` (2) | `GetAllElements`, `StoreElement` (копії елементів під блокуванням) |
