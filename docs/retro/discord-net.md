@@ -14,6 +14,7 @@
 - Автодоповнення середовищ і контейнерів (`AutocompleteHandler`).
 - Відповіді: відкладена ephemeral-відповідь (`DeferAsync`) і її заміна результатом (`ModifyOriginalResponseAsync`).
 - Сповіщення в каналах: пошук каналу (`GetChannelAsync`), повідомлення з embed (`EmbedBuilder`: заголовок, колір за важливістю, поля, час події), відмови Discord як причина невдачі для панелі.
+- Меню `/dashboard` на Components V2 (`ComponentBuilderV2`, `ContainerBuilder`, `SectionBuilder` з кнопкою-accessory, `TextDisplayBuilder`, `SeparatorBuilder`, прапорець `MessageFlags.ComponentsV2`): середовища → стеки → стек із діями, гортання сторінками, обробка натискань кнопок через `[ComponentInteraction]` із шаблоном `dash:*`.
 
 ### Чому саме ця бібліотека
 
@@ -43,6 +44,10 @@ NetCord і Remora.Discord мають меншу спільноту, тож ві�
 10. **Відмови Discord як текст для адміністратора.** Якщо бот не може писати в канал сповіщень, панель має пояснити, яке право дати. `HttpException.DiscordCode` містить JSON-код помилки Discord (10003 — каналу немає, 50001 — бот не бачить канал, 50013 — бракує прав), але назви членів `DiscordErrorCode` не задокументовані, тож бот порівнює числові коди з таблицею з документації Discord. Канал з `GetChannelAsync` може бути не текстовим: перед надсиланням перевіряється `IMessageChannel`.
 11. **Публікувати можна лише після входу.** Споживач сповіщень стартує разом із ботом, але до події `Ready` кешу серверів і каналів ще немає. `DiscordNotificationPoster` підписується на `Ready` ще до входу й відкриває потік сповіщень лише після неї.
 12. **Ліміти embed.** Значення поля — до 1024 символів, а причина невдалого деплою — до 2000. Помилка обрізається з «…», а її власні потрійні зворотні лапки замінюються, щоб не закрити блок коду раніше.
+13. **Components V2 майже не описані в гайдах.** Гайди Discord.Net пояснюють лише старі компоненти (action row, кнопки, select); будівельники V2 (`ComponentBuilderV2`, `ContainerBuilder`, `SectionBuilder`, `SeparatorBuilder`) я знаходив за XML-документацією пакета 3.20.1, а поведінку — у документації Discord. Важливе звідти: повідомлення з прапорцем `IS_COMPONENTS_V2` не може мати `content` і embed, увесь текст — у компонентах `TextDisplay`, до 40 компонентів разом із вкладеними і до 4000 символів тексту на повідомлення. Відкладену відповідь на slash-команду можна перевести в V2, задавши `MessageProperties.Flags` у `ModifyOriginalResponseAsync`.
+14. **Стан меню між натисканнями.** Бот без стану, а кожне натискання — нова взаємодія. Усе, що потрібно наступному екрану (середовище, стек, сторінка, куди веде «Back»), записано в `custom_id` кнопки (`DashboardRoute`). Ліміт — 100 символів, а GUID у тексті займає 36, тож три GUID із префіксом не влазили; у base64url GUID займає 22 символи, і найдовший маршрут має близько 80. `custom_id` має бути унікальним у межах повідомлення, тому вимкнені кнопки «Back» і «Next» на крайніх сторінках мають власні id, що нікуди не ведуть.
+15. **Маршрутизація натискань.** `[ComponentInteraction("dash:*")]` передає в параметр усе після префікса, разом із двокрапками. Що шаблон справді ловить кожен маршрут, перевіряє тест через `InteractionService.SearchComponentCommand`; для нього знадобилася підробка `IComponentInteraction` через `DispatchProxy`, бо інтерфейс великий, а роутер читає лише `Data.CustomId`. `AddModuleAsync` одразу перевіряє залежності конструктора модуля, тож у тесті їх треба зареєструвати.
+16. **Довгі дії в меню.** Restart чи down стеку триває хвилини. Кнопка відкладається (`DeferAsync` для компонента — це «оновлю повідомлення пізніше»), потім повідомлення редагується двічі: спершу екран із вимкненими кнопками «Restarting…», потім результат. Токен взаємодії діє 15 хвилин, тому дедлайн виклику ЦА лишається 14 хвилин, як у `/stack-restart`.
 
 ### Плюси й мінуси
 
@@ -71,6 +76,8 @@ NetCord і Remora.Discord мають меншу спільноту, тож ві�
 - Команди застосунку й автодоповнення (ліміти): https://discord.com/developers/docs/interactions/application-commands
 - JSON-коди помилок Discord: https://discord.com/developers/docs/topics/opcodes-and-status-codes#json-json-error-codes
 - Ліміти embed: https://discord.com/developers/docs/resources/message#embed-object-embed-limits
+- Components V2 і їхні ліміти: https://discord.com/developers/docs/components/reference
+- Обробка компонентів в Interaction Framework (шаблони `custom_id`): https://docs.discordnet.dev/guides/int_framework/intro.html#component-interaction
 
 ## Бояр В. О.
 
