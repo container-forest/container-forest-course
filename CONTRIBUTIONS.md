@@ -242,21 +242,21 @@
 
 ## Бояр Володимир Олександрович (@volodaboyar1-star)
 
-Зона: агент (обробники команд `IAgentCommandHandler`, робота з Docker і Docker Compose); у ЦА — креди container registry та їх шифрування.
+Зона: агент (обробники команд `IAgentCommandHandler`, робота з Docker і Docker Compose); у ЦА — креди container registry та їх шифрування, операції restart і down стеку, у Discord-боті — команди стеків.
 
 ### Лаба 1
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 77 (67 класів, з них 6 статичних і 7 record; 8 інтерфейсів; 1 структура; 1 enum) | ✅ |
-| Поля | ≥ 15 | 158 (123 поля стану, 35 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 116 | ✅ |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (10 класів на трьох рівнях; 13 класів) | ✅ |
-| Поліморфізм | ≥ 3, серед них статичний і динамічний | 9 з клієнтським кодом (8 динамічних, 1 статичний) | ✅ |
+| Класи та подібні типи | ≥ 9 | 94 (82 класи, з них 6 статичних і 13 record; 8 інтерфейсів; 1 структура; 3 enum) | ✅ |
+| Поля | ≥ 15 | 198 (158 полів стану, 40 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 141 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 4 (10 класів на трьох рівнях; 13 класів; 3 класи; 3 класи) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 11 з клієнтським кодом (10 динамічних, 1 статичний) | ✅ |
 
-Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21).
+Код: `src/Agent` (PR #10; обробники стеків — PR #21; скасування команд — PR #24, змерджено як #26); у ЦА — креди registry (PR #21), restart і down стеку в ЦА й Discord-боті (PR #37).
 
-Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` з їхніми DTO (прибираються, коли з'явиться API панелі).
+Не враховано: `Program.cs`, згенерований з proto код і міграції, тимчасові `DevRegistryEndpoints` з їхніми DTO і ендпоінт restart/down у `DevStackEndpoints` із `StackCommandResponse` (прибираються, коли з'явиться API панелі).
 
 #### Класи та подібні типи
 
@@ -281,8 +281,15 @@
 | `Application.Registries` | `IRegistryCredentialRepository` (інтерфейс), `RegistryCredentialSummary` (record), `RegistryCredentialService` |
 | `Application.Agents` | `RegistryLogin` (record) |
 | `Application.Deployments.Steps` | `ResolveRegistryAuthStep` |
+| `Application.Stacks` | `StackCommand` (абстрактний клас), `RestartStackCommand`, `DownStackCommand`, `StackCommandResult` (record), `StackAction` (enum), `StackCommandService` |
 | `Infrastructure.Security` | `SecretProtectionOptions`, `DataProtectionSecretProtector` |
 | `Infrastructure.Persistence` | `RegistryCredentialConfiguration`, `RegistryCredentialRepository` |
+
+| Простір імен `ContainerForest.DiscordBot.*` | Типи |
+|---|---|
+| `Forest` | `ForestStack`, `ForestStackResult` (record), `StackAction` (enum) |
+| `Commands` | `StackList`, `StackActionArgs`, `StackActionOutcome` (record), `StacksCommand`, `StackActionCommand` (абстрактний клас), `RestartStackCommand`, `DownStackCommand` |
+| `Interactions` | `StackAutocompleteHandler` |
 
 #### Поля
 
@@ -337,9 +344,19 @@
 | ЦА: `RegistryLogin` | `Server`, `Username`, `Password` | |
 | ЦА: `SecretProtectionOptions` | `KeyDirectory` | `SectionName` |
 | ЦА: `DataProtectionSecretProtector` | `provider` | |
-| ЦА: поля, додані в класи Петренка Б. О. | `DeployContext.compose`, `StackBundle.RegistryLogins` | `AgentSession.CancelWriteTimeout` |
+| ЦА: `StackCommand` | `agents`, `StopTimeout` | `DefaultStopTimeout`, `MaxStopTimeout`, `MaxOutputLines` |
+| ЦА: `StackCommandResult` | `Error`, `Output` | |
+| ЦА: `StackCommandService` | `currentActor`, `environments`, `stacks`, `roleAssignments`, `deployments`, `unitOfWork`, `agents` | |
+| Бот: `ForestStack` | `Id`, `Name`, `IsSystem`, `DeployedCommit`, `DeployedAt`, `CanRestart`, `CanTakeDown` | |
+| Бот: `ForestStackResult` | `Error`, `Output` | |
+| Бот: `StackList`, `StackActionOutcome` | `Environment`, `Stacks`; `Environment`, `Result` | |
+| Бот: `StackActionArgs` | `Environment`, `Stack`, `TimeoutSeconds` | |
+| Бот: `StacksCommand`, `StackActionCommand` | `forest`, `environments` у кожному | |
+| Бот: `StackAutocompleteHandler` | `source` | |
+| ЦА: поля, додані в класи Петренка Б. О. | `DeployContext.compose`, `StackBundle.RegistryLogins`, `AgentGatewayOptions.StackCommandTimeout`, `StackSummary.CanRestart` | `AgentSession.CancelWriteTimeout` |
+| Бот: поля, додані в класи Синенка Д. В. | `BotOptions.StackActionTimeout` | `ForestModule.StackDescription`, `StackTimeoutDescription` |
 
-#### Нетривіальні методи (116)
+#### Нетривіальні методи (141)
 
 | Тип | Методи |
 |---|---|
@@ -385,14 +402,22 @@
 | ЦА: `DataProtectionSecretProtector` (2) | `Unprotect` (переклад `CryptographicException`), `Protector` (окремий purpose) |
 | ЦА: `RegistryCredentialConfiguration` (1) | `Configure` |
 | ЦА: `RegistryCredentialRepository` (2) | `ListByEnvironmentAsync`, `FindByServerAsync` |
-| ЦА: метод, доданий у клас Петренка Б. О. (1) | `AgentSession.CancelOnAgentAsync` |
+| ЦА: `StackCommand` (3) | `ExecuteAsync` (заборони для стеку, вивід compose і помилка compose як результат, без скасування викликачем), `Collect` (останні рядки виводу), `ValidateTimeout` |
+| ЦА: `StackCommandService` (4) | `ExecuteAsync` за id і `ExecuteAsync` за назвою в середовищі (видимість, однакова відповідь для відсутнього й невидимого стеку), `RunAsync` (роль для операції, незавершений деплой, коміт забувається лише після успішного down), `Create` |
+| ЦА: методи, додані в класи Петренка Б. О. (6) | `Stack.RecordTakenDown` (заборонено для системного стеку); `AgentSession.CancelOnAgentAsync`; `GrpcAgentChannel.RestartStackAsync`, `DownStackAsync`; `BotGatewayService.ListStacks` (дії без системних стеків), `ControlStack` |
+| Бот: `StacksCommand` (1) | `CallForestAsync` (середовище за назвою чи id, стеки) |
+| Бот: `StackActionCommand` (2) | `CallForestAsync`, `Format` (помилка compose як відповідь-помилка з виводом) |
+| Бот: `StackAutocompleteHandler` (1) | `GenerateSuggestionsAsync` (дія з назви команди) |
+| Бот: методи, додані в класи Синенка Д. В. (9) | `GrpcForestClient.ListStacksAsync`, `ControlStackAsync`, `ToStack`; `ReplyFormatter.Stacks`, `StackLine`, `WithOutput` (кінець виводу в блоці коду в межах 2000 символів, захист від закриття блоку); `AutocompleteSource.StacksAsync`, `SuggestStacks`, `Allows` |
 
-Не враховано як тривіальні: `ContainerIdOf` і `StackNameOf` в обробниках, `StartContainerHandler.RunAsync` і `ContainerActionHandler.ToStopTimeout` (лише делегують), `ReconnectBackoff.Reset`, `DockerDotNetGateway.Seconds` і `Dispose`, `AgentStreamWriter.Dispose`, `StackLocks.IsHeld`, `RunningCommands.Count`, `CommandDispatcher.RunningCount`, `StackFileStore.Exists`, `DiscardPreviousSecrets`, `DeleteDirectory` і шляхи (`StackDirectory`, `SecretsDirectory`, `ManifestPath`), `DataProtectionSecretProtector.Protect`, `RegistryCredentialSummary.Of`, властивості `Handles`, `FilePath`, `SupportedCommands`, `StacksRoot`, `RegularFiles`, `SecretFiles`, `DeployContext.Compose`.
+Не враховано як тривіальні: `ContainerIdOf` і `StackNameOf` в обробниках, `StartContainerHandler.RunAsync` і `ContainerActionHandler.ToStopTimeout` (лише делегують), `ReconnectBackoff.Reset`, `DockerDotNetGateway.Seconds` і `Dispose`, `AgentStreamWriter.Dispose`, `StackLocks.IsHeld`, `RunningCommands.Count`, `CommandDispatcher.RunningCount`, `StackFileStore.Exists`, `DiscardPreviousSecrets`, `DeleteDirectory` і шляхи (`StackDirectory`, `SecretsDirectory`, `ManifestPath`), `DataProtectionSecretProtector.Protect`, `RegistryCredentialSummary.Of`, `SendAsync` у `RestartStackCommand` і `DownStackCommand` (лише делегують), `StackCommandResult.Succeeded`, `ForestStackResult.Succeeded`, `StacksCommand.Format`, перевизначення `Name`, `Action`, `Done` у командах стеків бота, методи `/stacks`, `/stack-restart`, `/stack-down` у `ForestModule` (лише передають опції), властивості `Handles`, `FilePath`, `SupportedCommands`, `StacksRoot`, `RegularFiles`, `SecretFiles`, `DeployContext.Compose`.
 
 #### Ієрархії успадкування
 
 1. `AgentCommandHandler<TCommand>` → `ListContainersHandler`, `ContainerActionHandler<TCommand>` → `StartContainerHandler`, `StopContainerHandler`, `RestartContainerHandler`, `StackCommandHandler<TCommand>` → `DeployStackHandler`, `RestartStackHandler`, `DownStackHandler`. Це 10 класів на трьох рівнях (плюс інтерфейс `IAgentCommandHandler`).
 2. `AgentCommandException` → `InvalidCommandArgumentException`, `ContainerNotFoundException`, `DockerUnavailableException`, `DockerCommandFailedException`, `DockerTimeoutException`, `UnsupportedCommandException`, `StackNotFoundException`, `StackBusyException`, `ComposeUnavailableException`, `ComposeFailedException`, `ComposeTimeoutException`, `StackFileConflictException`. Це 13 класів.
+3. ЦА: `StackCommand` → `RestartStackCommand`, `DownStackCommand`. Це 3 класи.
+4. Бот: `StackActionCommand` → `RestartStackCommand`, `DownStackCommand` (під `BotCommand<TArgs, TResult>` Синенка Д. В., як і `StacksCommand`). Це 3 класи.
 
 #### Поліморфізм
 
@@ -407,11 +432,14 @@
 | 7 | Динамічний (адаптер) | `IComposeRunner`: `DockerComposeCli` (і фейк у тестах) | обробники стеків запускають compose, не знаючи про процеси й CLI ✅ |
 | 8 | Динамічний (адаптер) | ЦА: `ISecretProtector`: `DataProtectionSecretProtector` (і фейк у тестах) | `RegistryCredentialService` шифрує, а `ResolveRegistryAuthStep` розшифровує паролі без залежності від Data Protection ✅ |
 | 9 | Динамічний (адаптер) | `IStackFileStore`: `StackFileStore` (і фейк у тестах) | обробники стеків пишуть файли й прибирають секрети, не знаючи про маніфест, tmpfs і посилання ✅ |
+| 10 | Динамічний (шаблонний метод) | ЦА: `StackCommand.Operation`, `Name`, `SendAsync` | `StackCommandService.ExecuteAsync` перевіряє роль і запускає restart і down через базовий клас, а `StackCommand.ExecuteAsync` однаково перевіряє заборони для стеку й збирає вивід ✅ |
+| 11 | Динамічний (шаблонний метод) | Бот: `StackActionCommand.Action`, `Done` | `BotCommand.ExecuteAsync` виконує `/stack-restart` і `/stack-down` через `CallForestAsync` і `Format` базового `StackActionCommand`, які беруть дію й текст відповіді з підкласу ✅ |
 
 #### Тести (не входять в облік)
 
 - `tests/Agent`, 166 тестів (частина лише на Linux): зіставлення міток compose і станів контейнерів; обробники — `request_id` у результаті, коди помилок, передача таймауту зупинки, відхилення небезпечних id контейнерів; диспетчер — непідтримувані й невідомі команди, `CancelRequest` без результату; backoff — межі, jitter, скидання після довгої сесії; послідовний запис у стрім; сесія — облікові дані в metadata, Hello першим, відповіді на команди, heartbeat, `Unauthenticated`; збереження облікових даних і реєстрація; boot_id; стеки — ім'я стеку, шляхи поза каталогом стеку, дублікати, режими файлів, аргументи compose без `-f` для restart/down, `BUSY`, `NOT_FOUND`, секрети не потрапляють у прогрес і помилки, тимчасовий `DOCKER_CONFIG`; справжній процес (`/bin/sh` замість docker) — вивід обох потоків, код виходу, тайм-аут, скасування, фільтр `CF_*`; запис файлів — дані контейнерів лишаються, застарілі файли й порожні каталоги прибираються, `.prev`, режими 0644/0755, секрет лежить у каталозі секретів, а в каталозі стеку — посилання на нього, вміст секретів не потрапляє на диск, `.prev` секретів до успішного up, посилання після перезавантаження, підкладене контейнером посилання не використовується для запису й видалення; скасування — `CancelRequest` зупиняє команду з `ERROR_CODE_CANCELLED`, дублікат request_id, скасований деплой лишає `.prev` секретів і звільняє стек.
-- `tests/Aggregator`: правило хоста registry для образів і нормалізація адрес, `RegistryCredential`, сервіс кредів (лише адміністратор, заміна логіну, ізоляція середовищ), крок `ResolveRegistryAuthStep` (лише потрібні креди, `${VAR}`, нерозшифровуваний пароль), Data Protection (перезапуск, пошкоджене значення, втрачений key ring), інтеграційний тест: креди через dev-ендпоінт доходять до агента в `DeployStack`; `AgentSession` надсилає `CancelRequest` після тайм-ауту й скасування викликача, але не після результату чи закриття сесії.
+- `tests/Aggregator`: правило хоста registry для образів і нормалізація адрес, `RegistryCredential`, сервіс кредів (лише адміністратор, заміна логіну, ізоляція середовищ), крок `ResolveRegistryAuthStep` (лише потрібні креди, `${VAR}`, нерозшифровуваний пароль), Data Protection (перезапуск, пошкоджене значення, втрачений key ring), інтеграційний тест: креди через dev-ендпоінт доходять до агента в `DeployStack`; `AgentSession` надсилає `CancelRequest` після тайм-ауту й скасування викликача, але не після результату чи закриття сесії; restart і down стеку — роль Operator для restart і Editor для down, невидимий стек — 404 без звернення до агента, системний стек і незавершений деплой — 409, межі тайм-ауту зупинки, помилка compose як результат із виводом, лише останні рядки виводу, скасування викликача не доходить до агента, стек за назвою в середовищі (невідома, некоректна назва й стек іншого середовища — 404), успішний down забуває розгорнутий коміт, невдалий down і restart — ні, `Stack.RecordTakenDown` для системного стеку — помилка; інтеграційні тести: `RestartStack`/`DownStack` з тайм-аутом доходять до агента, вивід і помилка compose у відповіді, `NOT_FOUND` агента — 404, після деплою й down у списку стеків немає розгорнутого коміту; шлюз бота — `ListStacks` з правами на дії, `ControlStack` доходить до агента й повертає помилку compose з виводом, Viewer — `PERMISSION_DENIED`, невідомий стек — `NOT_FOUND`.
+- `tests/DiscordBot`: `/stack-restart` і `/stack-down` — defer до виклику, назва стеку й тайм-аут у запиті, вивід compose в блоці коду, помилка compose як відповідь-помилка, відмова ЦА; `/stacks` — рядки зі станом деплою й доступними діями; підказки стеків за дією; вивід у межах 2000 символів зі зміщенням до останніх рядків, compose не може закрити блок коду; `GrpcForestClient` — перетворення `ListStacks`, поля `ControlStack`, тайм-аут не задано, статус → `ForestException`.
 
 ### Лаба 2
 
@@ -423,6 +451,7 @@
 |---|---|---|
 | Docker.DotNet (`Docker.DotNet.Enhanced`) | `DockerClientBuilder` з визначенням endpoint як у docker CLI; `System.GetVersionAsync`; `Containers.ListContainersAsync`, `StartContainerAsync`, `StopContainerAsync`, `RestartContainerAsync` з `WaitBeforeKillSeconds`; типізовані винятки (`DockerContainerNotFoundException`, `DockerApiException`) | [docs/retro/docker-dotnet.md](docs/retro/docker-dotnet.md) |
 | gRPC для .NET (`Grpc.Net.Client`, `Grpc.Tools`, `Google.Protobuf`) | Клієнт двонапрямленого стріму `Connect`; metadata виклику; коди статусу (`Unauthenticated`, `Unavailable`); HTTP/2 keepalive-пінги через `SocketsHttpHandler`; дескриптори protobuf для зіставлення типу команди з полем `oneof`; фейковий клієнт у тестах через віртуальні методи згенерованого класу | [docs/retro/grpc.md](docs/retro/grpc.md) |
+| Discord.Net | Slash-команди `/stacks`, `/stack-restart`, `/stack-down` (`[SlashCommand]`, `[Summary]`, `[MinValue]`, `[MaxValue]`), власний `AutocompleteHandler` для стеків, що читає вже вибране середовище й назву команди з `IAutocompleteInteraction.Data` | [docs/retro/discord-net.md](docs/retro/discord-net.md) |
 | EF Core | Конфігурація сутності `RegistryCredential` (зовнішній ключ з каскадним видаленням, унікальний індекс «середовище + registry»), міграція `RegistryCredentials` | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
 
 ## Синенко Дмитро Вячеславович (@Dmyt-S)
