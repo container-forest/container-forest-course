@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 224 (179 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
-| Поля | ≥ 15 | 449 (395 полів стану, 54 константи й статичні поля) | ✅ |
-| Нетривіальні методи | ≥ 25 | 275 | ✅ |
+| Класи та подібні типи | ≥ 9 | 246 (196 класів, 23 інтерфейси, 10 структур, 17 enum) | ✅ |
+| Поля | ≥ 15 | 476 (416 полів стану, 60 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 293 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61).
 
 Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
@@ -32,8 +32,8 @@
 
 | Простір імен `ContainerForest.Aggregator.Domain.*` | Типи |
 |---|---|
-| `Common` | `Entity<TId>` (абстрактний клас), `IStronglyTypedId<TSelf>` (інтерфейс), `EnvironmentId`, `RepositoryId`, `StackId`, `DeploymentId`, `UserId`, `RoleAssignmentId`, `NotificationChannelId`, `NotificationRuleId`, `NotificationId` (структури), `DomainException` (абстрактний клас), `DomainValidationException`, `DomainConflictException`, `SecretToken` (статичний клас) |
-| `Environments` | `DockerEnvironment` |
+| `Common` | `Entity<TId>` (абстрактний клас), `IStronglyTypedId<TSelf>` (інтерфейс), `EnvironmentId`, `RepositoryId`, `StackId`, `DeploymentId`, `UserId`, `RoleAssignmentId`, `NotificationChannelId`, `NotificationRuleId`, `NotificationId`, `AgeKeyId` (структури), `DomainException` (абстрактний клас), `DomainValidationException`, `DomainConflictException`, `SecretToken` (статичний клас) |
+| `Environments` | `DockerEnvironment`, `AgeKey` |
 | `Repositories` | `GitRepository` |
 | `Stacks` | `Stack`, `StackName`, `StackFilePath`, `CommitSha`, `BranchName`, `StackOperation` (enum) |
 | `Deployments` | `Deployment`, `DeploymentLogLine`, `ImageReference`, `DeploymentStatus`, `DeploymentTrigger`, `ImagePullPolicy`, `DeploymentLogLevel` (enum) |
@@ -50,17 +50,19 @@
 | `Repositories` | `IGitRepositoryRepository` (інтерфейс), `RepositoryService`, `RepositoryAccessToken` |
 | `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `GitSnapshot`, `GitCredentials`, `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
 | `Notifications` | `INotificationChannelRepository`, `INotificationRuleRepository`, `INotificationRepository` (інтерфейси), `NotificationSettingsService`, `NotificationRuleView`, `NotificationHistoryEntry` |
-| `Deployments.Steps` | `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` |
+| `Secrets` (PR #61) | `IAgeKeyRepository`, `IAgeKeyGenerator`, `ISopsDecryptor` (інтерфейси), `GeneratedAgeKey`, `SopsDecryptionException`, `SopsFile` (статичний клас), `SopsFile.SopsFormat` (enum), `AgeKeyService`, `AgeKeySummary` |
+| `Deployments.Steps` | `SopsDecryptStep` (PR #61), `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` |
 | `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer`, `ContainerLookup` (статичний клас), `ContainerLogService` |
 | — | `DependencyInjection` (статичний клас) |
 
 | Простір імен `ContainerForest.Aggregator.Infrastructure.*` | Типи |
 |---|---|
-| `Persistence` | `AggregatorDbContext`, `StronglyTypedIdConverter<TId>`, `ModelConfigurationBuilderExtensions`, `EfRepository<TEntity, TId>`, `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `DatabaseMigrator`, `DesignTimeDbContextFactory` |
-| `Persistence.Configurations` | `EnvironmentConfiguration`, `RepositoryConfiguration`, `StackConfiguration`, `DeploymentConfiguration`, `UserConfiguration`, `RoleAssignmentConfiguration`, `EnvironmentRoleAssignmentConfiguration`, `StackRoleAssignmentConfiguration`, `DiscordLinkConfiguration`, `NotificationChannelConfiguration`, `NotificationRuleConfiguration`, `NotificationConfiguration` |
+| `Persistence` | `AggregatorDbContext`, `StronglyTypedIdConverter<TId>`, `ModelConfigurationBuilderExtensions`, `EfRepository<TEntity, TId>`, `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `DatabaseMigrator`, `DesignTimeDbContextFactory`, `AgeKeyRepository` |
+| `Persistence.Configurations` | `EnvironmentConfiguration`, `RepositoryConfiguration`, `StackConfiguration`, `DeploymentConfiguration`, `UserConfiguration`, `RoleAssignmentConfiguration`, `EnvironmentRoleAssignmentConfiguration`, `StackRoleAssignmentConfiguration`, `DiscordLinkConfiguration`, `NotificationChannelConfiguration`, `NotificationRuleConfiguration`, `NotificationConfiguration`, `AgeKeyConfiguration` |
 | `Agents` | `AgentGatewayOptions`, `AgentSession`, `AgentSession.PendingRequest`, `AgentRegistry`, `GrpcAgentChannel`, `ContainerLogTail` |
 | `Deployments` | `GitOptions`, `LibGit2SharpGitSource`, `LibGit2SharpGitSource.TreeReader`, `YamlComposeParser`, `DeploymentQueue`, `DeploymentWorker` |
 | `Security` | `InMemoryXmlRepository` |
+| `Secrets` (PR #61) | `SopsOptions`, `CliResult`, `CliUnavailableException`, `CliProcess` (статичний клас), `SopsCli`, `AgeKeygenCli` |
 | — | `DependencyInjection` (статичний клас) |
 
 | Простір імен `ContainerForest.Aggregator.Api.*` | Типи |
@@ -68,8 +70,8 @@
 | `Grpc` | `AgentGatewayService`, `BotGatewayService`, `BotGatewayInterceptor`, `BotGatewayOptions` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
 | `Access` | `ClaimsCurrentUser` |
-| `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` (PR #60), `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
-| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints` |
+| `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` (PR #60), `AgeKeyResponse` (PR #61), `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
+| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints` |
 
 #### Поля
 
@@ -114,6 +116,7 @@
 | `Deployment` (PR #13), `DeploymentLogLine` | `log`; `Sequence`, `At`, `Level`, `Text` | `MaxLogLines`, `MaxLogLineLength` |
 | `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService` | 3 + 3 + 1 + 4 | |
 | `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 11 + 4 | `DeploymentService.HistoryLimit` |
+| SOPS (PR #61): `AgeKey`, `AgeKeyId`, `GeneratedAgeKey`, `AgeKeySummary`, `SourceFile`, `BundleFile`, `SopsOptions`, `CliResult`, `AgeKeyResponse` | `EnvironmentId`, `Recipient`, `ProtectedIdentity`, `CreatedAt`; `Value`; `Recipient`, `Identity`; `Id`, `Recipient`, `CreatedAt`; `IsSecret`; `IsSecret`; `SopsPath`, `AgeKeygenPath`, `Timeout`; `ExitCode`, `Stdout`, `Stderr`; `Id`, `Recipient`, `CreatedAt` | `SopsFile.Marker`, `SopsOptions.SectionName`, `SopsCli.CouldNotRetrieveKey`, `SopsCli.MaxErrorLength`, `AgeKeygenCli.PublicKeyComment`, `AgeKeygenCli.IdentityPrefix` |
 | Приватні репозиторії (PR #60): `RepositoryAccessToken`, `GitCredentials`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` | `UserName`, `Token` у кожному (8) | `RepositoryAccessToken.MaxTokenLength` |
 | `DeploymentOptions`, `GitOptions` | `MaxBundleBytes`, `AgentTimeout`, `MaxConcurrentDeployments`; `CacheDirectory` | `SectionName` в обох |
 | `DeployContext` | `source`, `bundle`, `Deployment`, `Stack`, `Environment`, `Repository` | |
@@ -128,7 +131,7 @@
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (275)
+#### Нетривіальні методи (293)
 
 | Тип | Методи |
 |---|---|
@@ -182,6 +185,7 @@
 | `ContainerLogService` (1) | `ReadAsync`: межі хвоста, видимість середовища й контейнера (роль на стеку або на середовищі), право на логи до звернення до агента |
 | `ContainerLogTail` (3) | `Add` (лише останні рядки, під блокуванням), `ToList`, `ToLine` |
 | `DeployPipeline` (3) | `RunAsync`, `Describe`, `NotifyObserversAsync` (спостерігачі після збереження результату; помилка одного не зупиняє інших) |
+| SOPS (PR #61, 18) | `AgeKey.Create` (формат recipient); `SopsFile.IsEncrypted`, `FormatOf`, `HasJsonMetadata` (метадані sops за форматом); `AgeKeyService.ListAsync` (видимість середовища), `CreateAsync`, `DeleteAsync` (лише ключ свого середовища); `SopsDecryptStep.ExecuteAsync` (лише ключі цільового середовища, файли стають секретними), `Unprotect`; `SopsOptions.IsValid`; `CliProcess.RunAsync` (очищене оточення, stdin/stdout без диска, тайм-аут з убиванням дерева процесів), `ReadAllAsync`; `SopsCli.DecryptAsync` (код виходу → повідомлення), `FirstLine`; `AgeKeygenCli.GenerateAsync`, `Parse`; `AgeKeyRepository.ListByEnvironmentAsync`; `AgeKeyEndpoints.MapAgeKeyEndpoints` |
 | `GitFetchStep`, `BuildBundleStep`, `SendToAgentStep` (4) | `ExecuteAsync` у кожному; `GitFetchStep.Credentials` (розшифрування токена репозиторію) |
 | `ValidateComposeStep` (3) | `ExecuteAsync`, `Check`, `Decode` |
 | `DeploymentService` (4) | `QueueAsync`, `ListAsync`, `GetAsync`, `LoadVisibleStackAsync` |
@@ -235,37 +239,41 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Екрани | ≥ 4 | 5 | ✅ |
-| Елементи керування | ≥ 20 | 49 | ✅ |
-| Контейнерні елементи | ≥ 1 | 4 (2 таблиці, 2 списки) | ✅ |
-| Обробники подій | ≥ 10 | 29 | ✅ |
+| Екрани | ≥ 4 | 6 | ✅ |
+| Елементи керування | ≥ 20 | 55 | ✅ |
+| Контейнерні елементи | ≥ 1 | 6 (4 таблиці, 2 списки) | ✅ |
+| Обробники подій | ≥ 10 | 32 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
+Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60), ключі середовищ (PR #61). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
 
-- **Екрани** (замість запланованих «ключів середовищ», які чекають SOPS, — репозиторії):
+- **Екрани:**
   1. стеки середовища (`src/routes/_authed/stacks/index.tsx`, `/stacks`);
   2. стек: дії й редактор джерела (`src/routes/_authed/stacks/$stackId/index.tsx`, `/stacks/$stackId`);
   3. історія деплоїв стеку (`src/routes/_authed/stacks/$stackId/deployments.tsx`, `/stacks/$stackId/deployments`);
   4. деплой із логом (`src/routes/_authed/deployments/$deploymentId.tsx`, `/deployments/$deploymentId`);
-  5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`).
-- **Елементи керування (49):**
+  5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`);
+  6. ключі середовищ (`src/routes/_authed/keys.tsx`, `/keys`).
+- **Елементи керування (55):**
   - шапка: посилання «Стеки» й «Репозиторії» (друге — лише для адміністраторів);
   - стеки: список «Середовище», кнопка «Новий стек», посилання на стек у кожному рядку, кнопка «Оновити»; діалог «Новий стек» (`src/components/stacks/create-stack-dialog.tsx`): поле назви, список репозиторіїв, поля гілки й compose-файлу, кнопки «Скасувати» й «Створити»;
   - стек: посилання «Усі стеки», кнопки «Деплой», «Деплой з оновленням образів», «Перезапустити», «Down»; редактор джерела: список репозиторіїв, поля гілки й compose-файлу, кнопки «Зберегти» й «Скасувати зміни»; посилання на останні деплої й «Уся історія»;
   - історія: посилання на стек, список «Стан», кнопка «Оновити», посилання на деплой у кожному рядку;
   - деплой: посилання на історію, прапорці «Лише попередження й помилки» і «Стежити за новими рядками»;
   - репозиторії: поле пошуку, кнопка «Додати репозиторій»; діалог (`src/components/stacks/add-repository-dialog.tsx`): поля назви й адреси, прапорець «Приватний репозиторій», поля токена й імені користувача (`src/components/stacks/access-token-fields.tsx`), кнопки «Скасувати» й «Додати»; кнопка «Змінити» в рядку; діалог зміни (`src/components/stacks/edit-repository-dialog.tsx`): поля назви й адреси, «Скасувати», «Зберегти», поля токена й імені користувача, «Задати / Замінити токен», «Видалити токен».
-- **Контейнерні елементи:** таблиця стеків, таблиця деплоїв; список останніх деплоїв стеку, рядки логу деплою.
-- **Обробники подій (29):**
+  - ключі: посилання «Ключі» в шапці, список «Середовище», кнопка «Новий ключ» (з підтвердженням, якщо ключ уже є), у рядку — «Копіювати» й «Видалити», «Копіювати .sops.yaml».
+- **Контейнерні елементи:** таблиця стеків, таблиця деплоїв, таблиця репозиторіїв, таблиця ключів середовища; список останніх деплоїв стеку, рядки логу деплою.
+- **Обробники подій (32):**
   - стеки: вибір середовища (у URL через `validateSearch`), відкриття й закриття діалогу (скидання форми й помилки), вибір репозиторію, надсилання форми (перехід на сторінку стеку), «Оновити»;
   - стек: «Деплой» і «Деплой з оновленням образів» (перехід на сторінку деплою), підтвердження перезапуску й down (вивід compose під кнопками), вибір репозиторію, надсилання джерела, «Скасувати зміни»;
   - історія: вибір стану (у URL), «Оновити»;
   - деплой: прапорці фільтра й стеження;
   - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, прапорець «Приватний» (показує поля токена), надсилання форми (токен лише для приватного); відкриття й закриття діалогу зміни (форми й мутації з токеном скидаються), введення адреси (на льоту: інший хост при заданому токені блокує збереження), збереження назви й адреси, збереження токена (форма й мутація очищаються), підтвердження видалення токена.
+  - ключі: вибір середовища (у URL; без нього — перше видиме), «Новий ключ» (скидає помилку видалення), підтвердження видалення ключа.
 - **Логіка окремо від GUI:**
   - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts`;
   - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса, токен без пробілів, ім'я користувача без двокрапки; токен перевіряється лише для приватного репозиторію), перевірка, що адреса не переносить токен на інший хост (`movesTokenToAnotherHost`), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
+  - ключі: `src/features/keys/model.ts` — поточний ключ (найновіший), правило `.sops.yaml` для середовища з місцем для власного ключа, команди sops; запит `ageKeysQuery`, мутації — `src/api/keys.ts`;
   - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться.
 
 Інтернаціоналізація панелі (PR #36): `src/i18n` (ініціалізація, вибір мови, словники uk/en) і перемикач мови `LanguageSwitcher` — елемент керування з обробником натискання (`src/components/language-switcher.tsx`), у шапці й на екрані входу. Тексти екранів інших учасників перенесено в словники; екрани й елементи лишаються за їхніми авторами.
