@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 258 (206 класів, 25 інтерфейсів, 10 структур, 17 enum) | ✅ |
-| Поля | ≥ 15 | 491 (427 полів стану, 64 константи й статичні поля) | ✅ |
-| Нетривіальні методи | ≥ 25 | 313 | ✅ |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
-| Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
+| Класи та подібні типи | ≥ 9 | 281 (226 класів, 25 інтерфейсів, 10 структур, 20 enum) | ✅ |
+| Поля | ≥ 15 | 526 (460 полів стану, 66 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 338 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 6 (13, 3, 5, 11, 5 і 5 класів) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 7 з клієнтським кодом (5 динамічних, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63); події контейнерів від агента (PR #64; зона агента, але реалізував Петренко Б. О.).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63); події контейнерів від агента (PR #64; зона агента, але реалізував Петренко Б. О.); деплой після push за webhook (PR #65).
 
 Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
@@ -51,6 +51,7 @@
 | `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `SecretRehydrationService` (PR #62), `GitSnapshot`, `GitCredentials`, `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
 | `Notifications` | `INotificationChannelRepository`, `INotificationRuleRepository`, `INotificationRepository` (інтерфейси), `NotificationSettingsService`, `NotificationRuleView`, `NotificationHistoryEntry` |
 | `Live` (PR #63) | `ILiveUpdates` (інтерфейс), `NullLiveUpdates` |
+| `Webhooks` (PR #65) | `GitWebhookProvider`, `HmacWebhookProvider` (абстрактні класи), `GitHubWebhook`, `GiteaWebhook`, `GitLabWebhook`, `WebhookDelivery`, `WebhookEventKind` (enum), `PushEvent`, `WebhookPayloadException`, `PushDeploymentGate`, `PushDeploymentGate.Releaser`, `WebhookRejectedException`, `WebhookOutcome`, `PushStackOutcome` (enum), `PushStackResult`, `WebhookResult`, `PushWebhookService`, `PushFollowUpObserver` |
 | `Secrets` (PR #61) | `IAgeKeyRepository`, `IAgeKeyGenerator`, `ISopsDecryptor` (інтерфейси), `GeneratedAgeKey`, `SopsDecryptionException`, `SopsFile` (статичний клас), `SopsFile.SopsFormat` (enum), `AgeKeyService`, `AgeKeySummary` |
 | `Deployments.Steps` | `SopsDecryptStep` (PR #61), `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` |
 | `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer`, `ContainerLookup` (статичний клас), `ContainerLogService` |
@@ -78,7 +79,8 @@
 | `Access` | `ClaimsCurrentUser` |
 | `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` (PR #60), `AgeKeyResponse` (PR #61), `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
 | `Live` (PR #63) | `ILiveClient` (інтерфейс), `LiveHub`, `SignalRLiveUpdates` |
-| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints` |
+| `Contracts` (PR #65) | `WebhookSecretResponse`, `DeployOnPushRequest`, `WebhookResponse`, `WebhookStackResponse` |
+| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints`, `WebhookEndpoints` (PR #65) |
 
 #### Поля
 
@@ -123,6 +125,7 @@
 | `Deployment` (PR #13), `DeploymentLogLine` | `log`; `Sequence`, `At`, `Level`, `Text` | `MaxLogLines`, `MaxLogLineLength` |
 | `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService` | 3 + 3 + 1 + 4 | |
 | `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 11 + 4 | `DeploymentService.HistoryLimit` |
+| Webhook-деплой (PR #65): `GitRepository`, `Stack`, `StackSummary`, `RepositoryResponse`, `StackResponse`, `WebhookDelivery`, `PushEvent`, `PushDeploymentGate`, `PushDeploymentGate.Releaser`, `PushStackResult`, `WebhookResult`, `WebhookSecretResponse`, `DeployOnPushRequest`, `WebhookResponse`, `WebhookStackResponse` | `ProtectedWebhookSecret`; `DeployOnPush`; `DeployOnPush`; `HasWebhook`; `DeployOnPush`; `Headers`, `Body`; `Branch`, `After`; `mutex`, `pending`; `disposed`; 5; 4; 2; 1; 4; 5 | `GitWebhookProvider.BranchPrefix`, `WebhookEndpoints.MaxBodyBytes` |
 | Події контейнерів (PR #64): `DockerContainerEvent`, `ContainerEventForwarder`, `ContainerEventCoalescer`, `ContainerEventFilter` | `ContainerId`, `Action`, `At`; `RetryDelay`; `pending` | `ContainerEventCoalescer.Window`, `ContainerEventFilter.Relevant`, `ContainerEventFilter.HealthPrefix` |
 | Live-оновлення (PR #63): `LiveChanges`, `AggregatorDbContext`, `ClaimsCurrentUser` | `stacks`, `deployments`, `environments`; `live`; `principal` | `LiveHub.GroupsKey` |
 | SOPS (PR #61): `AgeKey`, `AgeKeyId`, `GeneratedAgeKey`, `AgeKeySummary`, `SourceFile`, `BundleFile`, `SopsOptions`, `CliResult`, `AgeKeyResponse` | `EnvironmentId`, `Recipient`, `ProtectedIdentity`, `CreatedAt`; `Value`; `Recipient`, `Identity`; `Id`, `Recipient`, `CreatedAt`; `IsSecret`; `IsSecret`; `SopsPath`, `AgeKeygenPath`, `Timeout`; `ExitCode`, `Stdout`, `Stderr`; `Id`, `Recipient`, `CreatedAt` | `SopsFile.Marker`, `SopsOptions.SectionName`, `SopsCli.CouldNotRetrieveKey`, `SopsCli.MaxErrorLength`, `AgeKeygenCli.PublicKeyComment`, `AgeKeygenCli.IdentityPrefix` |
@@ -140,7 +143,7 @@
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (313)
+#### Нетривіальні методи (338)
 
 | Тип | Методи |
 |---|---|
@@ -218,6 +221,7 @@
 | `DiscordLinkRepository` (2) | `FindByDiscordUserAsync`, `FindByCodeHashAsync` |
 | `BotGatewayOptions`, `BotGatewayInterceptor` (4) | `IsValid`; `UnaryServerHandler` (перевірка токена), `ToStatus`, `ToStatusCode` |
 | `BotGatewayService` (8) | `GetCaller`, `LinkAccount`, `ListEnvironments`, `ListContainers`, `ControlContainer`, `ActAsAsync` (виклик від імені прив'язаного користувача), `ParseEnvironmentId`, `ToState` |
+| Webhook-деплой (PR #65) (25) | `GitRepository.SetWebhookSecret`, `Stack.SetDeployOnPush` (не для системного стеку); `GitWebhookProvider.ReadPush` (гілка, видалена гілка, не JSON), `FixedTimeEquals`; `HmacWebhookProvider.IsAuthentic` (HMAC-SHA256 за сталий час); `Recognizes` і `EventKind` у `GitHubWebhook`, `GiteaWebhook`, `GitLabWebhook`, `GitLabWebhook.IsAuthentic`; `PushDeploymentGate.EnterAsync`, `Releaser.Dispose`; `PushWebhookService.ReceiveAsync`, `DeployAsync` (стан деплою стеку → черга, пізніше або нічого); `PushFollowUpObserver.DeploymentFinishedAsync`; `RepositoryService.CreateWebhookSecretAsync`, `RemoveWebhookSecretAsync`; `StackService.SetDeployOnPushAsync`; `StackRepository.ListDeployedOnPushAsync`, `DeploymentRepository.FindUnfinishedAsync`; `WebhookEndpoints.MapWebhookEndpoints`, `ReceiveAsync`, `ReadBodyAsync` (ліміт тіла) |
 
 Не враховано як тривіальні: фабрики `Queue*`, `Create*` у `Stack`, `User` і `RoleAssignment`, методи `MakePrivate`, `MakePublic`, `RemoveAccessToken`, `ChangeSource`, `RevokeAdmin`, `Activate`, `Deactivate`, методи-делегатори (`RecordHeartbeat`, `CanSee` для стеку, `CanPerform` для операції, `IsActiveAdmin`, `Equals(object)`, `EfRepository.Add`/`Remove`, `AgentRegistry.IsOnline`, `GrpcAgentChannel.IsOnline`, `NullIfEmpty`, `StronglyTypedIdConverter.Create`, `DeployContext.Info`/`Warn`/`Error`, `DeploymentQueue.Enqueue`, `BuildBundleStep.Kib`), обчислювані властивості (`StackFilePath.Directory`/`FileName`, `ImageReference.IsFloatingLatest`, `StackBundle.TotalBytes`, `Deployment.Log`) і методи структур ID.
 
@@ -228,6 +232,7 @@
 3. `AgentException` → `AgentOfflineException`, `AgentDisconnectedException`, `AgentTimeoutException`, `AgentCommandFailedException`. Це 5 класів.
 4. `EfRepository<TEntity, TId>` → `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`. Це 11 класів.
 5. `ContainerCommand` → `StartContainerCommand`, `StoppingContainerCommand` → `StopContainerCommand`, `RestartContainerCommand`. Це 5 класів на трьох рівнях.
+6. `GitWebhookProvider` → `HmacWebhookProvider` → `GitHubWebhook`, `GiteaWebhook`; `GitWebhookProvider` → `GitLabWebhook` (PR #65). Це 5 класів на трьох рівнях.
 
 #### Поліморфізм
 
@@ -239,6 +244,7 @@
 | 4 | Динамічний (декоратор) | `IContainerCommand`: реалізують `ContainerCommand` і `AuthorizedCommand` | `ContainerCommandService` виконує команду через `IContainerCommand`, а `AuthorizedCommand` викликає вкладену команду, не знаючи її конкретного типу ✅ |
 | 5 | Динамічний (шаблонний метод) | `ContainerCommand.IsAllowedIn`, `SendAsync`, `AllowedOnSystemStack` | `ContainerCommand.ExecuteAsync` виконує однакові перевірки для старту, зупинки й перезапуску, а відмінності бере з перевизначених методів ✅ |
 | 6 | Динамічний (ланцюжок кроків) | `IDeployStep`: реалізують `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` | `DeployPipeline.RunAsync` виконує кроки зі списку `IDeployStep`, не знаючи їхніх типів; новий етап (SOPS) додається без зміни пайплайну ✅ |
+| 7 | Динамічний (абстрактні й віртуальні методи) | `GitWebhookProvider.Recognizes`, `IsAuthentic`, `EventKind`, `ReadPush`; `HmacWebhookProvider` дає спільну перевірку HMAC, підкласи — лише заголовок і префікс підпису (PR #65) | `PushWebhookService.ReceiveAsync` обирає провайдера зі списку `GitWebhookProvider` і перевіряє підпис, не знаючи, GitHub це, Gitea чи GitLab ✅ |
 
 #### Тести (не входять в облік)
 
@@ -252,12 +258,12 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Екрани | ≥ 4 | 6 | ✅ |
-| Елементи керування | ≥ 20 | 55 | ✅ |
+| Елементи керування | ≥ 20 | 60 | ✅ |
 | Контейнерні елементи | ≥ 1 | 6 (4 таблиці, 2 списки) | ✅ |
-| Обробники подій | ≥ 10 | 32 | ✅ |
+| Обробники подій | ≥ 10 | 35 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60), ключі середовищ (PR #61). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
+Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60), ключі середовищ (PR #61), webhook і деплой після push (PR #65). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
 
 - **Екрани:**
   1. стеки середовища (`src/routes/_authed/stacks/index.tsx`, `/stacks`);
@@ -266,25 +272,27 @@
   4. деплой із логом (`src/routes/_authed/deployments/$deploymentId.tsx`, `/deployments/$deploymentId`);
   5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`);
   6. ключі середовищ (`src/routes/_authed/keys.tsx`, `/keys`).
-- **Елементи керування (55):**
+- **Елементи керування (60):**
   - шапка: посилання «Стеки» й «Репозиторії» (друге — лише для адміністраторів);
   - стеки: список «Середовище», кнопка «Новий стек», посилання на стек у кожному рядку, кнопка «Оновити»; діалог «Новий стек» (`src/components/stacks/create-stack-dialog.tsx`): поле назви, список репозиторіїв, поля гілки й compose-файлу, кнопки «Скасувати» й «Створити»;
   - стек: посилання «Усі стеки», кнопки «Деплой», «Деплой з оновленням образів», «Перезапустити», «Down»; редактор джерела: список репозиторіїв, поля гілки й compose-файлу, кнопки «Зберегти» й «Скасувати зміни»; посилання на останні деплої й «Уся історія»;
   - історія: посилання на стек, список «Стан», кнопка «Оновити», посилання на деплой у кожному рядку;
   - деплой: посилання на історію, прапорці «Лише попередження й помилки» і «Стежити за новими рядками»;
-  - репозиторії: поле пошуку, кнопка «Додати репозиторій»; діалог (`src/components/stacks/add-repository-dialog.tsx`): поля назви й адреси, прапорець «Приватний репозиторій», поля токена й імені користувача (`src/components/stacks/access-token-fields.tsx`), кнопки «Скасувати» й «Додати»; кнопка «Змінити» в рядку; діалог зміни (`src/components/stacks/edit-repository-dialog.tsx`): поля назви й адреси, «Скасувати», «Зберегти», поля токена й імені користувача, «Задати / Замінити токен», «Видалити токен».
+  - репозиторії: поле пошуку, кнопка «Додати репозиторій»; діалог (`src/components/stacks/add-repository-dialog.tsx`): поля назви й адреси, прапорець «Приватний репозиторій», поля токена й імені користувача (`src/components/stacks/access-token-fields.tsx`), кнопки «Скасувати» й «Додати»; кнопка «Змінити» в рядку; діалог зміни (`src/components/stacks/edit-repository-dialog.tsx`): поля назви й адреси, «Скасувати», «Зберегти», поля токена й імені користувача, «Задати / Замінити токен», «Видалити токен»; розділ webhook (`src/components/stacks/webhook-section.tsx`, PR #65): «Створити секрет / Новий секрет», «Вимкнути webhook», «Копіювати адресу», «Копіювати секрет»;
+  - стек (PR #65): перемикач «Деплоїти після push».
   - ключі: посилання «Ключі» в шапці, список «Середовище», кнопка «Новий ключ» (з підтвердженням, якщо ключ уже є), у рядку — «Копіювати» й «Видалити», «Копіювати .sops.yaml».
 - **Контейнерні елементи:** таблиця стеків, таблиця деплоїв, таблиця репозиторіїв, таблиця ключів середовища; список останніх деплоїв стеку, рядки логу деплою.
-- **Обробники подій (32):**
+- **Обробники подій (35):**
   - стеки: вибір середовища (у URL через `validateSearch`), відкриття й закриття діалогу (скидання форми й помилки), вибір репозиторію, надсилання форми (перехід на сторінку стеку), «Оновити»;
   - стек: «Деплой» і «Деплой з оновленням образів» (перехід на сторінку деплою), підтвердження перезапуску й down (вивід compose під кнопками), вибір репозиторію, надсилання джерела, «Скасувати зміни»;
   - історія: вибір стану (у URL), «Оновити»;
   - деплой: прапорці фільтра й стеження;
-  - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, прапорець «Приватний» (показує поля токена), надсилання форми (токен лише для приватного); відкриття й закриття діалогу зміни (форми й мутації з токеном скидаються), введення адреси (на льоту: інший хост при заданому токені блокує збереження), збереження назви й адреси, збереження токена (форма й мутація очищаються), підтвердження видалення токена.
+  - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, прапорець «Приватний» (показує поля токена), надсилання форми (токен лише для приватного); відкриття й закриття діалогу зміни (форми й мутації з токеном скидаються), введення адреси (на льоту: інший хост при заданому токені блокує збереження), збереження назви й адреси, збереження токена (форма й мутація очищаються), підтвердження видалення токена; створення секрету webhook (з підтвердженням, якщо він уже є; секрет — лише в стані компонента, мутація скидається), підтвердження вимкнення webhook (PR #65);
+  - стек: перемикач «Деплоїти після push» (PR #65).
   - ключі: вибір середовища (у URL; без нього — перше видиме), «Новий ключ» (скидає помилку видалення), підтвердження видалення ключа.
 - **Логіка окремо від GUI:**
   - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts`;
-  - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса, токен без пробілів, ім'я користувача без двокрапки; токен перевіряється лише для приватного репозиторію), перевірка, що адреса не переносить токен на інший хост (`movesTokenToAnotherHost`), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
+  - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса, токен без пробілів, ім'я користувача без двокрапки; токен перевіряється лише для приватного репозиторію), перевірка, що адреса не переносить токен на інший хост (`movesTokenToAnotherHost`), адреса webhook (`webhookUrl`), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
   - live-оновлення (PR #63): `src/features/live/model.ts` — типи подій хабу, які запити кожна подія робить застарілими, backoff перепідключення, опитування лише без живого з'єднання; з'єднання — `HubProvider` (`src/components/live/hub-provider.tsx`), стан у шапці — `LiveIndicator`; екрани деплоїв не опитують ЦА, поки з'єднання живе;
   - ключі: `src/features/keys/model.ts` — поточний ключ (найновіший), правило `.sops.yaml` для середовища з місцем для власного ключа, команди sops; запит `ageKeysQuery`, мутації — `src/api/keys.ts`;
   - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться.
