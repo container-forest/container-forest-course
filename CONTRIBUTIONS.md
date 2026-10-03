@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 220 (175 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
-| Поля | ≥ 15 | 434 (383 поля стану, 51 константа й статичне поле) | ✅ |
-| Нетривіальні методи | ≥ 25 | 268 | ✅ |
+| Класи та подібні типи | ≥ 9 | 224 (179 класів, 20 інтерфейсів, 9 структур, 16 enum) | ✅ |
+| Поля | ≥ 15 | 449 (395 полів стану, 54 константи й статичні поля) | ✅ |
+| Нетривіальні методи | ≥ 25 | 275 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60).
 
 Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
@@ -47,8 +47,8 @@
 | `Environments` | `IEnvironmentRepository` (інтерфейс), `EnvironmentService`, `EnrollmentToken`, `EnvironmentCreated`, `EnvironmentSummary` |
 | `Access` | `IUserRepository`, `IRoleAssignmentRepository`, `ICurrentUser`, `IDiscordLinkRepository` (інтерфейси), `AccessDeniedException`, `UnauthenticatedException`, `CurrentActor`, `DiscordLinkService`, `DiscordLinkStatus`, `DiscordLinkCode` |
 | `Stacks` | `IStackRepository` (інтерфейс), `StackService`, `StackSummary` |
-| `Repositories` | `IGitRepositoryRepository` (інтерфейс), `RepositoryService` |
-| `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
+| `Repositories` | `IGitRepositoryRepository` (інтерфейс), `RepositoryService`, `RepositoryAccessToken` |
+| `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `GitSnapshot`, `GitCredentials`, `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
 | `Notifications` | `INotificationChannelRepository`, `INotificationRuleRepository`, `INotificationRepository` (інтерфейси), `NotificationSettingsService`, `NotificationRuleView`, `NotificationHistoryEntry` |
 | `Deployments.Steps` | `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` |
 | `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer`, `ContainerLookup` (статичний клас), `ContainerLogService` |
@@ -68,7 +68,7 @@
 | `Grpc` | `AgentGatewayService`, `BotGatewayService`, `BotGatewayInterceptor`, `BotGatewayOptions` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
 | `Access` | `ClaimsCurrentUser` |
-| `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
+| `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` (PR #60), `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
 | `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints` |
 
 #### Поля
@@ -79,7 +79,7 @@
 | 9 структур ID | `Value` у кожній (9) | |
 | `StackName`, `StackFilePath`, `CommitSha`, `BranchName` | `Value` у кожному (4) | `StackName.MaxLength`, `StackFilePath.MaxLength`, `BranchName.MaxLength`, `BranchName.ForbiddenChars` |
 | `DockerEnvironment` | `Name`, `IsPrivate`, `CreatedAt`, `EnrollmentTokenHash`, `EnrollmentTokenExpiresAt`, `AgentSecretHash`, `EnrolledAt`, `AgentVersion`, `LastBootId`, `LastSeenAt` | `MaxNameLength`, `DefaultEnrollmentTokenLifetime` |
-| `GitRepository` | `Name`, `Url`, `ProtectedAccessToken`, `CreatedAt` | `MaxNameLength` |
+| `GitRepository` | `Name`, `Url`, `ProtectedAccessToken`, `AccessUserName`, `CreatedAt` | `MaxNameLength`, `MaxAccessUserNameLength`, `DefaultAccessUserName` |
 | `Stack` | `EnvironmentId`, `Name`, `RepositoryId`, `Branch`, `ComposePath`, `IsSystem`, `CreatedAt`, `DeployedCommit`, `DeployedAt` | |
 | `Deployment` | `StackId`, `Trigger`, `RequestedBy`, `PullPolicy`, `Status`, `Commit`, `QueuedAt`, `StartedAt`, `FinishedAt`, `Error` | `MaxErrorLength` |
 | `User` | `UserName`, `IsAdmin`, `IsActive`, `CreatedAt` | `MinUserNameLength`, `MaxUserNameLength` |
@@ -114,6 +114,7 @@
 | `Deployment` (PR #13), `DeploymentLogLine` | `log`; `Sequence`, `At`, `Level`, `Text` | `MaxLogLines`, `MaxLogLineLength` |
 | `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService` | 3 + 3 + 1 + 4 | |
 | `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 11 + 4 | `DeploymentService.HistoryLimit` |
+| Приватні репозиторії (PR #60): `RepositoryAccessToken`, `GitCredentials`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` | `UserName`, `Token` у кожному (8) | `RepositoryAccessToken.MaxTokenLength` |
 | `DeploymentOptions`, `GitOptions` | `MaxBundleBytes`, `AgentTimeout`, `MaxConcurrentDeployments`; `CacheDirectory` | `SectionName` в обох |
 | `DeployContext` | `source`, `bundle`, `Deployment`, `Stack`, `Environment`, `Repository` | |
 | `DeployPipeline` | `steps`, `observers` | |
@@ -123,11 +124,11 @@
 | `DeploymentQueue`, `AgentSession.PendingRequest` | `channel`; `Completion`, `OnProgress`, `OnLogs` | |
 | Керування середовищами (PR #48): DTO, `EnvironmentSummary` | `CreateEnvironmentRequest` 2, `UpdateEnvironmentRequest` 2, `EnvironmentCreatedResponse` 4, `EnrollmentTokenResponse` 2, `SetRegistryCredentialRequest` 3, `RegistryCredentialResponse` 5; `EnrollmentTokenExpiresAt` | |
 | Сповіщення в панелі (PR #47): `NotificationRuleView`, `NotificationHistoryEntry`, DTO | 3 + 2; `NotificationChannelResponse` 6, `CreateNotificationChannelRequest` 2, `UpdateNotificationChannelRequest` 3, `NotificationRuleResponse` 9, `CreateNotificationRuleRequest` 3, `UpdateNotificationRuleRequest` 2, `NotificationResponse` 12 | `NotificationSettingsService.DefaultHistoryLimit`, `MaxHistoryLimit`; `NotificationEndpoints.SingleKinds` |
-| DTO стеків і деплоїв (PR #45) | `RepositoryResponse` 4, `CreateRepositoryRequest` 2, `CreateStackRequest` 4, `ChangeStackSourceRequest` 3, `StackResponse` 12, `StackCommandResponse` 3, `DeployRequest` 1, `DeploymentResponse` 9, `DeploymentDetailsResponse` 11, `DeploymentLogLineResponse` 3 | |
+| DTO стеків і деплоїв (PR #45, #60) | `RepositoryResponse` 6, `CreateRepositoryRequest` 3, `CreateStackRequest` 4, `ChangeStackSourceRequest` 3, `StackResponse` 12, `StackCommandResponse` 3, `DeployRequest` 1, `DeploymentResponse` 9, `DeploymentDetailsResponse` 11, `DeploymentLogLineResponse` 3 | |
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (268)
+#### Нетривіальні методи (275)
 
 | Тип | Методи |
 |---|---|
@@ -138,7 +139,7 @@
 | `CommitSha` (2) | `Parse`, `TryParse` |
 | `BranchName` (3) | `Parse`, `TryParse`, `IsValid` |
 | `DockerEnvironment` (10) | `Create`, `Rename`, `IssueEnrollmentToken`, `TryEnroll`, `VerifyAgentSecret`, `RecordConnection`, `RevokeAgent`, `TouchLastSeen`, `NormalizeName`, `NormalizeHostname` |
-| `GitRepository` (6) | `Create`, `Rename`, `ChangeUrl`, `SetAccessToken`, `ParseUrl`, `NormalizeName` |
+| `GitRepository` (7) | `Create`, `Rename`, `ChangeUrl` (токен не переходить на інший хост), `SetAccessToken`, `ParseUrl`, `NormalizeName`, `NormalizeAccessUserName` |
 | `Stack` (3) | `EnsureAllows`, `RequiresUpdateHelper`, `RecordDeployment` |
 | `Deployment` (8) | `Start`, `ResolveCommit`, `Succeed`, `Fail`, `Cancel`, `TransitionTo`, `EnsureStatus`, `AppendLog` (ліміт рядків і довжини) |
 | `ImageReference` (1) | `TryParse`: ім'я, тег, digest, порт registry |
@@ -181,16 +182,16 @@
 | `ContainerLogService` (1) | `ReadAsync`: межі хвоста, видимість середовища й контейнера (роль на стеку або на середовищі), право на логи до звернення до агента |
 | `ContainerLogTail` (3) | `Add` (лише останні рядки, під блокуванням), `ToList`, `ToLine` |
 | `DeployPipeline` (3) | `RunAsync`, `Describe`, `NotifyObserversAsync` (спостерігачі після збереження результату; помилка одного не зупиняє інших) |
-| `GitFetchStep`, `BuildBundleStep`, `SendToAgentStep` (3) | `ExecuteAsync` у кожному |
+| `GitFetchStep`, `BuildBundleStep`, `SendToAgentStep` (4) | `ExecuteAsync` у кожному; `GitFetchStep.Credentials` (розшифрування токена репозиторію) |
 | `ValidateComposeStep` (3) | `ExecuteAsync`, `Check`, `Decode` |
 | `DeploymentService` (4) | `QueueAsync`, `ListAsync`, `GetAsync`, `LoadVisibleStackAsync` |
 | `DeploymentRunner` (2) | `RunAsync`, `FailInterruptedAsync` |
 | `DeploymentOptions` (1) | `IsValid` |
-| `RepositoryService`, `StackService` (9) | `CreateAsync`, `ListAsync` (адміністратори й редактори); `CreateAsync`, `ListVisibleAsync`, `GetAsync`, `ChangeSourceAsync` (Editor, не під час деплою), `Summarize` (права на дії), `RepositoryNamesAsync`, `LoadVisibleAsync` |
+| `RepositoryService`, `StackService` (14) | `CreateAsync`, `ListAsync` (адміністратори й редактори), `UpdateAsync`, `SetAccessTokenAsync`, `RemoveAccessTokenAsync`, `SetAccessToken` (перевірка й шифрування токена), `EnsureNameIsFreeAsync`; `CreateAsync`, `ListVisibleAsync`, `GetAsync`, `ChangeSourceAsync` (Editor, не під час деплою), `Summarize` (права на дії), `RepositoryNamesAsync`, `LoadVisibleAsync` |
 | `StackEndpoints` (2) | `MapStackEndpoints`, `MapStackAction` |
 | `NotificationSettingsService` (11) | `ListChannelsAsync`, `CreateChannelAsync`, `UpdateChannelAsync`, `DeleteChannelAsync`, `ListRulesAsync`, `CreateRuleAsync` (область за переданими id, стек чужого середовища), `UpdateRuleAsync`, `DeleteRuleAsync`, `ListHistoryAsync` (назви каналів, межі ліміту), `DescribeAsync`, `ParseDiscordId` |
 | `NotificationEndpoints` (3) | `MapNotificationEndpoints`, `Combine`, `Split` (список видів ↔ прапорці) |
-| `LibGit2SharpGitSource` (10) | `FetchAsync`, `ReadAsync` (по дві версії), `Fetch`, `Read` (коміт з кешу), `WithLockAsync`, `EnsureSupported`; `TreeReader.Read`, `TreeReader.ReadBlob` |
+| `LibGit2SharpGitSource` (10) | `FetchAsync`, `ReadAsync` (по дві версії), `Fetch`, `Read` (коміт з кешу), `WithLockAsync`, `CredentialsFor` (токен лише для хоста репозиторію); `TreeReader.Read`, `TreeReader.ReadBlob` |
 | `YamlComposeParser` (2) | `Parse`, `Find` (з merge-ключами) |
 | `DeploymentWorker` (3) | `StartAsync`, `ExecuteAsync`, `RunAsync` |
 | `InMemoryXmlRepository` (2) | `GetAllElements`, `StoreElement` (копії елементів під блокуванням) |
@@ -235,12 +236,12 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Екрани | ≥ 4 | 5 | ✅ |
-| Елементи керування | ≥ 20 | 37 | ✅ |
+| Елементи керування | ≥ 20 | 49 | ✅ |
 | Контейнерні елементи | ≥ 1 | 4 (2 таблиці, 2 списки) | ✅ |
-| Обробники подій | ≥ 10 | 23 | ✅ |
+| Обробники подій | ≥ 10 | 29 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` — стеки, деплої й репозиторії (PR #45). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
+Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60). Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
 
 - **Екрани** (замість запланованих «ключів середовищ», які чекають SOPS, — репозиторії):
   1. стеки середовища (`src/routes/_authed/stacks/index.tsx`, `/stacks`);
@@ -248,23 +249,23 @@
   3. історія деплоїв стеку (`src/routes/_authed/stacks/$stackId/deployments.tsx`, `/stacks/$stackId/deployments`);
   4. деплой із логом (`src/routes/_authed/deployments/$deploymentId.tsx`, `/deployments/$deploymentId`);
   5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`).
-- **Елементи керування (37):**
+- **Елементи керування (49):**
   - шапка: посилання «Стеки» й «Репозиторії» (друге — лише для адміністраторів);
   - стеки: список «Середовище», кнопка «Новий стек», посилання на стек у кожному рядку, кнопка «Оновити»; діалог «Новий стек» (`src/components/stacks/create-stack-dialog.tsx`): поле назви, список репозиторіїв, поля гілки й compose-файлу, кнопки «Скасувати» й «Створити»;
   - стек: посилання «Усі стеки», кнопки «Деплой», «Деплой з оновленням образів», «Перезапустити», «Down»; редактор джерела: список репозиторіїв, поля гілки й compose-файлу, кнопки «Зберегти» й «Скасувати зміни»; посилання на останні деплої й «Уся історія»;
   - історія: посилання на стек, список «Стан», кнопка «Оновити», посилання на деплой у кожному рядку;
   - деплой: посилання на історію, прапорці «Лише попередження й помилки» і «Стежити за новими рядками»;
-  - репозиторії: поле пошуку, кнопка «Додати репозиторій»; діалог (`src/components/stacks/add-repository-dialog.tsx`): поля назви й адреси, кнопки «Скасувати» й «Додати».
+  - репозиторії: поле пошуку, кнопка «Додати репозиторій»; діалог (`src/components/stacks/add-repository-dialog.tsx`): поля назви й адреси, прапорець «Приватний репозиторій», поля токена й імені користувача (`src/components/stacks/access-token-fields.tsx`), кнопки «Скасувати» й «Додати»; кнопка «Змінити» в рядку; діалог зміни (`src/components/stacks/edit-repository-dialog.tsx`): поля назви й адреси, «Скасувати», «Зберегти», поля токена й імені користувача, «Задати / Замінити токен», «Видалити токен».
 - **Контейнерні елементи:** таблиця стеків, таблиця деплоїв; список останніх деплоїв стеку, рядки логу деплою.
-- **Обробники подій (23):**
+- **Обробники подій (29):**
   - стеки: вибір середовища (у URL через `validateSearch`), відкриття й закриття діалогу (скидання форми й помилки), вибір репозиторію, надсилання форми (перехід на сторінку стеку), «Оновити»;
   - стек: «Деплой» і «Деплой з оновленням образів» (перехід на сторінку деплою), підтвердження перезапуску й down (вивід compose під кнопками), вибір репозиторію, надсилання джерела, «Скасувати зміни»;
   - історія: вибір стану (у URL), «Оновити»;
   - деплой: прапорці фільтра й стеження;
-  - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, надсилання форми.
+  - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, прапорець «Приватний» (показує поля токена), надсилання форми (токен лише для приватного); відкриття й закриття діалогу зміни (форми й мутації з токеном скидаються), введення адреси (на льоту: інший хост при заданому токені блокує збереження), збереження назви й адреси, збереження токена (форма й мутація очищаються), підтвердження видалення токена.
 - **Логіка окремо від GUI:**
   - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts`;
-  - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
+  - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса, токен без пробілів, ім'я користувача без двокрапки; токен перевіряється лише для приватного репозиторію), перевірка, що адреса не переносить токен на інший хост (`movesTokenToAnotherHost`), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
   - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться.
 
 Інтернаціоналізація панелі (PR #36): `src/i18n` (ініціалізація, вибір мови, словники uk/en) і перемикач мови `LanguageSwitcher` — елемент керування з обробником натискання (`src/components/language-switcher.tsx`), у шапці й на екрані входу. Тексти екранів інших учасників перенесено в словники; екрани й елементи лишаються за їхніми авторами.
@@ -277,7 +278,7 @@
 |---|---|---|
 | gRPC для .NET (`Grpc.AspNetCore`, `Grpc.Tools`, `Google.Protobuf`), почато в PR #6 | Генерація коду з `.proto` окремо для сервера й клієнта; двонапрямлений стрім `Connect`; автентифікація через metadata; коди статусу (`Unauthenticated`, `InvalidArgument`, `DeadlineExceeded`); `Grpc.Net.Client` з `TestServer` в інтеграційних тестах | [docs/retro/grpc.md](docs/retro/grpc.md) |
 | EF Core + SQLite, почато в PR #6 | Мапінг доменних класів без окремих моделей; міграції й застосування при старті; конвертери значень для ID і value objects; конвенції (`ConfigureConventions`); TPH-успадкування з дискримінатором; фільтровані унікальні індекси; колація `NOCASE`; owned-колекція (`OwnsMany`) для логу деплою; проєкції без завантаження логу | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
-| LibGit2Sharp, почато в PR #13 | Bare-клон як кеш; fetch однієї гілки з refspec і `Prune`; читання файлів із дерева коміту без checkout (`Tree`, `Blob`, `Mode`); скасування через колбек прогресу | [docs/retro/libgit2sharp.md](docs/retro/libgit2sharp.md) |
+| LibGit2Sharp, почато в PR #13 | Bare-клон як кеш; fetch однієї гілки з refspec і `Prune`; читання файлів із дерева коміту без checkout (`Tree`, `Blob`, `Mode`); скасування через колбек прогресу; HTTPS-автентифікація токеном через `CredentialsProvider` і `UsernamePasswordCredentials` з перевіркою хоста запиту (PR #60) | [docs/retro/libgit2sharp.md](docs/retro/libgit2sharp.md) |
 | YamlDotNet, почато в PR #13 | Дерево вузлів `YamlStream` / `YamlMappingNode` замість типізованої моделі; якорі й merge-ключі; позиція помилки з `YamlException.Start` | [docs/retro/yamldotnet.md](docs/retro/yamldotnet.md) |
 | TanStack Router, почато в PR #23 | Маршрути з файлів з генерацією дерева; pathless layout `_authed` з `beforeLoad` і redirect на 401; контекст роутера; `validateSearch` зі схемою Zod | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
 | TanStack Query, почато в PR #23 | `queryOptions`-фабрики як єдине джерело ключів; `ensureQueryData` у `beforeLoad`; політика повторів без 401 | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
