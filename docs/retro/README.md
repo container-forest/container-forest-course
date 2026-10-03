@@ -12,6 +12,7 @@
 | [gRPC для .NET](grpc.md) | Петренко Б. О., Бояр В. О., Синенко Д. В. |
 | [LibGit2Sharp](libgit2sharp.md) | Петренко Б. О. |
 | [React Hook Form](react-hook-form.md) | Денисенко Л. В. |
+| [SignalR (`@microsoft/signalr`)](signalr.md) | Петренко Б. О. |
 | [TanStack Query](tanstack-query.md) | Петренко Б. О., Денисенко Л. В. |
 | [TanStack Router](tanstack-router.md) | Петренко Б. О., Денисенко Л. В. |
 | [YamlDotNet](yamldotnet.md) | Петренко Б. О. |

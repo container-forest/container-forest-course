@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 247 (197 класів, 23 інтерфейси, 10 структур, 17 enum) | ✅ |
-| Поля | ≥ 15 | 477 (417 полів стану, 60 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 297 | ✅ |
+| Класи та подібні типи | ≥ 9 | 253 (201 клас, 25 інтерфейсів, 10 структур, 17 enum) | ✅ |
+| Поля | ≥ 15 | 483 (422 поля стану, 61 константа й статичне поле) | ✅ |
+| Нетривіальні методи | ≥ 25 | 304 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (13, 3, 5, 11 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 6 з клієнтським кодом (4 динамічні, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63).
 
 Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
@@ -50,6 +50,7 @@
 | `Repositories` | `IGitRepositoryRepository` (інтерфейс), `RepositoryService`, `RepositoryAccessToken` |
 | `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `SecretRehydrationService` (PR #62), `GitSnapshot`, `GitCredentials`, `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
 | `Notifications` | `INotificationChannelRepository`, `INotificationRuleRepository`, `INotificationRepository` (інтерфейси), `NotificationSettingsService`, `NotificationRuleView`, `NotificationHistoryEntry` |
+| `Live` (PR #63) | `ILiveUpdates` (інтерфейс), `NullLiveUpdates` |
 | `Secrets` (PR #61) | `IAgeKeyRepository`, `IAgeKeyGenerator`, `ISopsDecryptor` (інтерфейси), `GeneratedAgeKey`, `SopsDecryptionException`, `SopsFile` (статичний клас), `SopsFile.SopsFormat` (enum), `AgeKeyService`, `AgeKeySummary` |
 | `Deployments.Steps` | `SopsDecryptStep` (PR #61), `GitFetchStep`, `ValidateComposeStep`, `BuildBundleStep`, `SendToAgentStep` |
 | `Containers` | `IContainerCommand` (інтерфейс), `ContainerCommand` (абстрактний клас), `StartContainerCommand`, `StoppingContainerCommand` (абстрактний клас), `StopContainerCommand`, `RestartContainerCommand`, `AuthorizedCommand`, `ContainerCommandService`, `ContainerCommandContext`, `ContainerAction` (enum), `ContainerQueryService`, `VisibleContainer`, `ContainerLookup` (статичний клас), `ContainerLogService` |
@@ -57,7 +58,7 @@
 
 | Простір імен `ContainerForest.Aggregator.Infrastructure.*` | Типи |
 |---|---|
-| `Persistence` | `AggregatorDbContext`, `StronglyTypedIdConverter<TId>`, `ModelConfigurationBuilderExtensions`, `EfRepository<TEntity, TId>`, `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `DatabaseMigrator`, `DesignTimeDbContextFactory`, `AgeKeyRepository` |
+| `Persistence` | `AggregatorDbContext`, `StronglyTypedIdConverter<TId>`, `ModelConfigurationBuilderExtensions`, `EfRepository<TEntity, TId>`, `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `DatabaseMigrator`, `DesignTimeDbContextFactory`, `AgeKeyRepository`, `LiveChanges` (PR #63) |
 | `Persistence.Configurations` | `EnvironmentConfiguration`, `RepositoryConfiguration`, `StackConfiguration`, `DeploymentConfiguration`, `UserConfiguration`, `RoleAssignmentConfiguration`, `EnvironmentRoleAssignmentConfiguration`, `StackRoleAssignmentConfiguration`, `DiscordLinkConfiguration`, `NotificationChannelConfiguration`, `NotificationRuleConfiguration`, `NotificationConfiguration`, `AgeKeyConfiguration` |
 | `Agents` | `AgentGatewayOptions`, `AgentSession`, `AgentSession.PendingRequest`, `AgentRegistry`, `GrpcAgentChannel`, `ContainerLogTail` |
 | `Deployments` | `GitOptions`, `LibGit2SharpGitSource`, `LibGit2SharpGitSource.TreeReader`, `YamlComposeParser`, `DeploymentQueue`, `DeploymentWorker` |
@@ -71,6 +72,7 @@
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
 | `Access` | `ClaimsCurrentUser` |
 | `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` (PR #60), `AgeKeyResponse` (PR #61), `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
+| `Live` (PR #63) | `ILiveClient` (інтерфейс), `LiveHub`, `SignalRLiveUpdates` |
 | `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints` |
 
 #### Поля
@@ -116,6 +118,7 @@
 | `Deployment` (PR #13), `DeploymentLogLine` | `log`; `Sequence`, `At`, `Level`, `Text` | `MaxLogLines`, `MaxLogLineLength` |
 | `GitSnapshot`, `SourceFile`, `ComposeFile`, `ComposeService` | 3 + 3 + 1 + 4 | |
 | `DeploymentSummary`, `StackSummary`, `DeploymentService.VisibleStack` | 9 + 11 + 4 | `DeploymentService.HistoryLimit` |
+| Live-оновлення (PR #63): `LiveChanges`, `AggregatorDbContext`, `ClaimsCurrentUser` | `stacks`, `deployments`, `environments`; `live`; `principal` | `LiveHub.GroupsKey` |
 | SOPS (PR #61): `AgeKey`, `AgeKeyId`, `GeneratedAgeKey`, `AgeKeySummary`, `SourceFile`, `BundleFile`, `SopsOptions`, `CliResult`, `AgeKeyResponse` | `EnvironmentId`, `Recipient`, `ProtectedIdentity`, `CreatedAt`; `Value`; `Recipient`, `Identity`; `Id`, `Recipient`, `CreatedAt`; `IsSecret`; `IsSecret`; `SopsPath`, `AgeKeygenPath`, `Timeout`; `ExitCode`, `Stdout`, `Stderr`; `Id`, `Recipient`, `CreatedAt` | `SopsFile.Marker`, `SopsOptions.SectionName`, `SopsCli.CouldNotRetrieveKey`, `SopsCli.MaxErrorLength`, `AgeKeygenCli.PublicKeyComment`, `AgeKeygenCli.IdentityPrefix` |
 | Приватні репозиторії (PR #60): `RepositoryAccessToken`, `GitCredentials`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` | `UserName`, `Token` у кожному (8) | `RepositoryAccessToken.MaxTokenLength` |
 | `DeploymentOptions`, `GitOptions` | `MaxBundleBytes`, `AgentTimeout`, `MaxConcurrentDeployments`; `CacheDirectory` | `SectionName` в обох |
@@ -131,7 +134,7 @@
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 
-#### Нетривіальні методи (297)
+#### Нетривіальні методи (304)
 
 | Тип | Методи |
 |---|---|
@@ -185,6 +188,7 @@
 | `ContainerLogService` (1) | `ReadAsync`: межі хвоста, видимість середовища й контейнера (роль на стеку або на середовищі), право на логи до звернення до агента |
 | `ContainerLogTail` (3) | `Add` (лише останні рядки, під блокуванням), `ToList`, `ToLine` |
 | `DeployPipeline` (3) | `RunAsync`, `Describe`, `NotifyObserversAsync` (спостерігачі після збереження результату; помилка одного не зупиняє інших) |
+| Live-оновлення (PR #63, 7) | `LiveChanges.Collect` (зміни з трекера, включно з рядками логу деплою), `PublishAsync`, `EnvironmentOfAsync`; `AggregatorDbContext.SaveChangesAsync` (публікація лише після успішного збереження); `GrpcAgentChannel.ChangeContainersAsync` (і після помилки агента, але не офлайн); `LiveHub.SubscribeAsync` (групи видимих середовищ); `SignalRLiveUpdates.SendAsync` (помилка лише логується) |
 | Rehydrate (PR #62, 4) | `Deployment.QueueRehydrate` (коміт закріплений з постановки); `SecretRehydrationService.RehydrateAsync` (лише стеки із секретами, без незавершеного деплою; збереження до постановки в чергу); `GitFetchStep.FetchPinnedAsync` (закріплений коміт, кеш при недоступному git); `AgentGatewayService.RehydrateAsync` (після відкриття сесії, помилка не рве з'єднання) |
 | SOPS (PR #61, 18) | `AgeKey.Create` (формат recipient); `SopsFile.IsEncrypted`, `FormatOf`, `HasJsonMetadata` (метадані sops за форматом); `AgeKeyService.ListAsync` (видимість середовища), `CreateAsync`, `DeleteAsync` (лише ключ свого середовища); `SopsDecryptStep.ExecuteAsync` (лише ключі цільового середовища, файли стають секретними), `Unprotect`; `SopsOptions.IsValid`; `CliProcess.RunAsync` (очищене оточення, stdin/stdout без диска, тайм-аут з убиванням дерева процесів), `ReadAllAsync`; `SopsCli.DecryptAsync` (код виходу → повідомлення), `FirstLine`; `AgeKeygenCli.GenerateAsync`, `Parse`; `AgeKeyRepository.ListByEnvironmentAsync`; `AgeKeyEndpoints.MapAgeKeyEndpoints` |
 | `GitFetchStep`, `BuildBundleStep`, `SendToAgentStep` (4) | `ExecuteAsync` у кожному; `GitFetchStep.Credentials` (розшифрування токена репозиторію) |
@@ -274,6 +278,7 @@
 - **Логіка окремо від GUI:**
   - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts`;
   - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса, токен без пробілів, ім'я користувача без двокрапки; токен перевіряється лише для приватного репозиторію), перевірка, що адреса не переносить токен на інший хост (`movesTokenToAnotherHost`), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
+  - live-оновлення (PR #63): `src/features/live/model.ts` — типи подій хабу, які запити кожна подія робить застарілими, backoff перепідключення, опитування лише без живого з'єднання; з'єднання — `HubProvider` (`src/components/live/hub-provider.tsx`), стан у шапці — `LiveIndicator`; екрани деплоїв не опитують ЦА, поки з'єднання живе;
   - ключі: `src/features/keys/model.ts` — поточний ключ (найновіший), правило `.sops.yaml` для середовища з місцем для власного ключа, команди sops; запит `ageKeysQuery`, мутації — `src/api/keys.ts`;
   - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться.
 
@@ -292,6 +297,7 @@
 | TanStack Router, почато в PR #23 | Маршрути з файлів з генерацією дерева; pathless layout `_authed` з `beforeLoad` і redirect на 401; контекст роутера; `validateSearch` зі схемою Zod | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
 | TanStack Query, почато в PR #23 | `queryOptions`-фабрики як єдине джерело ключів; `ensureQueryData` у `beforeLoad`; політика повторів без 401 | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
 | i18next (`i18next`, `react-i18next`, `i18next-browser-languagedetector`), PR #36 | Вбудовані словники з типізованими ключами (`CustomTypeOptions`); `useTranslation`; детектор мови з `localStorage` і браузера; запасна мова; `changeLanguage` і подія `languageChanged` | [docs/retro/i18next.md](docs/retro/i18next.md) |
+| SignalR, клієнт `@microsoft/signalr` (PR #63; сервер — частина ASP.NET Core) | `HubConnectionBuilder` з `withAutomaticReconnect` і власною політикою затримок; підписка на події (`on`) і виклик методу хабу (`invoke("Resubscribe")`); `onreconnecting` / `onreconnected` / `onclose` для стану з'єднання; `HttpError` для 401/403; на сервері — типізований `Hub<ILiveClient>`, групи, `IHubContext`, `RequireAuthorization` і `CloseOnAuthenticationExpiration`; .NET-клієнт з long polling в інтеграційних тестах | [docs/retro/signalr.md](docs/retro/signalr.md) |
 
 ## Бояр Володимир Олександрович (@volodaboyar1-star)
 
