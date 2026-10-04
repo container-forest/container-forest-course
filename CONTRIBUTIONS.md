@@ -19,7 +19,7 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 306 (248 класів, 26 інтерфейсів, 11 структур, 21 enum) | ✅ |
-| Поля | ≥ 15 | 590 (522 поля стану, 68 констант і статичних полів) | ✅ |
+| Поля | ≥ 15 | 591 (523 поля стану, 68 констант і статичних полів) | ✅ |
 | Нетривіальні методи | ≥ 25 | 391 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 6 (14, 3, 5, 12, 5 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 7 з клієнтським кодом (5 динамічних, 2 статичні) | ✅ |
@@ -94,7 +94,7 @@
 | `DockerEnvironment` | `Name`, `IsPrivate`, `CreatedAt`, `EnrollmentTokenHash`, `EnrollmentTokenExpiresAt`, `AgentSecretHash`, `EnrolledAt`, `AgentVersion`, `LastBootId`, `LastSeenAt` | `MaxNameLength`, `DefaultEnrollmentTokenLifetime` |
 | `GitRepository` | `Name`, `Url`, `ConnectionId` (ADR-0006), `CreatedAt` | `MaxNameLength` |
 | `GitConnection` (ADR-0006) | `Name`, `UrlPrefix`, `ProtectedAccessToken`, `AccessUserName`, `AllowsAllEnvironments`, `environments`, `ProtectedWebhookSecret`, `CreatedAt` | `MaxNameLength`, `MaxAccessUserNameLength`, `DefaultAccessUserName` |
-| Підключення до git-серверів (ADR-0006): `GitConnectionEnvironment`, `GitConnectionId`, `GitOptions`, `GitHostGuard`, `RepositoryActor`, `RepositorySummary`, `GitConnectionSummary`, `ConnectionEnvironments`, `GitAccess`, `GitCredentials`, `PushEvent`, `DeployContext`, `RepositoryResponse`, `UpdateRepositoryRequest`, `GitConnectionResponse`, `CreateGitConnectionRequest`, `UpdateGitConnectionRequest`, `GitConnectionWebhookSecretResponse` | `EnvironmentId`; `Value`; `MaxCacheBytes`, `AllowPrivateHosts`; `resolve`; `Actor`, `Assignments`, `EditorEnvironments`; `Repository`, `Connection`, `CanManage`; `Connection`, `RepositoryCount`, `EnvironmentIds`; `AllEnvironments`, `EnvironmentIds`; `Credentials`, `IsTrustedHost`; `Scope`; `RepositoryUrls`; `Connection`; `ConnectionId`, `ConnectionName`, `CanManage` (замість `HasAccessToken`, `AccessUserName`); `ConnectionId`; 10 полів; 5 полів; 4 поля; `Connection`, `Secret` (46) | `GitAccess.Public` |
+| Підключення до git-серверів (ADR-0006): `GitConnectionEnvironment`, `GitConnectionId`, `GitOptions`, `GitHostGuard`, `RepositoryActor`, `RepositorySummary`, `GitConnectionSummary`, `ConnectionEnvironments`, `GitAccess`, `GitCredentials`, `PushEvent`, `DeployContext`, `RepositoryResponse`, `UpdateRepositoryRequest`, `GitConnectionResponse`, `CreateGitConnectionRequest`, `UpdateGitConnectionRequest`, `GitConnectionWebhookSecretResponse` | `EnvironmentId`; `Value`; `MaxCacheBytes`, `AllowPrivateHosts`; `resolve`; `Actor`, `Assignments`, `EditorEnvironments`; `Repository`, `Connection`, `CanManage`; `Connection`, `RepositoryCount`, `EnvironmentIds`; `AllEnvironments`, `EnvironmentIds`; `Credentials`, `IsTrustedHost`; `Scope`; `RepositoryUrls`; `Connection`; `ConnectionId`, `ConnectionName`, `ConnectionHasWebhook`, `CanManage` (замість `HasAccessToken`, `AccessUserName`); `ConnectionId`; 10 полів; 5 полів; 4 поля; `Connection`, `Secret` (46) | `GitAccess.Public` |
 | `Stack` | `EnvironmentId`, `Name`, `RepositoryId`, `Branch`, `ComposePath`, `IsSystem`, `CreatedAt`, `DeployedCommit`, `DeployedAt`, `DeployedWithSecrets` | |
 | `Deployment` | `StackId`, `Trigger`, `RequestedBy`, `PullPolicy`, `Status`, `Commit`, `QueuedAt`, `StartedAt`, `FinishedAt`, `Error` | `MaxErrorLength` |
 | `User` | `UserName`, `IsAdmin`, `IsActive`, `CreatedAt` | `MinUserNameLength`, `MaxUserNameLength` |
