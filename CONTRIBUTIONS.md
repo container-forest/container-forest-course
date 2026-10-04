@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 306 (248 класів, 26 інтерфейсів, 11 структур, 21 enum) | ✅ |
-| Поля | ≥ 15 | 591 (523 поля стану, 68 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 391 | ✅ |
+| Класи та подібні типи | ≥ 9 | 308 (250 класів, 26 інтерфейсів, 11 структур, 21 enum) | ✅ |
+| Поля | ≥ 15 | 599 (530 полів стану, 69 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 396 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 6 (14, 3, 5, 12, 5 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 7 з клієнтським кодом (5 динамічних, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63); події контейнерів від агента (PR #64; зона агента, але реалізував Петренко Б. О.); деплой після push за webhook (PR #65); підключення до git-серверів, репозиторії для редакторів, захист від SSRF і ліміт git-кешу (ADR-0006); хук деплою для CI (deploy hook).
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63); події контейнерів від агента (PR #64; зона агента, але реалізував Петренко Б. О.); деплой після push за webhook (PR #65); підключення до git-серверів, репозиторії для редакторів, захист від SSRF і ліміт git-кешу (ADR-0006); хук деплою для CI (deploy hook); перезапуск стеку після зміни файлів (у ЦА й на агенті: зона агента, але реалізував Петренко Б. О.).
 
 Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
@@ -83,6 +83,7 @@
 | `Contracts` (ADR-0006) | `GitConnectionResponse`, `CreateGitConnectionRequest`, `UpdateGitConnectionRequest`, `GitAccessTokenRequest` (замість `RepositoryAccessTokenRequest`), `GitConnectionWebhookSecretResponse` |
 | `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints`, `WebhookEndpoints` (PR #65), `GitConnectionEndpoints` (ADR-0006) |
 | `Contracts` (хук деплою) | `DeployHookTokenResponse`, `DeployHookResponse` |
+| Перезапуск після зміни файлів | `StackWriteResult` (агент), `RestartOnFileChangeRequest` |
 
 #### Поля
 
@@ -147,8 +148,9 @@
 | Логи контейнерів (PR #44): `ContainerLogQuery`, `ContainerLogLine`, `ContainerLogTail`, `ContainerLogsResponse`, `ContainerLogLineResponse`, `ContainerLogService` | `TailLines`, `Since`; `At`, `Stream`, `Text`; `capacity`, `lines`, `gate`; `Lines`; `At`, `Stream`, `Text` | `DefaultTailLines`, `MaxTailLines` |
 | `InMemoryXmlRepository` (PR #29) | `elements` | |
 | Хук деплою: `Stack`, `StackSummary`, `StackResponse`, `DeployHookResult`, `DeployHookTokenResponse`, `DeployHookResponse` | `DeployHookTokenHash`; `HasDeployHook`; `HasDeployHook`; `StackId`, `Outcome`, `DeploymentId`; `Stack`, `Token`; `StackId`, `Outcome`, `DeploymentId` (11) | |
+| Перезапуск після зміни файлів: `Stack`, `StackBundle`, `StackSummary`, `StackResponse`, `RestartOnFileChangeRequest`, `StackWriteResult` (агент) | `RestartOnFileChange` у перших чотирьох; `Enabled`; `Directory`, `FilesChanged` (7) | `DeployStackHandler.RestartTimeout` |
 
-#### Нетривіальні методи (391)
+#### Нетривіальні методи (396)
 
 | Тип | Методи |
 |---|---|
@@ -230,6 +232,7 @@
 | `BotGatewayService` (8) | `GetCaller`, `LinkAccount`, `ListEnvironments`, `ListContainers`, `ControlContainer`, `ActAsAsync` (виклик від імені прив'язаного користувача), `ParseEnvironmentId`, `ToState` |
 | Webhook-деплой (PR #65) (25) | `GitRepository.SetWebhookSecret`, `Stack.SetDeployOnPush` (не для системного стеку); `GitWebhookProvider.ReadPush` (гілка, видалена гілка, не JSON), `FixedTimeEquals`; `HmacWebhookProvider.IsAuthentic` (HMAC-SHA256 за сталий час); `Recognizes` і `EventKind` у `GitHubWebhook`, `GiteaWebhook`, `GitLabWebhook`, `GitLabWebhook.IsAuthentic`; `PushDeploymentGate.EnterAsync`, `Releaser.Dispose`; `PushWebhookService.ReceiveAsync`, `DeployAsync` (стан деплою стеку → черга, пізніше або нічого); `PushFollowUpObserver.DeploymentFinishedAsync`; `RepositoryService.CreateWebhookSecretAsync`, `RemoveWebhookSecretAsync`; `StackService.SetDeployOnPushAsync`; `StackRepository.ListDeployedOnPushAsync`, `DeploymentRepository.FindUnfinishedAsync`; `WebhookEndpoints.MapWebhookEndpoints`, `ReceiveAsync`, `ReadBodyAsync` (ліміт тіла) |
 | Хук деплою (9) | `Stack.SetDeployHook` (лише хеш, не для системного стеку), `AcceptsDeployHook` (за сталий час); `PushDeploymentGate.MarkPending` (вимога оновити образи не губиться за push); `DeployHookService.ReceiveAsync` (токен → черга, після поточного деплою або 503); `StackService.CreateDeployHookAsync`, `RemoveDeployHookAsync`, `LoadDeployableAsync`; `WebhookEndpoints.ReceiveDeployHookAsync`, `BearerToken` |
+| Перезапуск після зміни файлів (5) | `Stack.SetRestartOnFileChange` (не для системного стеку); `StackService.SetRestartOnFileChangeAsync`; агент: `StackFileStore.FilesChanged` (порівняння з хостом і маніфестом до запису), `HasContent` (посилання не читається), `DeployStackHandler.RestartIfFilesChangedAsync` |
 
 Не враховано як тривіальні: фабрики `Queue*`, `Create*` у `Stack`, `User` і `RoleAssignment`, методи `MakePrivate`, `MakePublic`, `RemoveAccessToken`, `RemoveDeployHook`, `PushDeploymentGate.TakePending`, `ChangeSource`, `RevokeAdmin`, `Activate`, `Deactivate`, методи-делегатори (`RecordHeartbeat`, `CanSee` для стеку, `CanPerform` для операції, `IsActiveAdmin`, `Equals(object)`, `EfRepository.Add`/`Remove`, `AgentRegistry.IsOnline`, `GrpcAgentChannel.IsOnline`, `NullIfEmpty`, `StronglyTypedIdConverter.Create`, `DeployContext.Info`/`Warn`/`Error`, `DeploymentQueue.Enqueue`, `BuildBundleStep.Kib`), обчислювані властивості (`StackFilePath.Directory`/`FileName`, `ImageReference.IsFloatingLatest`, `StackBundle.TotalBytes`, `Deployment.Log`) і методи структур ID.
 
@@ -266,9 +269,9 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Екрани | ≥ 4 | 7 | ✅ |
-| Елементи керування | ≥ 20 | 86 | ✅ |
+| Елементи керування | ≥ 20 | 87 | ✅ |
 | Контейнерні елементи | ≥ 1 | 7 (5 таблиць, 2 списки) | ✅ |
-| Обробники подій | ≥ 10 | 47 | ✅ |
+| Обробники подій | ≥ 10 | 48 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
 Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60), ключі середовищ (PR #61), webhook і деплой після push (PR #65), підключення до git-серверів (ADR-0006), хук деплою. Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
@@ -281,7 +284,7 @@
   5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`);
   6. ключі середовищ (`src/routes/_authed/keys.tsx`, `/keys`);
   7. підключення до git-серверів (`src/routes/_authed/git-connections.tsx`, `/git-connections`, ADR-0006).
-- **Елементи керування (86):**
+- **Елементи керування (87):**
   - шапка: посилання «Стеки» й «Репозиторії»;
   - стеки: список «Середовище», кнопка «Новий стек», посилання на стек у кожному рядку, кнопка «Оновити»; діалог «Новий стек» (`src/components/stacks/create-stack-dialog.tsx`): поле назви, список репозиторіїв, поля гілки й compose-файлу, кнопки «Скасувати» й «Створити»;
   - стек: посилання «Усі стеки», кнопки «Деплой», «Деплой з оновленням образів», «Перезапустити», «Down»; редактор джерела: список репозиторіїв, поля гілки й compose-файлу, кнопки «Зберегти» й «Скасувати зміни»; посилання на останні деплої й «Уся історія»;
@@ -290,17 +293,18 @@
   - репозиторії: поле пошуку, кнопки «Підключення» (лише адміністраторам) і «Додати репозиторій»; поля діалогу (`src/components/stacks/repository-fields.tsx`, ADR-0006): назва, список «Підключення», адреса; кнопки «Скасувати» й «Додати» (`add-repository-dialog.tsx`); кнопка «Змінити» в рядку (лише для `canManage`); діалог зміни (`edit-repository-dialog.tsx`): ті самі поля, «Скасувати», «Зберегти»; розділ webhook (`src/components/stacks/webhook-section.tsx`): «Створити секрет / Новий секрет», «Вимкнути webhook», «Копіювати адресу», «Копіювати секрет»;
   - підключення (ADR-0006): кнопки «Репозиторії», «Нове підключення», «Змінити» в рядку; поля підключення (`src/components/git-connections/connection-fields.tsx`): назва, префікс адреси, прапорець «Усі середовища», прапорці середовищ; діалог створення (`create-connection-dialog.tsx`): прапорець «З токеном доступу», поля токена й імені користувача (`access-token-fields.tsx`), «Скасувати», «Створити»; діалог зміни (`edit-connection-dialog.tsx`): «Скасувати», «Зберегти», поля токена й імені, «Задати / Замінити токен», «Видалити токен», кнопки webhook організації, «Видалити підключення»;
   - стек (PR #65): перемикач «Деплоїти після push»;
-  - стек, хук деплою (`src/components/stacks/deploy-hook-card.tsx`): «Створити хук / Новий токен», «Вимкнути хук», «Копіювати адресу», «Копіювати токен», «Копіювати команду».
+  - стек, хук деплою (`src/components/stacks/deploy-hook-card.tsx`): «Створити хук / Новий токен», «Вимкнути хук», «Копіювати адресу», «Копіювати токен», «Копіювати команду»;
+  - стек: перемикач «Перезапускати після зміни файлів».
   - ключі: посилання «Ключі» в шапці, список «Середовище», кнопка «Новий ключ» (з підтвердженням, якщо ключ уже є), у рядку — «Копіювати» й «Видалити», «Копіювати .sops.yaml».
 - **Контейнерні елементи:** таблиця стеків, таблиця деплоїв, таблиця репозиторіїв, таблиця підключень (ADR-0006), таблиця ключів середовища; список останніх деплоїв стеку, рядки логу деплою.
-- **Обробники подій (47):**
+- **Обробники подій (48):**
   - стеки: вибір середовища (у URL через `validateSearch`), відкриття й закриття діалогу (скидання форми й помилки), вибір репозиторію, надсилання форми (перехід на сторінку стеку), «Оновити»;
   - стек: «Деплой» і «Деплой з оновленням образів» (перехід на сторінку деплою), підтвердження перезапуску й down (вивід compose під кнопками), вибір репозиторію, надсилання джерела, «Скасувати зміни»;
   - історія: вибір стану (у URL), «Оновити»;
   - деплой: прапорці фільтра й стеження;
   - репозиторії: введення в пошук (у URL), відкриття й закриття діалогу, вибір підключення й введення адреси (на льоту: адреса поза префіксом підключення блокує збереження, ADR-0006), надсилання форми; відкриття й закриття діалогу зміни (форма й мутації скидаються), збереження; створення секрету webhook (з підтвердженням, якщо він уже є; секрет — лише в стані компонента, мутація скидається), підтвердження вимкнення webhook (PR #65);
   - підключення (ADR-0006): відкриття й закриття діалогу створення (форма й мутація з токеном скидаються), прапорець «З токеном доступу», прапорець «Усі середовища» (ховає список), прапорець середовища, надсилання форми; відкриття й закриття діалогу зміни, збереження, збереження токена (форма й мутація очищаються), підтвердження видалення токена, створення й вимкнення webhook організації, підтвердження видалення підключення;
-  - стек: перемикач «Деплоїти після push» (PR #65); створення токена хука деплою (з підтвердженням, якщо він уже є; токен — лише в стані компонента, мутація скидається), підтвердження вимкнення хука.
+  - стек: перемикач «Деплоїти після push» (PR #65); створення токена хука деплою (з підтвердженням, якщо він уже є; токен — лише в стані компонента, мутація скидається), підтвердження вимкнення хука; перемикач «Перезапускати після зміни файлів».
   - ключі: вибір середовища (у URL; без нього — перше видиме), «Новий ключ» (скидає помилку видалення), підтвердження видалення ключа.
 - **Логіка окремо від GUI:**
   - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `gitConnectionsQuery` (ADR-0006), `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts` і `src/api/git-connections.ts`;
