@@ -4,7 +4,7 @@
 
 | Бібліотека | Автори розділів |
 |---|---|
-| [ASP.NET Core Identity](aspnet-identity.md) | Денисенко Л. В. |
+| [ASP.NET Core Identity](aspnet-identity.md) | Денисенко Л. В., Петренко Б. О. |
 | [Discord.Net](discord-net.md) | Синенко Д. В., Бояр В. О. |
 | [Docker.DotNet](docker-dotnet.md) | Бояр В. О. |
 | [EF Core](ef-core.md) | Петренко Б. О., Бояр В. О., Денисенко Л. В. |
