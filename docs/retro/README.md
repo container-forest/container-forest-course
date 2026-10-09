@@ -9,10 +9,12 @@
 | [Docker.DotNet](docker-dotnet.md) | Бояр В. О. |
 | [EF Core](ef-core.md) | Петренко Б. О., Бояр В. О., Денисенко Л. В. |
 | [i18next](i18next.md) | Петренко Б. О. |
+| [Kiota](kiota.md) | Петренко Б. О. |
 | [gRPC для .NET](grpc.md) | Петренко Б. О., Бояр В. О., Синенко Д. В. |
 | [LibGit2Sharp](libgit2sharp.md) | Петренко Б. О. |
 | [React Hook Form](react-hook-form.md) | Денисенко Л. В. |
 | [SignalR (`@microsoft/signalr`)](signalr.md) | Петренко Б. О. |
+| [System.CommandLine](system-commandline.md) | Петренко Б. О. |
 | [TanStack Query](tanstack-query.md) | Петренко Б. О., Денисенко Л. В. |
 | [TanStack Router](tanstack-router.md) | Петренко Б. О., Денисенко Л. В. |
 | [YamlDotNet](yamldotnet.md) | Петренко Б. О. |
