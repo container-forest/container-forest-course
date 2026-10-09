@@ -18,13 +18,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 308 (250 класів, 26 інтерфейсів, 11 структур, 21 enum) | ✅ |
-| Поля | ≥ 15 | 603 (534 поля стану, 69 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 401 | ✅ |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 6 (14, 3, 5, 12, 5 і 5 класів) | ✅ |
+| Класи та подібні типи | ≥ 9 | 327 (267 класів, 27 інтерфейсів, 12 структур, 21 enum) | ✅ |
+| Поля | ≥ 15 | 648 (567 полів стану, 81 константа й статичне поле) | ✅ |
+| Нетривіальні методи | ≥ 25 | 432 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 6 (15, 3, 5, 13, 5 і 5 класів) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 7 з клієнтським кодом (5 динамічних, 2 статичні) | ✅ |
 
-Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63); події контейнерів від агента (PR #64; зона агента, але реалізував Петренко Б. О.); деплой після push за webhook (PR #65); підключення до git-серверів, репозиторії для редакторів, захист від SSRF і ліміт git-кешу (ADR-0006); хук деплою для CI (deploy hook); перезапуск стеку після зміни файлів (у ЦА й на агенті: зона агента, але реалізував Петренко Б. О.); видалення стеку, репозиторію й середовища.
+Код: `src/Aggregator/Domain` (PR #3); `src/Aggregator/Application`, `src/Aggregator/Infrastructure`, `src/Aggregator/Api` (PR #6); команди контейнерів і їх авторизація (PR #8); поточний користувач і фільтрація за видимістю (PR #9); пошук контейнера за префіксом id (PR #12); пайплайн деплою, репозиторії й стеки (PR #13); контракти керування користувачами (PR #15); контракт Discord-бота й прив'язки акаунта (PR #16); gRPC-шлюз бота й прив'язка Discord-акаунта (PR #18); домен сповіщень і їх доставка в `bot.proto` (PR #22); ключі Data Protection у пам'яті під час збірки (PR #29); логи контейнерів у ЦА (PR #44); API репозиторіїв, стеків і деплоїв для панелі (PR #45); коміт деплою до читання файлів (PR #46); API каналів, правил та історії сповіщень (PR #47); керування середовищами, enrollment-токенами, відкликання агента й креди registry в API панелі (PR #48); приватні репозиторії з токеном доступу (PR #60); SOPS: age-ключі середовищ і розшифрування в пайплайні (PR #61); відновлення секретів після перезавантаження хоста (PR #62); live-оновлення через SignalR (PR #63); події контейнерів від агента (PR #64; зона агента, але реалізував Петренко Б. О.); деплой після push за webhook (PR #65); підключення до git-серверів, репозиторії для редакторів, захист від SSRF і ліміт git-кешу (ADR-0006); хук деплою для CI (deploy hook); перезапуск стеку після зміни файлів (у ЦА й на агенті: зона агента, але реалізував Петренко Б. О.); видалення стеку, репозиторію й середовища; API-токени користувачів з обмеженнями й `Actor`/`AccessScope` у перевірці прав (ADR-0007).
 
 Не враховано: `DevUserAuthenticationHandler` (dev-автентифікація лише для `Development`), `Program.cs`, згенерований код міграцій і proto.
 
@@ -32,20 +32,20 @@
 
 | Простір імен `ContainerForest.Aggregator.Domain.*` | Типи |
 |---|---|
-| `Common` | `Entity<TId>` (абстрактний клас), `IStronglyTypedId<TSelf>` (інтерфейс), `EnvironmentId`, `RepositoryId`, `GitConnectionId` (ADR-0006), `StackId`, `DeploymentId`, `UserId`, `RoleAssignmentId`, `NotificationChannelId`, `NotificationRuleId`, `NotificationId`, `AgeKeyId` (структури), `DomainException` (абстрактний клас), `DomainValidationException`, `DomainConflictException`, `SecretToken` (статичний клас) |
+| `Common` | `Entity<TId>` (абстрактний клас), `IStronglyTypedId<TSelf>` (інтерфейс), `EnvironmentId`, `RepositoryId`, `GitConnectionId` (ADR-0006), `StackId`, `DeploymentId`, `UserId`, `RoleAssignmentId`, `NotificationChannelId`, `NotificationRuleId`, `NotificationId`, `AgeKeyId`, `ApiTokenId` (ADR-0007) (структури), `DomainException` (абстрактний клас), `DomainValidationException`, `DomainConflictException`, `SecretToken` (статичний клас) |
 | `Environments` | `DockerEnvironment`, `AgeKey` |
 | `Repositories` | `GitRepository`, `GitConnection`, `GitConnectionEnvironment` (ADR-0006), `GitUrl` (статичний клас, ADR-0006) |
 | `Stacks` | `Stack`, `StackName`, `StackFilePath`, `CommitSha`, `BranchName`, `StackOperation` (enum) |
 | `Deployments` | `Deployment`, `DeploymentLogLine`, `ImageReference`, `DeploymentStatus`, `DeploymentTrigger`, `ImagePullPolicy`, `DeploymentLogLevel` (enum) |
 | `Notifications` | `NotificationChannel`, `NotificationRule`, `NotificationEvent`, `Notification`, `NotificationEventKinds`, `NotificationSeverity`, `NotificationChannelKind`, `NotificationStatus` (enum) |
-| `Access` | `User`, `DiscordLink`, `RoleAssignment` (абстрактний клас), `EnvironmentRoleAssignment`, `StackRoleAssignment`, `AccessPolicy` (статичний клас), `RolePermissions` (статичний клас), `Role`, `Permission` (enum) |
+| `Access` | `User`, `DiscordLink`, `RoleAssignment` (абстрактний клас), `EnvironmentRoleAssignment`, `StackRoleAssignment`, `AccessPolicy` (статичний клас), `RolePermissions` (статичний клас), `Role`, `Permission` (enum); ADR-0007: `Actor`, `AccessScope`, `ApiToken`, `ApiTokenEnvironment` |
 
 | Простір імен `ContainerForest.Aggregator.Application.*` | Типи |
 |---|---|
 | `Common` | `IRepository<TEntity, TId>`, `IUnitOfWork` (інтерфейси), `NotFoundException` |
 | `Agents` | `IAgentChannel` (інтерфейс), `ContainerSnapshot`, `ContainerState` (enum), `ContainerLogQuery`, `ContainerLogLine`, `LogStream` (enum), `AgentException` (абстрактний клас), `AgentOfflineException`, `AgentDisconnectedException`, `AgentTimeoutException`, `AgentCommandFailedException`, `AgentErrorKind` (enum), `AgentCredentials`, `AgentEnrollmentService`, `StackBundle`, `BundleFile` |
 | `Environments` | `IEnvironmentRepository` (інтерфейс), `EnvironmentService`, `EnrollmentToken`, `EnvironmentCreated`, `EnvironmentSummary` |
-| `Access` | `IUserRepository`, `IRoleAssignmentRepository`, `ICurrentUser`, `IDiscordLinkRepository` (інтерфейси), `AccessDeniedException`, `UnauthenticatedException`, `CurrentActor`, `DiscordLinkService`, `DiscordLinkStatus`, `DiscordLinkCode` |
+| `Access` | `IUserRepository`, `IRoleAssignmentRepository`, `ICurrentUser`, `IDiscordLinkRepository` (інтерфейси), `AccessDeniedException`, `UnauthenticatedException`, `CurrentActor`, `DiscordLinkService`, `DiscordLinkStatus`, `DiscordLinkCode`; ADR-0007: `IApiTokenRepository` (інтерфейс), `ApiTokenService`, `ApiTokenAuthenticator`, `CreatedApiToken` |
 | `Stacks` | `IStackRepository` (інтерфейс), `StackService`, `StackSummary` |
 | `Repositories` | `IGitRepositoryRepository`, `IGitConnectionRepository` (інтерфейси), `RepositoryService`, `RepositorySummary`, `RepositoryAccess`, `RepositoryActor`, `GitConnectionService`, `GitConnectionSummary`, `ConnectionEnvironments`, `GitAccessToken` (колишній `RepositoryAccessToken`) (ADR-0006) |
 | `Deployments` | `IDeployStep`, `IGitSource`, `IComposeParser`, `IDeploymentQueue`, `IDeploymentRepository` (інтерфейси), `DeployPipeline`, `DeployContext`, `DeploymentService`, `DeploymentService.VisibleStack`, `DeploymentRunner`, `DeploymentOptions`, `DeploymentFailedException`, `SecretRehydrationService` (PR #62), `GitSnapshot`, `GitCredentials`, `GitAccess` (ADR-0006), `SourceFile`, `ComposeFile`, `ComposeService`, `DeploymentSummary` |
@@ -59,8 +59,8 @@
 
 | Простір імен `ContainerForest.Aggregator.Infrastructure.*` | Типи |
 |---|---|
-| `Persistence` | `AggregatorDbContext`, `StronglyTypedIdConverter<TId>`, `ModelConfigurationBuilderExtensions`, `EfRepository<TEntity, TId>`, `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `GitConnectionRepository` (ADR-0006), `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `DatabaseMigrator`, `DesignTimeDbContextFactory`, `AgeKeyRepository`, `LiveChanges` (PR #63) |
-| `Persistence.Configurations` | `EnvironmentConfiguration`, `RepositoryConfiguration`, `GitConnectionConfiguration` (ADR-0006), `StackConfiguration`, `DeploymentConfiguration`, `UserConfiguration`, `RoleAssignmentConfiguration`, `EnvironmentRoleAssignmentConfiguration`, `StackRoleAssignmentConfiguration`, `DiscordLinkConfiguration`, `NotificationChannelConfiguration`, `NotificationRuleConfiguration`, `NotificationConfiguration`, `AgeKeyConfiguration` |
+| `Persistence` | `AggregatorDbContext`, `StronglyTypedIdConverter<TId>`, `ModelConfigurationBuilderExtensions`, `EfRepository<TEntity, TId>`, `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `GitConnectionRepository` (ADR-0006), `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `DatabaseMigrator`, `DesignTimeDbContextFactory`, `AgeKeyRepository`, `LiveChanges` (PR #63), `ApiTokenRepository` (ADR-0007) |
+| `Persistence.Configurations` | `EnvironmentConfiguration`, `RepositoryConfiguration`, `GitConnectionConfiguration` (ADR-0006), `StackConfiguration`, `DeploymentConfiguration`, `UserConfiguration`, `RoleAssignmentConfiguration`, `EnvironmentRoleAssignmentConfiguration`, `StackRoleAssignmentConfiguration`, `DiscordLinkConfiguration`, `NotificationChannelConfiguration`, `NotificationRuleConfiguration`, `NotificationConfiguration`, `AgeKeyConfiguration`, `ApiTokenConfiguration` (ADR-0007) |
 | `Agents` | `AgentGatewayOptions`, `AgentSession`, `AgentSession.PendingRequest`, `AgentRegistry`, `GrpcAgentChannel`, `ContainerLogTail`, `ContainerEventCoalescer` (PR #64) |
 | `Deployments` | `GitOptions`, `LibGit2SharpGitSource`, `LibGit2SharpGitSource.TreeReader`, `GitHostGuard` (ADR-0006), `YamlComposeParser`, `DeploymentQueue`, `DeploymentWorker` |
 | `Security` | `InMemoryXmlRepository` |
@@ -76,12 +76,13 @@
 |---|---|
 | `Grpc` | `AgentGatewayService`, `BotGatewayService`, `BotGatewayInterceptor`, `BotGatewayOptions` |
 | `ErrorHandling` | `ProblemDetailsExceptionHandler` |
-| `Access` | `ClaimsCurrentUser` |
+| `Access` | `ClaimsCurrentUser`; ADR-0007: `ApiTokenAuthenticationHandler`, `ApiTokenClaims` (статичний клас), `ReadOnlyTokens` (статичний клас), `ReadOnlyTokens.AllowedMetadata` |
 | `Contracts` | `CreateEnvironmentRequest`, `UpdateEnvironmentRequest`, `EnvironmentCreatedResponse`, `EnrollmentTokenResponse`, `SetRegistryCredentialRequest`, `RegistryCredentialResponse` (PR #48), `NotificationChannelResponse`, `CreateNotificationChannelRequest`, `UpdateNotificationChannelRequest`, `NotificationRuleResponse`, `CreateNotificationRuleRequest`, `UpdateNotificationRuleRequest`, `NotificationResponse` (PR #47), `RepositoryResponse`, `CreateRepositoryRequest`, `UpdateRepositoryRequest`, `RepositoryAccessTokenRequest` (PR #60), `AgeKeyResponse` (PR #61), `CreateStackRequest`, `ChangeStackSourceRequest`, `StackResponse`, `StackCommandResponse`, `DeployRequest`, `DeploymentResponse`, `DeploymentDetailsResponse`, `DeploymentLogLineResponse` (PR #45), `ContainerLogsResponse`, `ContainerLogLineResponse`, `LoginRequest`, `MeResponse`, `ChangePasswordRequest`, `UserResponse`, `UserDetailsResponse`, `CreateUserRequest`, `RenameUserRequest`, `SetAdminRequest`, `ResetPasswordRequest`, `RoleAssignmentResponse`, `GrantRoleRequest`, `ChangeRoleRequest`, `RoleScope` (enum), `DiscordLinkResponse`, `DiscordLinkCodeResponse` |
 | `Live` (PR #63) | `ILiveClient` (інтерфейс), `LiveHub`, `SignalRLiveUpdates` |
 | `Contracts` (PR #65) | `WebhookSecretResponse`, `DeployOnPushRequest`, `WebhookResponse`, `WebhookStackResponse` |
 | `Contracts` (ADR-0006) | `GitConnectionResponse`, `CreateGitConnectionRequest`, `UpdateGitConnectionRequest`, `GitAccessTokenRequest` (замість `RepositoryAccessTokenRequest`), `GitConnectionWebhookSecretResponse` |
-| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints`, `WebhookEndpoints` (PR #65), `GitConnectionEndpoints` (ADR-0006) |
+| `Endpoints` | `MeEndpoints`, `DiscordLinkEndpoints`, `StackEndpoints`, `NotificationEndpoints`, `AgeKeyEndpoints`, `WebhookEndpoints` (PR #65), `GitConnectionEndpoints` (ADR-0006), `ApiTokenEndpoints` (ADR-0007) |
+| `Contracts` (ADR-0007) | `ApiTokenResponse`, `CreateApiTokenRequest`, `CreatedApiTokenResponse` |
 | `Contracts` (хук деплою) | `DeployHookTokenResponse`, `DeployHookResponse` |
 | Перезапуск після зміни файлів | `StackWriteResult` (агент), `RestartOnFileChangeRequest` |
 
@@ -151,8 +152,10 @@
 | Перезапуск після зміни файлів: `Stack`, `StackBundle`, `StackSummary`, `StackResponse`, `RestartOnFileChangeRequest`, `StackWriteResult` (агент) | `RestartOnFileChange` у перших чотирьох; `Enabled`; `Directory`, `FilesChanged` (7) | `DeployStackHandler.RestartTimeout` |
 | Видалення стеку: `StackSummary`, `StackResponse` | `CanRemove` в обох (2) | |
 | Видалення репозиторію: `RepositorySummary`, `RepositoryResponse` | `StackCount` в обох (2) | |
+| API-токени (ADR-0007): `ApiToken`, `ApiTokenEnvironment`, `ApiTokenId`, `AccessScope`, `Actor`, `CreatedApiToken`, `ApiTokenService`, `ApiTokenAuthenticationHandler`, `ApiTokenClaims` | `UserId`, `Name`, `TokenHash`, `Hint`, `IsReadOnly`, `IsRestricted`, `environments`, `CreatedAt`, `ExpiresAt`, `LastUsedAt`; `EnvironmentId`; `Value`; `environments`, `IsReadOnly`; `User`, `Scope`; `Token`, `Secret` (18) | `ApiToken.Prefix`, `MaxNameLength`, `HintLength`, `LastUsedPrecision`; `AccessScope.Full`; `ApiTokenService.MaxTokensPerUser`; `SchemeName`, `BearerPrefix`; `TokenId`, `ReadOnly`, `Restricted`, `Environment` (12) |
+| DTO API-токенів (ADR-0007) | `ApiTokenResponse` 9, `CreateApiTokenRequest` 4, `CreatedApiTokenResponse` 2 (15) | |
 
-#### Нетривіальні методи (401)
+#### Нетривіальні методи (432)
 
 | Тип | Методи |
 |---|---|
@@ -172,7 +175,7 @@
 | `User` (4) | `Rename`, `GrantAdmin`, `EnsureActive`, `NormalizeUserName` |
 | `DiscordLink` (4) | `IssueCode`, `HashCode` (регістр, пробіли й дефіси не важать), `CompleteLink` (строк дії коду), `NormalizeDiscordUserName` |
 | `RoleAssignment` та підкласи (8) | `ChangeRole`, `EnsureDefined`; `Covers`, `CoversWholeEnvironment`, `Reveals` в `EnvironmentRoleAssignment` і `StackRoleAssignment` (по 3) |
-| `AccessPolicy` (9) | `EditorEnvironments` (ADR-0006), `CanSee(User, DockerEnvironment, …)`, `EffectiveRole` для стеку, `EffectiveRole` для середовища, `CanPerform` для стеку, `CanPerform` для середовища, `Highest`, `OwnAssignments`, `EnsureSameEnvironment` |
+| `AccessPolicy` (9) | `EditorEnvironments` (ADR-0006; з ADR-0007 звужується до scope токена), `CanSee(Actor, DockerEnvironment, …)`, `EffectiveRole` для стеку, `EffectiveRole` для середовища, `CanPerform` для стеку, `CanPerform` для середовища, `Highest`, `OwnAssignments`, `EnsureSameEnvironment` |
 | `EnvironmentService` (7) | `CreateAsync`, `IssueEnrollmentTokenAsync`, `ListVisibleAsync`, `IssueToken`, `UpdateAsync` (унікальність назви без збігу із собою), `RevokeAgentAsync` (забути облікові дані, потім обірвати з'єднання), `Summarize` |
 | `AgentEnrollmentService` (4) | `EnrollAsync`, `AuthenticateAsync`, `RecordConnectedAsync`, `RecordDisconnectedAsync` |
 | `Application.DependencyInjection` (1) | `AddApplication` |
@@ -201,7 +204,7 @@
 | `StoppingContainerCommand` (1) | `ValidateTimeout` |
 | `AuthorizedCommand` (1) | `ExecuteAsync` |
 | `ContainerCommandService` (2) | `ExecuteAsync`, `Create` |
-| `CurrentActor` (2) | `GetAsync`, `GetAdministratorAsync` |
+| `CurrentActor` (3) | `GetAsync` (з ADR-0007 — `Actor` зі scope облікових даних), `GetAdministratorAsync` (обмежений токен — не адміністратор), `GetSignedInUserAsync` (ADR-0007: лише сесія, не токен) |
 | `ContainerQueryService` (2) | `ListAsync`, `Can` |
 | `ContainerLookup` (1) | `Find`: повний id, точне ім'я, унікальний префікс id |
 | `ContainerLogService` (1) | `ReadAsync`: межі хвоста, видимість середовища й контейнера (роль на стеку або на середовищі), право на логи до звернення до агента |
@@ -237,15 +240,16 @@
 | Перезапуск після зміни файлів (5) | `Stack.SetRestartOnFileChange` (не для системного стеку); `StackService.SetRestartOnFileChangeAsync`; агент: `StackFileStore.FilesChanged` (порівняння з хостом і маніфестом до запису), `HasContent` (посилання не читається), `DeployStackHandler.RestartIfFilesChangedAsync` |
 | Видалення репозиторію й середовища (3) | `RepositoryService.RemoveAsync` (лише без стеків, потім клон із кешу), `EnvironmentService.RemoveAsync` (лише адміністратор і без стеків; каскад ключів, кредів, ролей і правил, агент від'єднується), `LibGit2SharpGitSource.ForgetAsync` (видалення клону під замком репозиторію, помилка лише в лог) |
 | Видалення стеку (2) | `Stack.EnsureRemovable` (не системний і не розгорнутий: його контейнери лишилися б без стеку); `StackService.RemoveAsync` (Editor середовища, без незавершеного деплою; історію, ролі й правила сповіщень забирає каскад) |
+| API-токени (ADR-0007, 30) | `ApiToken.Create` (секрет, хеш, підказка, межі), `HasTokenShape`, `IsExpired`, `RecordUse` (не частіше разу на хвилину), `NormalizeName`; `AccessScope.Reaches`, `Allows` (лише читання); `Actor.IsAdmin` (обмежений scope знімає права адміністратора); `ApiTokenService.ListMineAsync`, `CreateAsync` (лише сесія, ліміт, лише видимі середовища), `RevokeMineAsync`, `RevokeCurrentAsync`, `ListForUserAsync`, `RevokeForUserAsync`, `RemoveAsync`; `ApiTokenAuthenticator.AuthenticateAsync`; `ApiTokenRepository.FindByHashAsync`, `ListForUserAsync`, `CountForUserAsync`; `ApiTokenConfiguration.Configure`; `ApiTokenAuthenticationHandler.HandleAuthenticateAsync`, `HandleChallengeAsync`, `HasBearer`; `ApiTokenClaims.For`, `TokenIdOf`, `IsReadOnly`, `ScopeOf`; `ReadOnlyTokens.UseReadOnlyTokens` (не-GET запит токена лише для читання — 403); `ApiTokenEndpoints.MapApiTokenEndpoints`, `ToResponse` |
 
 Не враховано як тривіальні: фабрики `Queue*`, `Create*` у `Stack`, `User` і `RoleAssignment`, методи `MakePrivate`, `MakePublic`, `RemoveAccessToken`, `RemoveDeployHook`, `PushDeploymentGate.TakePending`, `ChangeSource`, `RevokeAdmin`, `Activate`, `Deactivate`, методи-делегатори (`RecordHeartbeat`, `CanSee` для стеку, `CanPerform` для операції, `IsActiveAdmin`, `Equals(object)`, `EfRepository.Add`/`Remove`, `AgentRegistry.IsOnline`, `GrpcAgentChannel.IsOnline`, `NullIfEmpty`, `StronglyTypedIdConverter.Create`, `DeployContext.Info`/`Warn`/`Error`, `DeploymentQueue.Enqueue`, `BuildBundleStep.Kib`), обчислювані властивості (`StackFilePath.Directory`/`FileName`, `ImageReference.IsFloatingLatest`, `StackBundle.TotalBytes`, `Deployment.Log`) і методи структур ID.
 
 #### Ієрархії успадкування
 
-1. `Entity<TId>` → `DockerEnvironment`, `GitRepository`, `GitConnection` (ADR-0006), `Stack`, `Deployment`, `User`, `DiscordLink`, `NotificationChannel`, `NotificationRule`, `Notification`, `RoleAssignment` → `EnvironmentRoleAssignment`, `StackRoleAssignment`. Це 14 класів на трьох рівнях.
+1. `Entity<TId>` → `DockerEnvironment`, `GitRepository`, `GitConnection` (ADR-0006), `Stack`, `Deployment`, `User`, `DiscordLink`, `NotificationChannel`, `NotificationRule`, `Notification`, `ApiToken` (ADR-0007), `RoleAssignment` → `EnvironmentRoleAssignment`, `StackRoleAssignment`. Це 15 класів на трьох рівнях.
 2. `DomainException` → `DomainValidationException`, `DomainConflictException`. Це 3 класи.
 3. `AgentException` → `AgentOfflineException`, `AgentDisconnectedException`, `AgentTimeoutException`, `AgentCommandFailedException`. Це 5 класів.
-4. `EfRepository<TEntity, TId>` → `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `GitConnectionRepository` (ADR-0006), `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`. Це 12 класів.
+4. `EfRepository<TEntity, TId>` → `EnvironmentRepository`, `StackRepository`, `UserRepository`, `RoleAssignmentRepository`, `GitRepositoryRepository`, `GitConnectionRepository` (ADR-0006), `DeploymentRepository`, `DiscordLinkRepository`, `NotificationChannelRepository`, `NotificationRuleRepository`, `NotificationRepository`, `ApiTokenRepository` (ADR-0007). Це 13 класів.
 5. `ContainerCommand` → `StartContainerCommand`, `StoppingContainerCommand` → `StopContainerCommand`, `RestartContainerCommand`. Це 5 класів на трьох рівнях.
 6. `GitWebhookProvider` → `HmacWebhookProvider` → `GitHubWebhook`, `GiteaWebhook`; `GitWebhookProvider` → `GitLabWebhook` (PR #65). Це 5 класів на трьох рівнях.
 
@@ -263,19 +267,19 @@
 
 #### Тести (не входять в облік)
 
-- `tests/Aggregator/Domain`, 246 тестів (разом із варіантами `Theory`): value objects, код прив'язки Discord, правила й стан-машина сповіщень, посилання на образ (тег, digest, `latest`), реєстрація агента, стан-машина й лог деплою, правила системних стеків, ефективна роль і видимість середовищ; підключення до git-серверів (ADR-0006): префікс адреси за сегментами, `.git` і регістр, відхилення облікових даних і %-кодування, дозволені середовища, токен лише на своєму хості, репозиторій — лише там, де дозволене його підключення; хук деплою приймає лише свій токен і зберігається хешем.
+- `tests/Aggregator/Domain`, 265 тестів (разом із варіантами `Theory`): API-токени й scope (ADR-0007): лише хеш і підказка, межі середовищ, строк дії, запис використання, обмежений токен адміністратора — Editor у своїх середовищах і не адміністратор, лише читання; value objects, код прив'язки Discord, правила й стан-машина сповіщень, посилання на образ (тег, digest, `latest`), реєстрація агента, стан-машина й лог деплою, правила системних стеків, ефективна роль і видимість середовищ; підключення до git-серверів (ADR-0006): префікс адреси за сегментами, `.git` і регістр, відхилення облікових даних і %-кодування, дозволені середовища, токен лише на своєму хості, репозиторій — лише там, де дозволене його підключення; хук деплою приймає лише свій токен і зберігається хешем.
 - `tests/Aggregator/Infrastructure`, 104 тести (разом із варіантами `Theory`): зіставлення запитів і відповідей у `AgentSession`, прогрес команди, закриття сесії, таймаут, заборона паралельного запису в стрім, заміна сесії в `AgentRegistry`; fetch зі справжнього локального git-репозиторію (нові коміти, видалена гілка, права на виконання, символьні посилання, ліміт розміру); розбір compose-файлів з якорями й merge-ключами; токен лише під префіксом підключення (зокрема після перенаправлення), відмова тягнути публічний репозиторій з приватної адреси, видалення клону понад ліміт кешу, класифікація адрес `GitHostGuard` (ADR-0006).
-- `tests/Aggregator/Application`, 299 тестів (разом із варіантами `Theory`): прив'язка Discord-акаунта (код, строк дії, перенесення, деактивований користувач); пайплайн деплою (порядок кроків, перша помилка зупиняє, приховування внутрішніх помилок), кожен крок деплою, права на деплой, один деплой на стек, офлайн-агент, системний стек; пошук контейнера за id, ім'ям і префіксом; команди контейнерів — дозволені стани, системні стеки, таймаут зупинки, права через роль на середовищі й на стеку, адміністратор, деактивований і анонімний користувач, приховування чужого середовища без звернення до агента; `CurrentActor`; фільтрація середовищ і контейнерів за видимістю; керування середовищами лише для адміністраторів; репозиторії й підключення (ADR-0006): редактор додає репозиторій лише під підключенням свого середовища, зміна — лише з правом деплою на кожному стеку, список для редактора, недоступне підключення — 404, підключення змінює лише адміністратор, префікс не лишає репозиторії поза собою, підключення з репозиторіями не видаляється; webhook організації, `NotAllowed` для недозволеного середовища, адреса репозиторію з тіла GitLab; хук деплою: деплой з оновленням образів, однакова відмова, офлайн-агент, виклик під час деплою й після деплою без оновлення образів.
-- `tests/Aggregator/Api`, 101 інтеграційний тест: збереження каналів, правил і сповіщень у SQLite; ЦА в пам'яті, фейковий агент через gRPC, git підмінено заглушкою. Шлюз бота: токен, неприв'язаний акаунт, прив'язка кодом з панелі, перезапуск контейнера від імені прив'язаного користувача, коди статусу для відмови в правах і невідомого середовища. Деплой через агента з прогресом і логом, помилка агента, крок, що зупиняє деплой до агента, конфлікт двох деплоїв, права Viewer. Реєстрація, повторне використання токена, невірний секрет, Hello першим повідомленням, список контейнерів, команда до офлайн-агента, помилка агента, обрив з'єднання, перезапуск контейнера через агента, 403 і 401 для dev-користувачів, `/api/me`, приховане приватне середовище, заборона створювати середовища звичайному користувачу; підключення з токеном, якого немає у відповіді, репозиторій редактора під ним і стек з ним, 404 для середовища поза підключенням, 409 на видалення підключення в користуванні; webhook організації через підключення (ADR-0006); хук деплою: деплой з `PULL_POLICY_ALWAYS`, однаковий 401, права Editor.
+- `tests/Aggregator/Application`, 315 тестів (разом із варіантами `Theory`): API-токени (ADR-0007): автентифікація, відкликання й строк, токен не керує токенами, але відкликає себе, межі лише видимими середовищами, адміністратор відкликає чужі, ліміт кількості; `CurrentActor` зі scope; прив'язка Discord-акаунта (код, строк дії, перенесення, деактивований користувач); пайплайн деплою (порядок кроків, перша помилка зупиняє, приховування внутрішніх помилок), кожен крок деплою, права на деплой, один деплой на стек, офлайн-агент, системний стек; пошук контейнера за id, ім'ям і префіксом; команди контейнерів — дозволені стани, системні стеки, таймаут зупинки, права через роль на середовищі й на стеку, адміністратор, деактивований і анонімний користувач, приховування чужого середовища без звернення до агента; `CurrentActor`; фільтрація середовищ і контейнерів за видимістю; керування середовищами лише для адміністраторів; репозиторії й підключення (ADR-0006): редактор додає репозиторій лише під підключенням свого середовища, зміна — лише з правом деплою на кожному стеку, список для редактора, недоступне підключення — 404, підключення змінює лише адміністратор, префікс не лишає репозиторії поза собою, підключення з репозиторіями не видаляється; webhook організації, `NotAllowed` для недозволеного середовища, адреса репозиторію з тіла GitLab; хук деплою: деплой з оновленням образів, однакова відмова, офлайн-агент, виклик під час деплою й після деплою без оновлення образів.
+- `tests/Aggregator/Api`, 112 інтеграційних тестів: API-токени через HTTP (ADR-0007): Bearer, токен лише для читання (403 на зміни, але може відкликати себе), обмежений токен не бачить інших середовищ і не адміністратор, токен не міняє пароль і не відкриває live-хаб, деактивований користувач; збереження каналів, правил і сповіщень у SQLite; ЦА в пам'яті, фейковий агент через gRPC, git підмінено заглушкою. Шлюз бота: токен, неприв'язаний акаунт, прив'язка кодом з панелі, перезапуск контейнера від імені прив'язаного користувача, коди статусу для відмови в правах і невідомого середовища. Деплой через агента з прогресом і логом, помилка агента, крок, що зупиняє деплой до агента, конфлікт двох деплоїв, права Viewer. Реєстрація, повторне використання токена, невірний секрет, Hello першим повідомленням, список контейнерів, команда до офлайн-агента, помилка агента, обрив з'єднання, перезапуск контейнера через агента, 403 і 401 для dev-користувачів, `/api/me`, приховане приватне середовище, заборона створювати середовища звичайному користувачу; підключення з токеном, якого немає у відповіді, репозиторій редактора під ним і стек з ним, 404 для середовища поза підключенням, 409 на видалення підключення в користуванні; webhook організації через підключення (ADR-0006); хук деплою: деплой з `PULL_POLICY_ALWAYS`, однаковий 401, права Editor.
 
 ### Лаба 2
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Екрани | ≥ 4 | 7 | ✅ |
-| Елементи керування | ≥ 20 | 90 | ✅ |
-| Контейнерні елементи | ≥ 1 | 7 (5 таблиць, 2 списки) | ✅ |
-| Обробники подій | ≥ 10 | 51 | ✅ |
+| Екрани | ≥ 4 | 8 | ✅ |
+| Елементи керування | ≥ 20 | 102 | ✅ |
+| Контейнерні елементи | ≥ 1 | 8 (6 таблиць, 2 списки) | ✅ |
+| Обробники подій | ≥ 10 | 59 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
 Код: `src/Web` — стеки, деплої й репозиторії (PR #45), приватні репозиторії (PR #60), ключі середовищ (PR #61), webhook і деплой після push (PR #65), підключення до git-серверів (ADR-0006), хук деплою. Діалог підтвердження `src/components/confirm-action.tsx` — Денисенко Л. В., тут лише використаний; його кнопки в облік не йдуть.
@@ -287,7 +291,8 @@
   4. деплой із логом (`src/routes/_authed/deployments/$deploymentId.tsx`, `/deployments/$deploymentId`);
   5. репозиторії (`src/routes/_authed/repositories.tsx`, `/repositories`);
   6. ключі середовищ (`src/routes/_authed/keys.tsx`, `/keys`);
-  7. підключення до git-серверів (`src/routes/_authed/git-connections.tsx`, `/git-connections`, ADR-0006).
+  7. підключення до git-серверів (`src/routes/_authed/git-connections.tsx`, `/git-connections`, ADR-0006);
+  8. API-токени (`src/routes/_authed/tokens.tsx`, `/tokens`, ADR-0007).
 - **Елементи керування (90):**
   - шапка: посилання «Стеки» й «Репозиторії»;
   - стеки: список «Середовище», кнопка «Новий стек», посилання на стек у кожному рядку, кнопка «Оновити»; діалог «Новий стек» (`src/components/stacks/create-stack-dialog.tsx`): поле назви, список репозиторіїв, поля гілки й compose-файлу, кнопки «Скасувати» й «Створити»;
@@ -301,7 +306,8 @@
   - стек: перемикач «Перезапускати після зміни файлів», кнопка «Видалити стек» (з підтвердженням; вимкнена, поки стек розгорнутий);
   - діалог зміни репозиторію: «Видалити репозиторій» (вимкнена, поки з нього деплояться стеки); екран середовища (екран Бояра В. О., кнопку реалізував Петренко Б. О.): «Видалити середовище» (лише адміністраторам, вимкнена, поки є стеки).
   - ключі: посилання «Ключі» в шапці, список «Середовище», кнопка «Новий ключ» (з підтвердженням, якщо ключ уже є), у рядку — «Копіювати» й «Видалити», «Копіювати .sops.yaml».
-- **Контейнерні елементи:** таблиця стеків, таблиця деплоїв, таблиця репозиторіїв, таблиця підключень (ADR-0006), таблиця ключів середовища; список останніх деплоїв стеку, рядки логу деплою.
+  - API-токени (ADR-0007): посилання «API-токени» в бічній панелі, кнопка «Новий токен»; діалог (`src/components/tokens/create-token-dialog.tsx`): поле назви, список «Строк дії», прапорці «Лише читання», «Усі середовища» й прапорці середовищ, «Скасувати», «Створити токен», після створення — «Копіювати токен» і «Готово»; «Відкликати» в рядку (`token-table.tsx`) і в картці токенів користувача (`user-tokens-card.tsx`, на екрані користувача Денисенко Л. В.).
+- **Контейнерні елементи:** таблиця API-токенів (ADR-0007; і на екрані, і в картці користувача), таблиця стеків, таблиця деплоїв, таблиця репозиторіїв, таблиця підключень (ADR-0006), таблиця ключів середовища; список останніх деплоїв стеку, рядки логу деплою.
 - **Обробники подій (51):**
   - стеки: вибір середовища (у URL через `validateSearch`), відкриття й закриття діалогу (скидання форми й помилки), вибір репозиторію, надсилання форми (перехід на сторінку стеку), «Оновити»;
   - стек: «Деплой» і «Деплой з оновленням образів» (перехід на сторінку деплою), підтвердження перезапуску й down (вивід compose під кнопками), вибір репозиторію, надсилання джерела, «Скасувати зміни»;
@@ -311,13 +317,15 @@
   - підключення (ADR-0006): відкриття й закриття діалогу створення (форма й мутація з токеном скидаються), прапорець «З токеном доступу», прапорець «Усі середовища» (ховає список), прапорець середовища, надсилання форми; відкриття й закриття діалогу зміни, збереження, збереження токена (форма й мутація очищаються), підтвердження видалення токена, створення й вимкнення webhook організації, підтвердження видалення підключення;
   - стек: перемикач «Деплоїти після push» (PR #65); створення токена хука деплою (з підтвердженням, якщо він уже є; токен — лише в стані компонента, мутація скидається), підтвердження вимкнення хука; перемикач «Перезапускати після зміни файлів»; підтвердження видалення стеку (перехід до списку стеків, потім кеш стеку забувається); підтвердження видалення репозиторію (діалог закривається); підтвердження видалення середовища (перехід до списку середовищ, потім кеш забувається).
   - ключі: вибір середовища (у URL; без нього — перше видиме), «Новий ключ» (скидає помилку видалення), підтвердження видалення ключа.
+  - API-токени (ADR-0007): відкриття й закриття діалогу (токен, форма й мутація скидаються), вибір строку дії, прапорці «Лише читання», «Усі середовища» (ховає список) і середовища, надсилання форми (токен — лише в стані компонента, мутація скидається одразу), підтвердження відкликання власного токена й токена користувача адміністратором.
 - **Логіка окремо від GUI:**
   - запити й кеш — `src/api/queries.ts` (`repositoriesQuery`, `gitConnectionsQuery` (ADR-0006), `stacksQuery`, `stackQuery`, `deploymentsQuery`, `deploymentQuery`), мутації з інвалідацією — `src/api/stacks.ts` і `src/api/git-connections.ts`;
   - підключення (ADR-0006): `src/features/git-connections/model.ts` — схеми форм, правила адреси як у ЦА (`parseGitUrl`, `coversUrl`), адреса webhook організації; у `src/features/stacks/model.ts` — `prefixMissedBy` (адреса поза префіксом обраного підключення);
   - правила форм (Zod, як у ЦА: назва стеку, шлях compose-файлу, https-адреса без облікових даних і %-кодування; токен без пробілів, ім'я користувача без двокрапки — для підключень), адреса webhook (`webhookUrl`), стани деплою, тривалість, короткий коміт, помилки ЦА за статусом → перекладені повідомлення — `src/features/stacks/model.ts`;
   - live-оновлення (PR #63): `src/features/live/model.ts` — типи подій хабу, які запити кожна подія робить застарілими, backoff перепідключення, опитування лише без живого з'єднання; з'єднання — `HubProvider` (`src/components/live/hub-provider.tsx`), стан у шапці — `LiveIndicator`; екрани деплоїв не опитують ЦА, поки з'єднання живе;
   - ключі: `src/features/keys/model.ts` — поточний ключ (найновіший), правило `.sops.yaml` для середовища з місцем для власного ключа, команди sops; запит `ageKeysQuery`, мутації — `src/api/keys.ts`;
-  - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться.
+  - незавершений деплой опитується кожні 2 с (`refetchInterval`), доки не завершиться;
+  - API-токени (ADR-0007): `src/features/tokens/model.ts` — схема форми, строк дії → дата, запит, стан токена (діє, скоро спливе, прострочений), назви середовищ обмеженого токена; запити `apiTokensQuery`, `userApiTokensQuery`, мутації — `src/api/tokens.ts`.
 
 Інтернаціоналізація панелі (PR #36): `src/i18n` (ініціалізація, вибір мови, словники uk/en) і перемикач мови `LanguageSwitcher` — елемент керування з обробником натискання (`src/components/language-switcher.tsx`), у шапці й на екрані входу. Тексти екранів інших учасників перенесено в словники; екрани й елементи лишаються за їхніми авторами.
 
