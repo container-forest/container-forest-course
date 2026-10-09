@@ -5,6 +5,7 @@
 | Бібліотека | Автори розділів |
 |---|---|
 | [ASP.NET Core Identity](aspnet-identity.md) | Денисенко Л. В., Петренко Б. О. |
+| [AspNet.Security.OAuth.Discord](aspnet-security-oauth-discord.md) | Петренко Б. О. |
 | [Discord.Net](discord-net.md) | Синенко Д. В., Бояр В. О. |
 | [Docker.DotNet](docker-dotnet.md) | Бояр В. О. |
 | [EF Core](ef-core.md) | Петренко Б. О., Бояр В. О., Денисенко Л. В. |
