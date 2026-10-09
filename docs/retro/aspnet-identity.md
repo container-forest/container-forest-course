@@ -61,3 +61,48 @@ ASP.NET Identity дає перевірене хешування паролів, 
 
 - https://learn.microsoft.com/aspnet/core/security/authentication/identity
 - https://learn.microsoft.com/aspnet/core/security/authentication/cookie
+
+## Петренко Б. О.
+
+### Які задачі розв'язує бібліотека
+
+- Вхід без пароля з passkey (WebAuthn, ADR-0009): опції для `navigator.credentials.create()` і `get()`, перевірка атестації й асерції, зберігання ключів (`AspNetUserPasskeys`), лічильник підписів.
+- Стан церемонії між опціями й відповіддю браузера (cookie схеми `TwoFactorUserId`).
+
+### Чому саме ця бібліотека
+
+Identity вже вела облікові записи (вхід паролем, lockout, security stamp — розділ Денисенко Л. В.), а в .NET 10 вона вміє WebAuthn сама. Альтернатива — Fido2NetLib на сервері й `@simplewebauthn/browser` у панелі: дві залежності й власні таблиці ключів поруч з Identity. З вбудованими passkeys у панелі вистачає `PublicKeyCredential.parse*OptionsFromJSON()` і `toJSON()` браузера.
+
+### Документація
+
+Сценарій у документації описано для Blazor-шаблону, а не для SPA з REST, тож порядок викликів (`MakePasskeyRequestOptionsAsync` → браузер → `PerformPasskeyAssertionAsync` → `AddOrUpdatePasskeyAsync` → `SignInAsync`) і те, де зберігається стан, довелося з'ясовувати з XML-коментарів і декомпіляції `SignInManager` (ILSpy).
+
+### Проблеми та як їх розв'язали
+
+1. **Порожня міграція.** `IdentityUserContext` бере версію схеми з `IdentityOptions` сервісів застосунку, а не з перевизначуваної властивості `SchemaVersion`; фабрика контексту для `dotnet ef` сервісів не мала, тож модель лишалася версії 1. Фабрика тепер передає ті самі налаштування через `UseApplicationServiceProvider`.
+2. **Власний вхід замість `PasskeySignInAsync`.** Готовий метод не знає про доменного користувача (деактивація живе не в Identity) і завжди створює сесійну cookie. Ми викликаємо `PerformPasskeyAssertionAsync`, перевіряємо lockout і активність, оновлюємо ключ і самі вирішуємо про «Запам'ятати мене».
+3. **Де живе стан.** Identity кладе виклик у cookie двофакторної схеми; її налаштування за замовчуванням (SameSite=Lax) ми привели до решти: `cf_passkey`, Strict, HttpOnly, 5 хвилин.
+4. **Тести без браузера.** WebAuthn вимагає справжнього підпису й CBOR; тести мають програмний автентифікатор (`FakeAuthenticator`: ключ ES256, атестація `none`) і заголовок `Origin`, бо Identity звіряє його з origin відповіді.
+
+### Плюси й мінуси
+
+Плюси:
+
+- WebAuthn без сторонніх бібліотек ні на сервері, ні в панелі;
+- ключі в тій самій базі й моделі, що й паролі; деактивація й lockout працюють однаково;
+- опції — готовий JSON для браузера.
+
+Мінуси:
+
+- документація розрахована на Blazor;
+- версія схеми береться з DI, а не з контексту, що неочевидно для міграцій;
+- немає часу останнього використання ключа: `UserPasskeyInfo` його не зберігає.
+
+### Що змінили б
+
+Так само: вбудовані passkeys. Інакше: одразу писати програмний автентифікатор для тестів, а не розбиратися з форматами після першої невдалої спроби, і від початку вимагати повторного підтвердження (пароль або наявний ключ) для додавання нового ключа.
+
+### Використані ресурси
+
+- WebAuthn Level 3: https://www.w3.org/TR/webauthn-3/
+- `PublicKeyCredential.parseCreationOptionsFromJSON()`: https://developer.mozilla.org/docs/Web/API/PublicKeyCredential/parseCreationOptionsFromJSON_static
