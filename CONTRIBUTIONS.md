@@ -647,8 +647,8 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 104 (91 клас, з них 37 record і 8 статичних; 5 інтерфейсів; 1 структура; 7 enum) | ✅ |
-| Поля | ≥ 15 | 313 (259 полів стану, 54 константи й статичних поля) | ✅ |
-| Нетривіальні методи | ≥ 25 | 140 | ✅ |
+| Поля | ≥ 15 | 317 (262 поля стану, 55 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 142 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (8 класів на трьох рівнях; 8 класів; 7 record; 6 record; 3 record) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 11, усі з клієнтським кодом (9 динамічних, 2 статичних) | ✅ |
 
@@ -723,10 +723,10 @@
 | `DashboardModule` | `dashboard`, `lifetime` | |
 | Поля, додані в чужі класи для `/dashboard` | `ForestStack.CanDeploy` (Бояр В. О.); ЦА: `BotGatewayService.deployments` (Петренко Б. О.) | |
 | ЦА: `DeploymentNotificationDetails` | `DeploymentId`, `StackId`, `StackName`, `Commit`, `PulledImages`, `Error` | |
-| ЦА: `ContainerNotificationDetails` | `ContainerId`, `ContainerName`, `StackName`, `ServiceName`, `ExitCode` | |
-| ЦА: `ContainerObservation` | `EnvironmentId`, `ContainerId`, `Action`, `OccurredAt`, `ContainerName`, `StackName`, `ServiceName`, `StatusText` | |
+| ЦА: `ContainerNotificationDetails` | `ContainerId`, `ContainerName`, `StackName`, `ServiceName`, `ExitCode`, `OutOfMemory` | |
+| ЦА: `ContainerObservation` | `EnvironmentId`, `ContainerId`, `Action`, `OccurredAt`, `ContainerName`, `StackName`, `ServiceName`, `StatusText`, `OutOfMemory` | |
 | ЦА: `ContainerIncidentNotifier` | `dispatcher`, `environments`, `stacks`, `logger` | |
-| ЦА: `ContainerIncidentWatch`, `PendingDeath` | `scopeFactory`, `options`, `time`, `logger`, `gate`, `deaths`, `lastNotified`, `stopping`, `disposed`, `requestedStops`; `Observation`, `Waiting`, `WaitOver` | `DieAction`, `StopAction`, `DestroyAction`, `UnhealthyAction` |
+| ЦА: `ContainerIncidentWatch`, `PendingDeath` | `scopeFactory`, `options`, `time`, `logger`, `gate`, `deaths`, `lastNotified`, `stopping`, `disposed`, `requestedStops`, `outOfMemory`; `Observation`, `Waiting`, `WaitOver` | `DieAction`, `StopAction`, `DestroyAction`, `OutOfMemoryAction`, `UnhealthyAction` |
 | ЦА: `DeploymentOutcome` | `Deployment`, `Stack`, `Environment` | |
 | ЦА: `NotificationFeed`, `Subscription` | `gate`, `current`; `feed`, `ended`, `signals`, `closed`, `WasReplaced` | |
 | ЦА: `NotificationDispatcher` | `rules`, `notifications`, `unitOfWork`, `feed`, `time` | |
@@ -764,10 +764,10 @@
 | `NotificationEmbed` (4) | `Build` (поля за видом деталей, екранування), `Title`, `ColorOf`, `CodeBlock` (ліміт поля 1024, захист від закриття блоку) |
 | `DiscordNotificationPoster` (2) | `PostAsync` (канал не існує або не текстовий, відмова Discord як причина), `Describe` (коди помилок Discord → підказка про права) |
 | ЦА: `DeploymentNotificationDetails` (2) | `Of` (лише успішний чи невдалий деплой свого стеку), `Fits` |
-| ЦА: `ContainerNotificationDetails` (1) | `Fits` (код виходу лише в падінні) |
+| ЦА: `ContainerNotificationDetails` (1) | `Fits` (код виходу й OOM лише в падінні) |
 | ЦА: `ContainerObservation` (2) | `ExitCode` (код виходу зі статусу Docker), `DisplayName` (коротке id контейнера, якого вже немає) |
 | ЦА: `ContainerIncidentNotifier` (2) | `NotifyAsync` (стек — лише керований стек із тим самим іменем, видалене середовище — без сповіщення), `Summarize` |
-| ЦА: `ContainerIncidentWatch` (7) | `Observe` (розбір дій), `Died` (stop щойно перед die — запитана зупинка, інакше чекання), `Requested` (stop або destroy скасовує чекання або запам'ятовується для наступного die), unhealthy — одразу, `NotifyUnlessStoppedAsync` (код 0 — не падіння), `Raise` (не частіше разу за інтервал для контейнера й виду, прибирання старих записів), `NotifyAsync` (власний DI-scope, помилки лише в лог), `Dispose` |
+| ЦА: `ContainerIncidentWatch` (9) | `Observe` (розбір дій), `Died` (stop щойно перед die — запитана зупинка, інакше чекання), `Requested` (stop або destroy скасовує чекання або запам'ятовується для наступного die), `RanOutOfMemory` (oom позначає падіння, що чекає, або запам'ятовується для наступного die), `Remember` (запис події з прибиранням старіших за чекання), unhealthy — одразу, `NotifyUnlessStoppedAsync` (код 0 — не падіння, крім OOM), `Raise` (не частіше разу за інтервал для контейнера й виду, прибирання старих записів), `NotifyAsync` (власний DI-scope, помилки лише в лог), `Dispose` |
 | ЦА: метод, доданий у клас Петренка Б. О. (1) | `AgentGatewayService.ToObservation` (подія агента → спостереження, час події або поточний) |
 | ЦА: `NotificationFeed`, `Subscription` (3) | `Subscribe` (новий підписник завершує попереднього), `Leave`, `WaitAsync` (сигнал або тайм-аут) |
 | ЦА: `NotificationDispatcher` (2) | `DispatchAsync` (правила → одне сповіщення на канал → збереження → пробудження потоку), `Specificity` |
