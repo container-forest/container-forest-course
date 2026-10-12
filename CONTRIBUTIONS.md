@@ -647,8 +647,8 @@
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 107 (94 класи, з них 38 record і 9 статичних; 5 інтерфейсів; 1 структура; 7 enum) | ✅ |
-| Поля | ≥ 15 | 330 (269 полів стану, 61 константа й статичне поле) | ✅ |
-| Нетривіальні методи | ≥ 25 | 148 | ✅ |
+| Поля | ≥ 15 | 332 (271 поле стану, 61 константа й статичне поле) | ✅ |
+| Нетривіальні методи | ≥ 25 | 149 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (8 класів на трьох рівнях; 8 класів; 7 record; 6 record; 3 record) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 11, усі з клієнтським кодом (9 динамічних, 2 статичних) | ✅ |
 
@@ -727,7 +727,7 @@
 | Поля, додані в чужі класи для `/dashboard` | `ForestStack.CanDeploy` (Бояр В. О.); ЦА: `BotGatewayService.deployments` (Петренко Б. О.) | |
 | ЦА: `DeploymentNotificationDetails` | `DeploymentId`, `StackId`, `StackName`, `Commit`, `PulledImages`, `Error` | |
 | ЦА: `ContainerNotificationDetails` | `ContainerId`, `ContainerName`, `StackName`, `ServiceName`, `ExitCode`, `OutOfMemory`, `IsSystem` | |
-| ЦА: `ContainerObservation` | `EnvironmentId`, `ContainerId`, `Action`, `OccurredAt`, `ContainerName`, `StackName`, `ServiceName`, `StatusText`, `OutOfMemory`, `IsSystem` | |
+| ЦА: `ContainerObservation` | `EnvironmentId`, `ContainerId`, `Action`, `OccurredAt`, `ContainerName`, `StackName`, `ServiceName`, `StatusText`, `ReportedExitCode`, `OutOfMemory`, `IsSystem` | |
 | ЦА: `ContainerIncidentNotifier` | `dispatcher`, `environments`, `stacks`, `logger` | |
 | ЦА: `ContainerIncidentWatch`, `PendingDeath` | `scopeFactory`, `options`, `time`, `logger`, `gate`, `deaths`, `lastNotified`, `stopping`, `disposed`, `requestedStops`, `outOfMemory`; `Observation`, `Waiting`, `WaitOver` | `DieAction`, `StopAction`, `DestroyAction`, `OutOfMemoryAction`, `UnhealthyAction` |
 | ЦА: `DeploymentOutcome` | `Deployment`, `Stack`, `Environment` | |
@@ -741,8 +741,9 @@
 | ЦА: `NotificationDeliveryService` | `notifications`, `channels`, `environments`, `unitOfWork`, `time`, `logger` | `ChannelDeletedError`, `ChannelDisabledError`, `UnknownBotError` |
 | ЦА: `NotificationDetailsConverter`, `StoredDetails` | `Type`, `DeploymentId`, `StackId`, `StackName`, `Commit`, `PulledImages`, `Error`, `ContainerId`, `ContainerName`, `ServiceName`, `ExitCode` | `DeploymentType`, `ContainerType`, `Options` |
 | ЦА: поля, додані в класи Петренка Б. О. | `Notification.Details`, `NotificationEvent.Details`; `BotGatewayService.notificationDelivery`, `notificationFeed`, `scopeFactory`; `AgentGatewayService.connectivity`, `containerIncidents` | `BotGatewayService.NotificationRescanInterval` |
+| Агент: поле, додане в тип Бояра В. О. | `DockerContainerEvent.ExitCode` | |
 
-#### Нетривіальні методи (148)
+#### Нетривіальні методи (149)
 
 | Тип | Методи |
 |---|---|
@@ -768,7 +769,7 @@
 | `DiscordNotificationPoster` (2) | `PostAsync` (канал не існує або не текстовий, відмова Discord як причина), `Describe` (коди помилок Discord → підказка про права) |
 | ЦА: `DeploymentNotificationDetails` (2) | `Of` (лише успішний чи невдалий деплой свого стеку), `Fits` |
 | ЦА: `ContainerNotificationDetails` (1) | `Fits` (код виходу й OOM лише в падінні) |
-| ЦА: `ContainerObservation` (2) | `ExitCode` (код виходу зі статусу Docker), `DisplayName` (коротке id контейнера, якого вже немає) |
+| ЦА: `ContainerObservation` (2) | `StatusExitCode` (код виходу зі статусу Docker; `ExitCode` спершу бере код із події агента), `DisplayName` (коротке id контейнера, якого вже немає) |
 | ЦА: `ContainerIncidentNotifier` (2) | `NotifyAsync` (стек — лише керований стек із тим самим іменем, видалене середовище — без сповіщення), `Summarize` |
 | ЦА: `ContainerIncidentWatch` (9) | `Observe` (розбір дій), `Died` (stop щойно перед die — запитана зупинка, інакше чекання), `Requested` (stop або destroy скасовує чекання або запам'ятовується для наступного die), `RanOutOfMemory` (oom позначає падіння, що чекає, або запам'ятовується для наступного die), `Remember` (запис події з прибиранням старіших за чекання), unhealthy — одразу, `NotifyUnlessStoppedAsync` (код 0 — не падіння, крім OOM), `Raise` (не частіше разу за інтервал для контейнера й виду, прибирання старих записів), `NotifyAsync` (власний DI-scope, помилки лише в лог), `Dispose` |
 | ЦА: метод, доданий у клас Петренка Б. О. (1) | `AgentGatewayService.ToObservation` (подія агента → спостереження, час події або поточний) |
@@ -793,6 +794,7 @@
 | `DashboardRenderer` (11) | `Environments`, `Stacks`, `Stack` (кнопки за правами, вимкнені для офлайн-агента й під час дії), `Confirm`, `Error`, `StackSummary`, `Deployed`, `ContainersLine`, `NoticeText` (кінець виводу compose в межах ліміту тексту), `TrimToEnd`, `Pager` (вимкнені кнопки з унікальними id) |
 | `DashboardModule` (2) | `NavigateAsync` (невідомий id → список середовищ), `DrawAsync` (Components V2, без згадок) |
 | ЦА: методи, додані в `BotGatewayService` Петренка Б. О. (2) | `DeployStack` (стек за назвою серед видимих, далі `DeploymentService.QueueAsync`), `GetDeployment` |
+| Агент: метод, доданий у `DockerDotNetGateway` Бояра В. О. (1) | `ExitCodeOf` (атрибут `exitCode` лише події `die`, некоректне значення — немає коду) |
 
 Не враховано як тривіальні: `CallForestAsync` і `Format` у `EnvironmentsCommand` і `LinkCommand` (лише делегують), перевизначення `Action`, `Done`, `StopTimeout`, `Name`, `BotReply.Success` і `Error`, `Markdown.Code`, `ReplyFormatter.Count`, `AutocompleteSource.Matches`, `DependencyInjection.AddCommands` (лише реєстрація), `DiscordInteraction.DeferAsync`, `DiscordBotService.HandleInteractionAsync`, методи slash-команд у `ForestModule` (лише передають опції команді), `DeliveryResult.Failed` і `IsDelivered`, `DiscordNotificationPoster.WaitUntilReadyAsync`, `NotificationFeed.Publish`, `Subscription.Signal`, `Replace`, `Close` і `Dispose`, `DeploymentNotificationDetails.Succeeded`, перевизначення в `BotGatewayInterceptor` для потокових викликів (лише передають у спільну перевірку токена); для `/dashboard` — `Kind` і `Parts` маршрутів, `PartReader.Take`, `PageOf.HasPrevious` і `HasNext`, `StackScreen.CanAct`, `ForestDeployment.IsFinished`, методи `StackOperations` (`NeedsConfirmation`, `IsQueued`, `Label`, `Explanation`), `DashboardService.ConfirmAsync` і `ShortCommit`, `DashboardRenderer.Render` (лише вибір за типом екрана) та його будівельники (`Button`, `Container`, `Text`, `Section`, `Divider`, `Build`, `Emoji`, `Style`), `DashboardModule.OpenAsync` і `ShowAsync`.
 
@@ -831,7 +833,7 @@
   - Команди зі stub-реалізацією `IForestClient`: defer до виклику ЦА, пошук середовища за ім'ям і id, дії з таймаутом і без, помилки ЦА → читабельна відповідь, непередбачена помилка → у лог і загальне повідомлення, скасування без відповіді, `/link`.
   - Форматування: групування за стеками, ліміт 2000 символів, екранування markdown. Автодоповнення: фільтр за введеним текстом і станом, ліміти 25 варіантів і 100 символів, бюджет часу, помилки ЦА.
   - Конфігурація: `ValidateOnStart` для ЦА й Discord, тестовий сервер у `Development`, токен Discord лише з ASCII без пробілів.
-- `tests/Aggregator`, 33 тести сповіщень: деталі деплою (лише успішний і невдалий деплой свого стеку, відповідність виду й стеку); диспетчер (одне сповіщення на канал від найконкретнішого правила, вимкнені канали й інші середовища, пробудження потоку); `DeploymentNotifier` (підсумок в один рядок, скасований деплой без сповіщення, помилка не доходить до пайплайну); доставка (порядок, переміщений канал, без повторного надсилання, прострочені, видалений і вимкнений канал, видалене середовище, звіти); `NotificationFeed` (сигнал, тайм-аут, заміна); інтеграційні тести шлюзу: потік без токена відхиляється, збережені й нові сповіщення з деталями, звіти, повторне надсилання новим потоком і `Aborted` для старого. Агент (12 тестів): затримка перед «офлайн», швидке перепідключення без сповіщень, «знову онлайн» лише після «офлайн», повторний розрив не зсуває початок простою, зупинка ЦА скасовує очікування, правило стеку й видалене середовище; наскрізні тести з агентом, що від'єднується від ЦА в пам'яті. Контейнери (19 тестів): die без stop, stop перед die, stop або destroy після die, давній stop не ховає падіння, код 0, контейнер, уже перезапущений Docker, unhealthy одразу, цикл перезапусків — одне сповіщення за інтервал, зупинка ЦА; керований і некерований стек, контейнер поза compose, код виходу зі статусу; наскрізний тест від події агента до сповіщення в потоці бота з `ContainerDetails`.
+- `tests/Aggregator`, 33 тести сповіщень: деталі деплою (лише успішний і невдалий деплой свого стеку, відповідність виду й стеку); диспетчер (одне сповіщення на канал від найконкретнішого правила, вимкнені канали й інші середовища, пробудження потоку); `DeploymentNotifier` (підсумок в один рядок, скасований деплой без сповіщення, помилка не доходить до пайплайну); доставка (порядок, переміщений канал, без повторного надсилання, прострочені, видалений і вимкнений канал, видалене середовище, звіти); `NotificationFeed` (сигнал, тайм-аут, заміна); інтеграційні тести шлюзу: потік без токена відхиляється, збережені й нові сповіщення з деталями, звіти, повторне надсилання новим потоком і `Aborted` для старого. Агент (12 тестів): затримка перед «офлайн», швидке перепідключення без сповіщень, «знову онлайн» лише після «офлайн», повторний розрив не зсуває початок простою, зупинка ЦА скасовує очікування, правило стеку й видалене середовище; наскрізні тести з агентом, що від'єднується від ЦА в пам'яті. Контейнери (22 тести): die без stop, stop перед die, stop або destroy після die, давній stop не ховає падіння, код 0, контейнер, уже перезапущений Docker (без коду від старого агента, з кодом із події, код 0 із події — не падіння), unhealthy одразу, цикл перезапусків — одне сповіщення за інтервал, зупинка ЦА; керований і некерований стек, контейнер поза compose, код виходу зі статусу; наскрізні тести від події агента до сповіщення в потоці бота з `ContainerDetails` і до запису з кодом із події. Агент (`tests/Agent`, 2 нові тести й перевірки в 2 наявних): `ExitCodeOf` (лише `die`, некоректне значення й відсутній атрибут), `ContainerEventForwarder` пересилає код і не ставить його без коду.
 - `tests/Aggregator`, 2 тести шлюзу для `/dashboard`: адміністратор деплоїть стек через бота (команда агенту з `pull`, другий деплой під час першого — `FAILED_PRECONDITION`, `GetDeployment` до `Succeeded` з комітом); Viewer не бачить `can_deploy` і отримує `PERMISSION_DENIED`, невідомий стек і деплой — `NOT_FOUND`, некоректний id — `INVALID_ARGUMENT`.
 
 ### Лаба 2
