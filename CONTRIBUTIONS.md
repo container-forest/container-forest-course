@@ -863,15 +863,15 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 29 (24 класи, з них 4 статичні й 3 абстрактні; 4 record; 1 інтерфейс) | ✅ |
-| Поля | ≥ 15 | 49 (35 полів стану, 14 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 38 | ✅ |
-| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 2 (8 класів на трьох рівнях; 4 класи) | ✅ |
-| Поліморфізм | ≥ 3, серед них статичний і динамічний | 4 з клієнтським кодом (3 динамічні, 1 статичний) | ✅ |
+| Класи та подібні типи | ≥ 9 | 64 (36 класів, з них 8 статичних і 3 абстрактні; 18 record, з них 1 абстрактний; 1 record struct; 4 інтерфейси; 5 переліків) | ✅ |
+| Поля | ≥ 15 | 146 (126 полів стану, 20 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 57 | ✅ |
+| Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 3 (8 класів на трьох рівнях; 4 класи; 8 record на двох рівнях) | ✅ |
+| Поліморфізм | ≥ 3, серед них статичний і динамічний | 8 з клієнтським кодом (6 динамічних, 2 статичні) | ✅ |
 
-Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR #33).
+Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR #33); журнал аудиту (PR «feat: audit log»).
 
-Не враховано: зміни в `Program.cs`, `AggregatorDbContext`, `ProblemDetailsExceptionHandler` і `UserRepository` (спільний код; у `UserRepository` — однорядкові запити `ListAsync` і `CountActiveAdministratorsAsync`), міграція `Accounts`, згенерований `schema.gen.ts`.
+Не враховано: зміни в `Program.cs`, `AggregatorDbContext`, `ProblemDetailsExceptionHandler` і `UserRepository` (спільний код; у `UserRepository` — однорядкові запити `ListAsync` і `CountActiveAdministratorsAsync`), міграції `Accounts` і `AuditLog`, згенеровані `schema.gen.ts` і `routeTree.gen.ts`. Для аудиту — виклики журналу, додані в сервіси інших учасників (`ApiTokenService`, `ContainerCommandService`, `StackCommandService`, `StackService`, `DeploymentService`, `EnvironmentService`, `SopsSecretsService`, `DiscordLinkService`, `PasskeySignIn`, `DiscordSignIn`): ці класи й методи лишаються за їхніми авторами, окремо враховано лише новий метод `ApiTokenService.LimitsOf`.
 
 #### Класи та подібні типи
 
@@ -881,6 +881,11 @@
 | `Application.Access` | `PasswordRejectedException`, `IAccountStore` (інтерфейс), `UserActionContext` (record), `UserAccountAction`, `AdministratorRemovingAction` (абстрактні класи), `DeactivateUserAction`, `RevokeAdminAction`, `ActivateUserAction`, `GrantAdminAction`, `RenameUserAction`, `ResetPasswordAction`, `UnlockUserAction`, `UserManagementService`, `UserSummary`, `RoleAssignmentView`, `UserDetails` (record) |
 | `Api.Access` | `AuthenticationSetup` (статичний клас), `PasswordSignIn` |
 | `Api.Endpoints` | `AuthEndpoints`, `UserEndpoints` (статичні класи) |
+| `Domain.Audit` (аудит) | `AuditEntry`, `AuditActor` (record), `AuditActions` (статичний клас), переліки `AuditAction`, `AuditCategory`, `AuditOutcome`, `AuditChannel`, `AuditTargetKind`; `AuditTarget` (абстрактний record) і його нащадки `UserAuditTarget`, `RoleAssignmentAuditTarget`, `ApiTokenAuditTarget`, `EnvironmentAuditTarget`, `StackAuditTarget`, `ContainerAuditTarget`, `FileAuditTarget` |
+| `Domain.Common` | `AuditEntryId` (record struct) |
+| `Application.Audit` | `IAuditLog`, `IRequestOrigin`, `IAuditTrail` (інтерфейси), `AuditFilter`, `AuditPage`, `AuditPerson` (record), `AuditDraft`, `AuditTrail`, `AuditedCommand`, `AuditService`, `AuditTrailExtensions`, `AuditOutcomes` (статичні класи) |
+| `Infrastructure.Persistence` | `AuditLog`, `AuditEntryConfiguration` |
+| `Api` | `HttpRequestOrigin`, `AuditEndpoints` (статичний клас), `AuditEntryResponse`, `AuditPageResponse` (record) |
 
 #### Поля
 
@@ -893,19 +898,36 @@
 | `AdminBootstrapper` | `scopeFactory`, `options`, `time`, `logger` | |
 | `PasswordRejectedException` | `Reasons` | |
 | `AuthenticationSetup` | | `SessionCookieName`, `DevOrCookieScheme` |
-| `PasswordSignIn` | `signInManager`, `users`, `currentActor` | `IncorrectPassword`, `DecoyAccount`, `decoyHash` |
+| `PasswordSignIn` | `signInManager`, `users`, `currentActor`, `currentUser`, `audit` | `IncorrectPassword`, `DecoyAccount`, `decoyHash` |
 | `IdentityAccountStore` | `userManager`, `db` | |
 | `UserActionContext` | `Users`, `Accounts` | |
 | `RenameUserAction`, `ResetPasswordAction` | `userName`; `newPassword` | |
-| `UserManagementService` | `currentActor`, `users`, `roleAssignments`, `environments`, `stacks`, `accounts`, `unitOfWork`, `time` | |
+| `UserManagementService` | `currentActor`, `users`, `roleAssignments`, `environments`, `stacks`, `accounts`, `unitOfWork`, `audit`, `time` | |
 | `UserSummary` | `User`, `LockedOutUntil` | |
 | `RoleAssignmentView` | `Id`, `EnvironmentId`, `EnvironmentName`, `StackId`, `StackName`, `Role`, `GrantedAt` | |
 | `UserDetails` | `User`, `RoleAssignments` | |
 | `MaximumLengthRule` | | `MaxLength` |
 | `RepetitiveOrSequentialRule` | | `MaxRepeatedChunk`, `KeyboardRows` |
 | `ContextWordsRule` | | `MinUserNameLength`, `ServiceNames` |
+| `AuditEntry` | `OccurredAt`, `Action`, `Category`, `Outcome`, `ActorId`, `ActorName`, `Channel`, `ApiTokenId`, `Address`, `TargetKind`, `TargetId`, `TargetName`, `EnvironmentId`, `StackId`, `Details` | `MaxNameLength`, `MaxDetailsLength`, `MaxAddressLength` |
+| `AuditEntryId` | `Value` | |
+| `AuditActor` | `UserId`, `UserName`, `Channel`, `ApiTokenId`, `Address` | |
+| `UserAuditTarget`, `ApiTokenAuditTarget`, `EnvironmentAuditTarget` | `UserId`, `UserName`; `TokenId`, `TokenName`; `Environment`, `EnvironmentName` | |
+| `RoleAssignmentAuditTarget` | `AssignmentId`, `UserName`, `OnEnvironment`, `OnStack` | |
+| `StackAuditTarget`, `ContainerAuditTarget`, `FileAuditTarget` | `Stack`, `StackName`, `InEnvironment`; `ContainerName`, `InEnvironment`, `InStack`; `Path` | |
+| `AuditDraft` | `Action`, `Target`, `Details`, `Failure` | |
+| `AuditTrail` | `currentUser`, `users`, `origin`, `log`, `time`, `logger` | |
+| `AuditPerson` | `UserId`, `UserName`, `Channel` | |
+| `AuditFilter` | `Category`, `Action`, `Outcome`, `ActorId`, `EnvironmentId`, `Search`, `From`, `To` | |
+| `AuditPage` | `Entries`, `Total` | |
+| `AuditedCommand` | `inner`, `action`, `audit` | |
+| `AuditService` | `currentActor`, `log` | `DefaultPageSize`, `MaxPageSize` |
+| `AuditLog` | `db`, `scopes` | |
+| `HttpRequestOrigin` | `httpContextAccessor` | `BotAuthenticationType` |
+| `AuditEntryResponse` | `Id`, `OccurredAt`, `Action`, `Category`, `Outcome`, `ActorId`, `ActorName`, `Channel`, `Address`, `TargetKind`, `TargetId`, `TargetName`, `EnvironmentId`, `StackId`, `Details` | |
+| `AuditPageResponse` | `Entries`, `Total`, `Page`, `PageSize` | |
 
-#### Нетривіальні методи (38)
+#### Нетривіальні методи (57)
 
 | Тип | Методи |
 |---|---|
@@ -913,25 +935,35 @@
 | `BootstrapOptions` (1) | `IsValid` (ім'я й пароль задаються разом або жодне) |
 | `AdminBootstrapper` (1) | `StartAsync` (перший адміністратор лише в порожній базі, атомарно з обліковим записом) |
 | `AuthenticationSetup` (1) | `AddSessionAuthentication` (cookie `cf_session`, 401/403 замість редіректів, security stamp, policy-схема з dev-заголовком) |
-| `PasswordSignIn` (2) | `SignInAsync` (перевірка пароля з lockout, деактивований користувач, decoy-хеш для невідомого імені), `ChangePasswordAsync` (зміна пароля, завершення інших сесій, перевидача поточної) |
+| `PasswordSignIn` (3) | `SignInAsync` (перевірка пароля з lockout, деактивований користувач, decoy-хеш для невідомого імені, запис успіху й причини невдачі в аудит), `ChangeOwnPasswordAsync` (зміна пароля, завершення інших сесій, перевидача поточної), `SignOutAsync` (запис в аудит до виходу, поки запит ще знає користувача) |
 | `AuthEndpoints` (1) | `MapAuthEndpoints` |
 | `IdentityAccountStore` (6) | `RenameAsync` (без зміни security stamp), `SetPasswordAsync` (перевірка політики до зміни хешу, обліковий запис для користувача без нього, завершення сесій), `EndSessionsAsync`, `UnlockAsync`, `ListLockoutsAsync`, `ThrowIfFailed` (помилки пароля → `PasswordRejectedException`) |
 | `UserAccountAction` (1) | `ExecuteAsync` (шаблонний метод: перевірка → дія → завершення сесій) |
 | `AdministratorRemovingAction` (1) | `CheckAsync` (останній активний адміністратор лишається) |
 | `RenameUserAction` (2) | `CheckAsync` (зайняте ім'я без урахування регістру, крім власного), `ApplyAsync` (доменне ім'я й ім'я облікового запису) |
-| `UserManagementService` (10) | `ListAsync`, `GetAsync` (ролі за середовищем і стеком), `CreateAsync` (зайняте ім'я, відкат при відхиленому паролі), `GrantRoleAsync` (стек того самого середовища, одна роль на область), `ChangeRoleAsync`, `RevokeRoleAsync`, `RunAsync` (виконання дії з перевіркою адміністратора), `SummarizeAsync`, `GetAssignmentAsync` (чуже призначення — 404), `ViewAsync` (назви середовища й стеку) |
+| `UserManagementService` (12) | `ListAsync`, `GetAsync` (ролі за середовищем і стеком), `CreateUserAsync` (зайняте ім'я, відкат при відхиленому паролі), `GrantRoleCoreAsync` (стек того самого середовища, одна роль на область), `GrantRoleAsync`, `ChangeRoleAsync`, `RevokeRoleAsync` (запис в аудит із роллю й областю до зміни), `RunAsync` (виконання дії з перевіркою адміністратора під дією аудиту самої дії), `SummarizeAsync`, `GetAssignmentAsync` (чуже призначення — 404), `ViewAsync` (назви середовища й стеку), `NameOfAsync` (ім'я або id видаленого користувача) |
 | `UserEndpoints` (4) | `MapUserEndpoints` (12 ендпоінтів), `MapUserChange<TRequest>` (ендпоінт зміни користувача з тілом будь-якого типу), `MapUserChange` (без тіла), `ToResponse` для призначення (область за наявністю стеку) |
 | `PasswordRule` (1) | `ValidateAsync` (шаблонний метод: перевірка правила → помилка Identity з кодом `Password…`) |
 | `MaximumLengthRule` (1) | `Check` |
 | `RepetitiveOrSequentialRule` (4) | `Check`, `IsRepetitive` (повтор шматка до 4 символів), `IsSequential` (послідовні цифри з переходом 9 → 0 або літери), `IsKeyboardRow` |
 | `ContextWordsRule` (1) | `Check` (ім'я користувача від 3 символів, назва системи) |
+| `AuditActions` (1) | `CategoryOf` (розділ кожної дії) |
+| `AuditEntry` (2) | `Record` (перевірка переліків, плоский запис із будь-якої цілі), `Clip` (один рядок, межа довжини з «…») |
+| `AuditTrail` (4) | `RunAsync<T>` (виконання з записом результату: виконано, відмовлено, не вдалося; повторний кидок винятку), `WriteAsync` (без токена скасування; помилка запису не ламає дію), `CurrentActorAsync` (канал: сесія, токен, бот, без входу), `Join` |
+| `AuditOutcomes` (1) | `Of` (виняток → результат і безпечна причина; невідомі винятки — без повідомлення) |
+| `AuditedCommand` (2) | `ExecuteAsync` (декоратор: запис будь-якої спроби, зокрема відмовленої авторизацією), `ActionFor` |
+| `AuditService` (1) | `ListAsync` (лише адміністратор, межі сторінки) |
+| `AuditLog` (3) | `AppendAsync` (окремий контекст, щоб не зберегти напівзроблені зміни запиту), `ListAsync` (кількість і сторінка, порядок за часом і id v7), `Apply` (фільтри; пошук `LIKE` з екрануванням `%` і `_`) |
+| `AuditEndpoints` (1) | `MapAuditEndpoints` |
+| `ApiTokenService` (1) | `LimitsOf` (обмеження токена одним рядком для аудиту, без самого токена) |
 
-Не враховано як тривіальні: `PasswordSignIn.SignOutAsync`, `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`, `IdentityAccountStore.CreateAsync` і `FindAsync`, `ApplyAsync` дій, що лише викликають один доменний метод чи метод `IAccountStore`, однорядкові `RenameAsync`, `DeactivateAsync`, `ActivateAsync`, `SetAdminAsync`, `ResetPasswordAsync`, `UnlockAsync` сервісу, `UserEndpoints.ToResponse` для користувача, властивості `Code` правил паролів, `RepetitiveOrSequentialRule.Steps`.
+Не враховано як тривіальні: `PasswordSignIn.ChangePasswordAsync`, `RecordSignInAsync` і `RecordFailureAsync` (обгортки виклику аудиту), `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`, `IdentityAccountStore.CreateAsync` і `FindAsync`, `ApplyAsync` дій, що лише викликають один доменний метод чи метод `IAccountStore`, однорядкові `RenameAsync`, `DeactivateAsync`, `ActivateAsync`, `SetAdminAsync`, `ResetPasswordAsync`, `UnlockAsync` сервісу, `UserEndpoints.ToResponse` для користувача, властивості `Code` правил паролів, `RepetitiveOrSequentialRule.Steps`, `UserManagementService.CreateAsync` і `TargetOf`, `ScopeOf`, властивості цілей аудиту, `AuditDraft.Fail`, `AuditTrailExtensions.RunAsync`, `AuditTrail.RecordAsync` і `AddressFor`, властивості `HttpRequestOrigin`, `AuditEndpoints.ToResponse`, `AuditEntryConfiguration.Configure`, `UserAccountAction.AuditAction` і `AuditDetails` дій.
 
 #### Ієрархії успадкування
 
 1. `UserAccountAction` → `ActivateUserAction`, `GrantAdminAction`, `RenameUserAction`, `ResetPasswordAction`, `UnlockUserAction`, `AdministratorRemovingAction` → `DeactivateUserAction`, `RevokeAdminAction`. Це 8 класів на трьох рівнях.
 2. `PasswordRule` → `MaximumLengthRule`, `RepetitiveOrSequentialRule`, `ContextWordsRule`. Це 4 класи.
+3. `AuditTarget` (абстрактний record) → `UserAuditTarget`, `RoleAssignmentAuditTarget`, `ApiTokenAuditTarget`, `EnvironmentAuditTarget`, `StackAuditTarget`, `ContainerAuditTarget`, `FileAuditTarget`. Це 8 типів.
 
 `AccountUser : IdentityUser<Guid>` успадковує клас бібліотеки й власною ієрархією не вважається.
 
@@ -943,52 +975,62 @@
 | 2 | Динамічний (адаптер) | `IAccountStore`: `IdentityAccountStore` (і `FakeAccountStore` у тестах) | `UserManagementService`, дії й `AdminBootstrapper` керують обліковими записами, не знаючи про ASP.NET Identity ✅ |
 | 3 | Динамічний (віртуальний метод) | `PasswordRule.Check` через `IPasswordValidator<AccountUser>` | `PasswordRule.ValidateAsync` однаково перетворює відмову будь-якого правила на помилку Identity; `IdentityAccountStore.SetPasswordAsync` перебирає всі валідатори, не знаючи, які це правила ✅ |
 | 4 | Статичний (generics) | `MapUserChange<TRequest>`: тип тіла запиту — параметр типу | `MapUserEndpoints` будує ним ендпоінти з `RenameUserRequest` і `SetAdminRequest`; обробник, відповідь і 404 описані один раз ✅ |
+| 5 | Динамічний (абстрактні властивості) | `AuditTarget.Kind`, `Id`, `Name`, `EnvironmentId`, `StackId` | `AuditEntry.Record` однаково записує будь-яку ціль: користувача, роль, токен, середовище, стек, контейнер, файл; фільтр за середовищем працює для всіх ✅ |
+| 6 | Динамічний (декоратор) | `IContainerCommand`: `AuditedCommand` навколо `AuthorizedCommand` навколо команди | `ContainerCommandService` виконує обгорнуту команду через той самий інтерфейс, а запис у журнал і перевірка прав не знають, яка це команда ✅ |
+| 7 | Динамічний (віртуальна властивість) | `UserAccountAction.AuditAction`, `AuditDetails` | `UserManagementService.RunAsync` записує кожну з семи дій під її власною дією аудиту, не розрізняючи їх ✅ |
+| 8 | Статичний (generics) | `IAuditTrail.RunAsync<T>`: тип результату дії — параметр типу | сервіси записують дії з різними результатами (`UserSummary`, `RoleAssignmentView`, `CreatedApiToken`, `StackCommandResult`, `byte[]`) одним методом, результат повертається без приведення типів ✅ |
 
 #### Тести (не входять в облік)
 
 - `tests/Aggregator/Api/AuthTests.cs`, 11 тестів: вхід і `/api/me`, атрибути cookie, `RememberMe`, неправильний пароль, невідоме ім'я з тією самою відповіддю, деактивований користувач, lockout, logout, зміна пароля завершує інші сесії й лишає поточну, неправильний поточний пароль, закороткий новий пароль із причиною. Адміністратора тестів створює `AdminBootstrapper`.
 - `tests/Aggregator/Application/Access/UserManagementServiceTests.cs`, 20 тестів: лише адміністратори, список із блокуваннями, створення й відкат при відхиленому паролі, зайняте ім'я, останній активний адміністратор, які дії завершують сесії, перейменування, розблокування, ролі на середовищі й стеку, одна роль на область, чужий стек і чуже призначення.
 - `tests/Aggregator/Infrastructure/Accounts/PasswordRulesTests.cs`, 19 тестів: повтори, послідовності й рядки клавіатури, звичайні паролі проходять, ім'я користувача й назва системи, короткі імена не шукаються, межа довжини, відмова правила → помилка Identity з кодом `Password…`.
+- `tests/Aggregator/Domain/Audit/AuditEntryTests.cs`, 7 тестів: розділ кожної дії, копія актора, область цілі стеку й контейнера, деталі одним рядком і з межею довжини, порожні деталі, невідомі значення відхиляються.
+- `tests/Aggregator/Application/Audit/AuditTrailTests.cs`, 8 тестів: успіх із ціллю, знайденою під час дії, відмова й повторний кидок, невідома помилка без повідомлення, невдача як результат дії, неавтентифікований запит не записується, канали токена й бота (бот без адреси), вхід без сесії, недоступний журнал не ламає дію. Нові тести в `UserManagementServiceTests` (кожна зміна під своєю дією, відмова), `ContainerCommandServiceTests` (відмовлена спроба з назвою контейнера) і `StackCommandServiceTests` (невдалий compose — «не вдалося»).
+- `tests/Aggregator/Api/AuditTests.cs`, 6 тестів через HTTP: входи й невдалі входи з наданим ім'ям і без паролів у журналі, хто керував користувачами, відмовлена спроба, журнал лише для адміністраторів, фільтри, пошук і сторінки, токен у журналі без самого токена й канал запиту з токеном.
 - `tests/Aggregator/Api/UserManagementTests.cs`, 12 тестів через HTTP: легкий для вгадування пароль відхиляється з усіма причинами, створений користувач входить, 403 для не-адміністратора, 409 і 400 при створенні, останній адміністратор, деактивація й скидання пароля завершують сесію, перейменування, блокування й розблокування, роль відкриває приватне середовище і після відкликання ховає його.
 
 ### Лаба 2
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Екрани | ≥ 4 | 4 | ✅ |
-| Елементи керування | ≥ 20 | 43 | ✅ |
-| Контейнерні елементи | ≥ 1 | 2 (таблиці) | ✅ |
-| Обробники подій | ≥ 10 | 29 | ✅ |
+| Екрани | ≥ 4 | 5 | ✅ |
+| Елементи керування | ≥ 20 | 58 | ✅ |
+| Контейнерні елементи | ≥ 1 | 3 (таблиці) | ✅ |
+| Обробники подій | ≥ 10 | 42 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` — вхід (PR #30), керування користувачами й власний обліковий запис (PR #41), форма видачі ролі (PR #58). Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`, `table`, `dialog`, `alert-dialog`, `select`, `badge`) в облік не йдуть.
+Код: `src/Web` — вхід (PR #30), керування користувачами й власний обліковий запис (PR #41), форма видачі ролі (PR #58), журнал аудиту. Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`, `table`, `dialog`, `alert-dialog`, `select`, `badge`) в облік не йдуть.
 
 - **Екрани:**
   1. вхід (`src/routes/login.tsx`, `/login`);
   2. користувачі (`src/routes/_authed/users/index.tsx`, `/users`);
   3. картка користувача з ролями (`src/routes/_authed/users/$userId.tsx`, `/users/$userId`);
-  4. мій обліковий запис (`src/routes/_authed/account.tsx`, `/account`).
-- **Елементи керування (43):**
+  4. мій обліковий запис (`src/routes/_authed/account.tsx`, `/account`);
+  5. журнал аудиту (`src/routes/_authed/audit.tsx`, `/audit`).
+- **Елементи керування (58):**
   - вхід: поле імені, поле пароля, прапорець «Запам'ятати мене», кнопка «Увійти»;
   - шапка (`src/routes/_authed.tsx`): кнопка «Вийти», посилання «Користувачі» (лише для адміністраторів), посилання на власний обліковий запис;
   - користувачі: поле пошуку, список «Стан», кнопка «Новий користувач», посилання на картку в кожному рядку; діалог «Новий користувач» (`src/components/users/create-user-dialog.tsx`): поле імені, поле пароля, прапорець «Адміністратор», кнопки «Скасувати» й «Створити»;
   - картка: посилання «Усі користувачі», поле імені й кнопка «Зберегти», кнопки «Розблокувати», «Деактивувати» / «Активувати», «Зробити адміністратором» / «Зняти права адміністратора», «Скинути пароль»; діалог скидання пароля (`src/components/users/reset-password-dialog.tsx`): поле нового пароля, кнопки «Скасувати» й «Задати пароль»; діалог підтвердження (`src/components/confirm-action.tsx`): кнопки підтвердження й «Скасувати»; у таблиці ролей — список ролі й кнопка «Відкликати» в кожному рядку; форма «Видати роль» (`src/components/users/grant-role-form.tsx`): списки «Середовище», «Область» (усе середовище або стек) і «Роль», кнопка «Видати»;
   - мій обліковий запис: поля поточного пароля, нового пароля й повтору, кнопка «Змінити пароль»;
+  - журнал аудиту: посилання «Журнал аудиту» в бічній панелі (лише адміністраторам), списки «Розділ», «Результат», «Хто», «Середовище», поля дат «З дня» й «По день», поле пошуку й кнопка «Знайти», «Скинути фільтри», «Оновити», ім'я автора в рядку (фільтр за ним), посилання на об'єкт у рядку (користувач, середовище, стек, логи контейнера), «Попередні» й «Наступні»;
   - навігація й дизайн панелі (`src/components/layout/app-sidebar.tsx`, `src/routes/_authed.tsx`; PR «feat(web): sidebar navigation, clickable lists, stack quick actions»): перемикач середовища в бічній панелі, кнопка «Меню» на телефоні; швидкі дії стеку в списку стеків (`src/components/stacks/stack-quick-actions.tsx`) — «Розгорнути», «Зупинити» (down), «Перезапустити». Посилання бічної панелі замінили посилання шапки, які інші учасники вже зарахували собі, тому тут вони не рахуються.
-- **Контейнерні елементи:** таблиця користувачів, таблиця ролей користувача.
-- **Обробники подій (29):**
+- **Контейнерні елементи:** таблиця користувачів, таблиця ролей користувача, таблиця журналу аудиту.
+- **Обробники подій (42):**
   - вхід: надсилання форми, зміна прапорця, «Вийти»;
   - користувачі: введення в пошук і вибір стану (фільтри в URL через `validateSearch`, `replace`), відкриття й закриття діалогу (скидання форми й помилки), надсилання форми нового користувача (перехід на його картку);
   - картка: надсилання перейменування, підтвердження деактивації, «Активувати», підтвердження зняття прав адміністратора, «Зробити адміністратором», «Розблокувати», відкриття й закриття діалогу скидання пароля, надсилання нового пароля, вибір ролі (зміна ролі), підтвердження відкликання ролі; у формі видачі ролі — вибір середовища (підвантажує його стеки й скидає область), вибір області, вибір ролі, надсилання (роль з'являється в таблиці, форма очищається);
   - мій обліковий запис: надсилання форми, зміна будь-якого поля (ховає попередній результат);
+  - журнал аудиту: вибір розділу, результату, користувача й середовища, зміна дати «з» і «по» (фільтри в URL, сторінка скидається на першу), введення в пошук і надсилання пошуку (запит до ЦА лише на Enter або «Знайти»), «Скинути фільтри» (очищає й поле пошуку), «Оновити», клік на ім'я автора (фільтр за ним), «Попередні» й «Наступні» (сторінка в URL, попередня сторінка лишається на екрані, доки вантажиться наступна);
   - навігація й дизайн: зміна середовища в бічній панелі (запам'ятовується, відкривається той самий розділ іншого середовища), відкриття й закриття меню на телефоні, вибір пункту меню (закриває меню), швидкий деплой стеку (рядок результату з посиланням на деплой), підтвердження down і restart стеку (результат над списком, список контейнерів оновлюється).
 - **Логіка окремо від GUI:**
   - запити й робота з кешем — `src/api/queries.ts` (`usersQuery`, `userQuery`; у формі видачі ролі — наявні `environmentsQuery` і `stacksQuery`), `src/api/users.ts` (мутації користувача й ролей, зокрема `useGrantRoleMutation`, з інвалідацією списку й картки), `src/api/auth.ts` (`useChangePasswordMutation`);
   - стан користувача й фільтрація — `src/lib/users.ts` (`userStatus`, `filterUsers`, `takenScopes` — області, де роль уже є, правило імені як у ЦА), формат дат — `src/lib/format.ts`;
   - правила форм — схеми Zod, помилки ЦА за статусом → перекладені повідомлення, причини відхилення пароля — `src/components/form-messages.tsx`;
+  - журнал аудиту — `src/features/audit/model.ts`: схема фільтрів у URL, запит до ЦА з фільтрів (дні — локальні, «по день» включно), діапазон сторінки, посилання на об'єкт запису, вигляд результату; `auditQuery` у `src/api/queries.ts`; `formatTimestamp` у `src/lib/format.ts`;
   - навігація — `src/features/navigation/model.ts`: розділ сторінки, середовище сторінки (параметр шляху → search param → середовище стеку), вибір поточного середовища (сторінка → запам'ятоване → перше), збереження в `localStorage`; клікабельні рядки — класи `src/lib/row-link.ts`.
 
-Заплановано: журнал аудиту.
 
 ### Лаба 3
 
@@ -996,7 +1038,7 @@
 |---|---|---|
 | React Hook Form 7.89.0 (з `@hookform/resolvers`) | `useForm` з `zodResolver`, `register` для полів (зокрема з власним `onChange`), `Controller` для прапорця Radix (не нативний `input`), `formState.errors` і `isDirty`, `handleSubmit`, `reset` після закриття діалогу й успішної зміни пароля | [docs/retro/react-hook-form.md](docs/retro/react-hook-form.md) |
 | Zod 4.6.5 | Схеми форм входу, нового користувача, перейменування, скидання й зміни пароля (`z.object`, `trim`, `min`, `regex` з правилом імені як у ЦА, `refine` для повтору пароля з `path`), повідомлення — ключі перекладу; `z.enum` і `catch` для search params списку користувачів; `z.infer` для типів форм | [docs/retro/zod.md](docs/retro/zod.md) |
-| TanStack Query | `useMutation` для входу, виходу, зміни пароля й усіх змін користувача; `setQueryData` і `removeQueries` для кешу поточного користувача; `useSuspenseQuery` з `queryOptions`-фабриками (`usersQuery`, `userQuery(id)`); `invalidateQueries` за префіксом ключа, щоб зміна користувача оновлювала і список, і картку | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
-| TanStack Router | `Route.useSearch` для `redirect` і фільтрів, `validateSearch` зі схемою Zod, `useNavigate` (`href`, `replace`, функція оновлення `search`), `loader` з `ensureQueryData`, параметри маршруту (`$userId`), `errorComponent` для 403 і 404 | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
+| TanStack Query | `placeholderData: keepPreviousData` для сторінок журналу аудиту; `useMutation` для входу, виходу, зміни пароля й усіх змін користувача; `setQueryData` і `removeQueries` для кешу поточного користувача; `useSuspenseQuery` з `queryOptions`-фабриками (`usersQuery`, `userQuery(id)`); `invalidateQueries` за префіксом ключа, щоб зміна користувача оновлювала і список, і картку | [docs/retro/tanstack-query.md](docs/retro/tanstack-query.md) |
+| TanStack Router | `loaderDeps` журналу аудиту (запит залежить від search params), `Route.useSearch` для `redirect` і фільтрів, `validateSearch` зі схемою Zod, `useNavigate` (`href`, `replace`, функція оновлення `search`), `loader` з `ensureQueryData`, параметри маршруту (`$userId`), `errorComponent` для 403 і 404 | [docs/retro/tanstack-router.md](docs/retro/tanstack-router.md) |
 | ASP.NET Core Identity (`Microsoft.AspNetCore.Identity.EntityFrameworkCore`) | `IdentityUserContext<TUser, TKey>` у наявному `DbContext` без таблиць ролей; `UserManager` (створення облікового запису, зміна пароля, `UpdateAsync` для імені й розблокування, `UpdateSecurityStampAsync` для завершення сесій, `PasswordValidators` і `PasswordHasher` для пароля від адміністратора); власні `IPasswordValidator` (`AddPasswordValidator`) для правил NIST; `SignInManager` (`CheckPasswordSignInAsync` з lockout, `SignInAsync` з постійною cookie, `RefreshSignInAsync`, `SignOutAsync`); `PasswordHasher`; `IdentityOptions` (політика паролів, lockout); security stamp і `SecurityStampValidatorOptions`; `ConfigureApplicationCookie` | [docs/retro/aspnet-identity.md](docs/retro/aspnet-identity.md) |
-| EF Core | Міграція `Accounts` для таблиць Identity | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
+| EF Core | Міграції `Accounts` для таблиць Identity і `AuditLog`; конфігурація журналу (`IEntityTypeConfiguration`, переліки як рядки `HasConversion<string>`, складені індекси, без зовнішніх ключів); запит журналу (`AsNoTracking`, `CountAsync`, `Skip`/`Take`, `EF.Functions.Like` з символом екранування); запис у власному `DbContext` з `IServiceScopeFactory` | [docs/retro/ef-core.md](docs/retro/ef-core.md) |
