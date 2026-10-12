@@ -646,13 +646,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 95 (82 класи, з них 35 record і 8 статичних; 5 інтерфейсів; 1 структура; 7 enum) | ✅ |
-| Поля | ≥ 15 | 253 (205 полів стану, 48 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 118 | ✅ |
+| Класи та подібні типи | ≥ 9 | 99 (86 класів, з них 35 record і 8 статичних; 5 інтерфейсів; 1 структура; 7 enum) | ✅ |
+| Поля | ≥ 15 | 271 (222 поля стану, 49 констант і статичних полів) | ✅ |
+| Нетривіальні методи | ≥ 25 | 127 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (8 класів на трьох рівнях; 8 класів; 7 record; 6 record; 2 класи) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 11, усі з клієнтським кодом (9 динамічних, 2 статичних) | ✅ |
 
-Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR #19); Discord-частина: slash-команди, автодоповнення, прив'язка акаунта (PR #20); Docker-образ бота (PR #25). Сповіщення (PR #38): у ЦА — диспетчер, доставка через бота, деталі сповіщення; у боті — споживач потоку й повідомлення в Discord. Меню `/dashboard` на Components V2 (PR «feat(bot): /dashboard with stacks and redeploy»): у боті — маршрути в `custom_id`, екрани, рендерер; у ЦА — `DeployStack` і `GetDeployment` у шлюзі бота.
+Код: `src/DiscordBot` — клієнт ЦА по gRPC (PR #19); Discord-частина: slash-команди, автодоповнення, прив'язка акаунта (PR #20); Docker-образ бота (PR #25). Сповіщення (PR #38): у ЦА — диспетчер, доставка через бота, деталі сповіщення; у боті — споживач потоку й повідомлення в Discord. Меню `/dashboard` на Components V2 (PR «feat(bot): /dashboard with stacks and redeploy»): у боті — маршрути в `custom_id`, екрани, рендерер; у ЦА — `DeployStack` і `GetDeployment` у шлюзі бота. Сповіщення про агента офлайн і знову онлайн (PR «feat(aggregator): notify when an agent goes offline and comes back»): у ЦА — сторож з'єднань агентів із затримкою й джерело подій.
 
 Не враховано: `Program.cs`, згенерований з proto код і міграції.
 
@@ -675,7 +675,7 @@
 |---|---|
 | `Domain.Notifications` | `NotificationDetails` (абстрактний record), `DeploymentNotificationDetails` (record) |
 | `Application.Deployments` | `IDeploymentObserver` (інтерфейс), `DeploymentOutcome` (record) |
-| `Application.Notifications` | `NotificationFeed`, `NotificationFeed.Subscription`, `NotificationDispatcher`, `DeploymentNotifier`, `OutgoingNotification` (record), `NotificationDeliveryService` |
+| `Application.Notifications` | `NotificationFeed`, `NotificationFeed.Subscription`, `NotificationDispatcher`, `DeploymentNotifier`, `OutgoingNotification` (record), `NotificationDeliveryService`, `NotificationOptions`, `AgentConnectivityNotifier`, `AgentConnectivityWatch`, `AgentConnectivityWatch.Outage` |
 | `Infrastructure.Persistence` | `NotificationDetailsConverter`, `NotificationDetailsConverter.StoredDetails` (record) |
 | `Api.Grpc` | `NotificationMessages` (статичний клас) |
 
@@ -727,12 +727,15 @@
 | ЦА: `NotificationFeed`, `Subscription` | `gate`, `current`; `feed`, `ended`, `signals`, `closed`, `WasReplaced` | |
 | ЦА: `NotificationDispatcher` | `rules`, `notifications`, `unitOfWork`, `feed`, `time` | |
 | ЦА: `DeploymentNotifier` | `dispatcher`, `logger` | |
+| ЦА: `NotificationOptions` | `AgentOfflineDelay` | `SectionName` |
+| ЦА: `AgentConnectivityNotifier` | `dispatcher`, `environments`, `logger` | |
+| ЦА: `AgentConnectivityWatch`, `Outage` | `scopeFactory`, `options`, `time`, `logger`, `gate`, `outages`, `deliveries`, `stopping`, `disposed`; `Waiting`, `DelayOver`, `Notified` | |
 | ЦА: `OutgoingNotification` | `Notification`, `DiscordChannelId`, `EnvironmentName` | |
 | ЦА: `NotificationDeliveryService` | `notifications`, `channels`, `environments`, `unitOfWork`, `time`, `logger` | `ChannelDeletedError`, `ChannelDisabledError`, `UnknownBotError` |
 | ЦА: `NotificationDetailsConverter`, `StoredDetails` | `Type`, `DeploymentId`, `StackId`, `StackName`, `Commit`, `PulledImages`, `Error` | `DeploymentType`, `Options` |
-| ЦА: поля, додані в класи Петренка Б. О. | `Notification.Details`, `NotificationEvent.Details`; `BotGatewayService.notificationDelivery`, `notificationFeed`, `scopeFactory` | `BotGatewayService.NotificationRescanInterval` |
+| ЦА: поля, додані в класи Петренка Б. О. | `Notification.Details`, `NotificationEvent.Details`; `BotGatewayService.notificationDelivery`, `notificationFeed`, `scopeFactory`; `AgentGatewayService.connectivity` | `BotGatewayService.NotificationRescanInterval` |
 
-#### Нетривіальні методи (118)
+#### Нетривіальні методи (127)
 
 | Тип | Методи |
 |---|---|
@@ -760,6 +763,9 @@
 | ЦА: `NotificationFeed`, `Subscription` (3) | `Subscribe` (новий підписник завершує попереднього), `Leave`, `WaitAsync` (сигнал або тайм-аут) |
 | ЦА: `NotificationDispatcher` (2) | `DispatchAsync` (правила → одне сповіщення на канал → збереження → пробудження потоку), `Specificity` |
 | ЦА: `DeploymentNotifier` (2) | `DeploymentFinishedAsync` (подія з деталями, помилки лише в лог), `Summarize` (один рядок) |
+| ЦА: `NotificationOptions` (1) | `IsValid` |
+| ЦА: `AgentConnectivityNotifier` (2) | `NotifyAsync` (лише події агента, видалене середовище — без сповіщення), `Summarize` |
+| ЦА: `AgentConnectivityWatch` (6) | `Connected` (кінець простою, «знову онлайн» лише після «офлайн»), `Disconnected` (початок простою, повторний розрив не перезапускає очікування), `NotifyWhenStillOfflineAsync` (затримка, перевірка, що простій той самий), `Enqueue` (черга сповіщень середовища: «онлайн» не випереджає «офлайн»), `NotifyAsync` (власний DI-scope, помилки лише в лог), `Dispose` (зупинка ЦА скасовує очікування) |
 | ЦА: `NotificationDeliveryService` (2) | `TakePendingAsync` (пропуск надісланих, прострочені → Expired, видалений чи вимкнений канал → Failed, назва середовища), `ReportAsync` (повторний звіт ігнорується) |
 | ЦА: `NotificationDetailsConverter` (2) | `Serialize`, `Deserialize` |
 | ЦА: `NotificationMessages` (3) | `ToMessage`, `ToKind`, `ToSeverity` |
@@ -809,7 +815,7 @@
   - Команди зі stub-реалізацією `IForestClient`: defer до виклику ЦА, пошук середовища за ім'ям і id, дії з таймаутом і без, помилки ЦА → читабельна відповідь, непередбачена помилка → у лог і загальне повідомлення, скасування без відповіді, `/link`.
   - Форматування: групування за стеками, ліміт 2000 символів, екранування markdown. Автодоповнення: фільтр за введеним текстом і станом, ліміти 25 варіантів і 100 символів, бюджет часу, помилки ЦА.
   - Конфігурація: `ValidateOnStart` для ЦА й Discord, тестовий сервер у `Development`, токен Discord лише з ASCII без пробілів.
-- `tests/Aggregator`, 33 тести сповіщень: деталі деплою (лише успішний і невдалий деплой свого стеку, відповідність виду й стеку); диспетчер (одне сповіщення на канал від найконкретнішого правила, вимкнені канали й інші середовища, пробудження потоку); `DeploymentNotifier` (підсумок в один рядок, скасований деплой без сповіщення, помилка не доходить до пайплайну); доставка (порядок, переміщений канал, без повторного надсилання, прострочені, видалений і вимкнений канал, видалене середовище, звіти); `NotificationFeed` (сигнал, тайм-аут, заміна); інтеграційні тести шлюзу: потік без токена відхиляється, збережені й нові сповіщення з деталями, звіти, повторне надсилання новим потоком і `Aborted` для старого.
+- `tests/Aggregator`, 33 тести сповіщень: деталі деплою (лише успішний і невдалий деплой свого стеку, відповідність виду й стеку); диспетчер (одне сповіщення на канал від найконкретнішого правила, вимкнені канали й інші середовища, пробудження потоку); `DeploymentNotifier` (підсумок в один рядок, скасований деплой без сповіщення, помилка не доходить до пайплайну); доставка (порядок, переміщений канал, без повторного надсилання, прострочені, видалений і вимкнений канал, видалене середовище, звіти); `NotificationFeed` (сигнал, тайм-аут, заміна); інтеграційні тести шлюзу: потік без токена відхиляється, збережені й нові сповіщення з деталями, звіти, повторне надсилання новим потоком і `Aborted` для старого. Агент (12 тестів): затримка перед «офлайн», швидке перепідключення без сповіщень, «знову онлайн» лише після «офлайн», повторний розрив не зсуває початок простою, зупинка ЦА скасовує очікування, правило стеку й видалене середовище; наскрізні тести з агентом, що від'єднується від ЦА в пам'яті.
 - `tests/Aggregator`, 2 тести шлюзу для `/dashboard`: адміністратор деплоїть стек через бота (команда агенту з `pull`, другий деплой під час першого — `FAILED_PRECONDITION`, `GetDeployment` до `Succeeded` з комітом); Viewer не бачить `can_deploy` і отримує `PERMISSION_DENIED`, невідомий стек і деплой — `NOT_FOUND`, некоректний id — `INVALID_ARGUMENT`.
 
 ### Лаба 2
