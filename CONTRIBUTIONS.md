@@ -648,7 +648,7 @@
 |---|---|---|---|
 | Класи та подібні типи | ≥ 9 | 107 (94 класи, з них 38 record і 9 статичних; 5 інтерфейсів; 1 структура; 7 enum) | ✅ |
 | Поля | ≥ 15 | 332 (271 поле стану, 61 константа й статичне поле) | ✅ |
-| Нетривіальні методи | ≥ 25 | 149 | ✅ |
+| Нетривіальні методи | ≥ 25 | 150 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 5 (8 класів на трьох рівнях; 8 класів; 7 record; 6 record; 3 record) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 11, усі з клієнтським кодом (9 динамічних, 2 статичних) | ✅ |
 
@@ -743,7 +743,7 @@
 | ЦА: поля, додані в класи Петренка Б. О. | `Notification.Details`, `NotificationEvent.Details`; `BotGatewayService.notificationDelivery`, `notificationFeed`, `scopeFactory`; `AgentGatewayService.connectivity`, `containerIncidents` | `BotGatewayService.NotificationRescanInterval` |
 | Агент: поле, додане в тип Бояра В. О. | `DockerContainerEvent.ExitCode` | |
 
-#### Нетривіальні методи (149)
+#### Нетривіальні методи (150)
 
 | Тип | Методи |
 |---|---|
@@ -770,7 +770,7 @@
 | ЦА: `DeploymentNotificationDetails` (2) | `Of` (лише успішний чи невдалий деплой свого стеку), `Fits` |
 | ЦА: `ContainerNotificationDetails` (1) | `Fits` (код виходу й OOM лише в падінні) |
 | ЦА: `ContainerObservation` (2) | `StatusExitCode` (код виходу зі статусу Docker; `ExitCode` спершу бере код із події агента), `DisplayName` (коротке id контейнера, якого вже немає) |
-| ЦА: `ContainerIncidentNotifier` (2) | `NotifyAsync` (стек — лише керований стек із тим самим іменем, видалене середовище — без сповіщення), `Summarize` |
+| ЦА: `ContainerIncidentNotifier` (3) | `NotifyAsync` (стек — лише керований стек із тим самим іменем, видалене середовище — без сповіщення), `Summarize`, `SignalName` (код понад 128 — сигнал 128 + N) |
 | ЦА: `ContainerIncidentWatch` (9) | `Observe` (розбір дій), `Died` (stop щойно перед die — запитана зупинка, інакше чекання), `Requested` (stop або destroy скасовує чекання або запам'ятовується для наступного die), `RanOutOfMemory` (oom позначає падіння, що чекає, або запам'ятовується для наступного die), `Remember` (запис події з прибиранням старіших за чекання), unhealthy — одразу, `NotifyUnlessStoppedAsync` (код 0 — не падіння, крім OOM), `Raise` (не частіше разу за інтервал для контейнера й виду, прибирання старих записів), `NotifyAsync` (власний DI-scope, помилки лише в лог), `Dispose` |
 | ЦА: метод, доданий у клас Петренка Б. О. (1) | `AgentGatewayService.ToObservation` (подія агента → спостереження, час події або поточний) |
 | ЦА: `NotificationFeed`, `Subscription` (3) | `Subscribe` (новий підписник завершує попереднього), `Leave`, `WaitAsync` (сигнал або тайм-аут) |
