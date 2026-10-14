@@ -891,13 +891,13 @@
 
 | Вимога | Потрібно | Є | Стан |
 |---|---|---|---|
-| Класи та подібні типи | ≥ 9 | 64 (36 класів, з них 8 статичних і 3 абстрактні; 18 record, з них 1 абстрактний; 1 record struct; 4 інтерфейси; 5 переліків) | ✅ |
-| Поля | ≥ 15 | 146 (126 полів стану, 20 констант і статичних полів) | ✅ |
-| Нетривіальні методи | ≥ 25 | 57 | ✅ |
+| Класи та подібні типи | ≥ 9 | 66 (38 класів, з них 8 статичних і 3 абстрактні; 18 record, з них 1 абстрактний; 1 record struct; 4 інтерфейси; 5 переліків) | ✅ |
+| Поля | ≥ 15 | 154 (131 поле стану, 23 константи й статичні поля) | ✅ |
+| Нетривіальні методи | ≥ 25 | 60 | ✅ |
 | Ієрархії успадкування | ≥ 2, одна з ≥ 3 класів | 3 (8 класів на трьох рівнях; 4 класи; 8 record на двох рівнях) | ✅ |
 | Поліморфізм | ≥ 3, серед них статичний і динамічний | 8 з клієнтським кодом (6 динамічних, 2 статичні) | ✅ |
 
-Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR #33); журнал аудиту (PR «feat: audit log»).
+Код: вхід за паролем у ЦА (PR #28); керування користувачами в ЦА (PR #31); правила паролів і узагальнені ендпоінти змін користувача (PR #33); журнал аудиту (PR #90); ліміт спроб входу й строк зберігання журналу (PR «feat: sign-in rate limit and audit retention»).
 
 Не враховано: зміни в `Program.cs`, `AggregatorDbContext`, `ProblemDetailsExceptionHandler` і `UserRepository` (спільний код; у `UserRepository` — однорядкові запити `ListAsync` і `CountActiveAdministratorsAsync`), міграції `Accounts` і `AuditLog`, згенеровані `schema.gen.ts` і `routeTree.gen.ts`. Для аудиту — виклики журналу, додані в сервіси інших учасників (`ApiTokenService`, `ContainerCommandService`, `StackCommandService`, `StackService`, `DeploymentService`, `EnvironmentService`, `SopsSecretsService`, `DiscordLinkService`, `PasskeySignIn`, `DiscordSignIn`): ці класи й методи лишаються за їхніми авторами, окремо враховано лише новий метод `ApiTokenService.LimitsOf`.
 
@@ -911,8 +911,8 @@
 | `Api.Endpoints` | `AuthEndpoints`, `UserEndpoints` (статичні класи) |
 | `Domain.Audit` (аудит) | `AuditEntry`, `AuditActor` (record), `AuditActions` (статичний клас), переліки `AuditAction`, `AuditCategory`, `AuditOutcome`, `AuditChannel`, `AuditTargetKind`; `AuditTarget` (абстрактний record) і його нащадки `UserAuditTarget`, `RoleAssignmentAuditTarget`, `ApiTokenAuditTarget`, `EnvironmentAuditTarget`, `StackAuditTarget`, `ContainerAuditTarget`, `FileAuditTarget` |
 | `Domain.Common` | `AuditEntryId` (record struct) |
-| `Application.Audit` | `IAuditLog`, `IRequestOrigin`, `IAuditTrail` (інтерфейси), `AuditFilter`, `AuditPage`, `AuditPerson` (record), `AuditDraft`, `AuditTrail`, `AuditedCommand`, `AuditService`, `AuditTrailExtensions`, `AuditOutcomes` (статичні класи) |
-| `Infrastructure.Persistence` | `AuditLog`, `AuditEntryConfiguration` |
+| `Application.Audit` | `IAuditLog`, `IRequestOrigin`, `IAuditTrail` (інтерфейси), `AuditFilter`, `AuditPage`, `AuditPerson` (record), `AuditDraft`, `AuditTrail`, `AuditedCommand`, `AuditService`, `AuditOptions`, `AuditTrailExtensions`, `AuditOutcomes` (статичні класи) |
+| `Infrastructure.Persistence` | `AuditLog`, `AuditEntryConfiguration`, `AuditRetention` |
 | `Api` | `HttpRequestOrigin`, `AuditEndpoints` (статичний клас), `AuditEntryResponse`, `AuditPageResponse` (record) |
 
 #### Поля
@@ -951,11 +951,14 @@
 | `AuditedCommand` | `inner`, `action`, `audit` | |
 | `AuditService` | `currentActor`, `log` | `DefaultPageSize`, `MaxPageSize` |
 | `AuditLog` | `db`, `scopes` | |
+| `AuditOptions` | `RetentionDays` | `SectionName` |
+| `AuditRetention` | `scopes`, `options`, `time`, `logger` | `Interval` |
+| `AuthEndpoints` | | `SignInPolicy` |
 | `HttpRequestOrigin` | `httpContextAccessor` | `BotAuthenticationType` |
 | `AuditEntryResponse` | `Id`, `OccurredAt`, `Action`, `Category`, `Outcome`, `ActorId`, `ActorName`, `Channel`, `Address`, `TargetKind`, `TargetId`, `TargetName`, `EnvironmentId`, `StackId`, `Details` | |
 | `AuditPageResponse` | `Entries`, `Total`, `Page`, `PageSize` | |
 
-#### Нетривіальні методи (57)
+#### Нетривіальні методи (60)
 
 | Тип | Методи |
 |---|---|
@@ -964,7 +967,7 @@
 | `AdminBootstrapper` (1) | `StartAsync` (перший адміністратор лише в порожній базі, атомарно з обліковим записом) |
 | `AuthenticationSetup` (1) | `AddSessionAuthentication` (cookie `cf_session`, 401/403 замість редіректів, security stamp, policy-схема з dev-заголовком) |
 | `PasswordSignIn` (3) | `SignInAsync` (перевірка пароля з lockout, деактивований користувач, decoy-хеш для невідомого імені, запис успіху й причини невдачі в аудит), `ChangeOwnPasswordAsync` (зміна пароля, завершення інших сесій, перевидача поточної), `SignOutAsync` (запис в аудит до виходу, поки запит ще знає користувача) |
-| `AuthEndpoints` (1) | `MapAuthEndpoints` |
+| `AuthEndpoints` (2) | `MapAuthEndpoints`, `AddSignInRateLimit` (ліміт спроб входу й зміни пароля на адресу клієнта: lockout не зупиняє один пароль на багатьох іменах) |
 | `IdentityAccountStore` (6) | `RenameAsync` (без зміни security stamp), `SetPasswordAsync` (перевірка політики до зміни хешу, обліковий запис для користувача без нього, завершення сесій), `EndSessionsAsync`, `UnlockAsync`, `ListLockoutsAsync`, `ThrowIfFailed` (помилки пароля → `PasswordRejectedException`) |
 | `UserAccountAction` (1) | `ExecuteAsync` (шаблонний метод: перевірка → дія → завершення сесій) |
 | `AdministratorRemovingAction` (1) | `CheckAsync` (останній активний адміністратор лишається) |
@@ -982,10 +985,11 @@
 | `AuditedCommand` (2) | `ExecuteAsync` (декоратор: запис будь-якої спроби, зокрема відмовленої авторизацією), `ActionFor` |
 | `AuditService` (1) | `ListAsync` (лише адміністратор, межі сторінки) |
 | `AuditLog` (3) | `AppendAsync` (окремий контекст, щоб не зберегти напівзроблені зміни запиту), `ListAsync` (кількість і сторінка, порядок за часом і id v7), `Apply` (фільтри; пошук `LIKE` з екрануванням `%` і `_`) |
+| `AuditRetention` (2) | `ExecuteAsync` (одразу після старту, далі раз на добу; 0 днів — вимкнено), `RemoveExpiredAsync` (окремий scope, помилка лише в лог) |
 | `AuditEndpoints` (1) | `MapAuditEndpoints` |
 | `ApiTokenService` (1) | `LimitsOf` (обмеження токена одним рядком для аудиту, без самого токена) |
 
-Не враховано як тривіальні: `PasswordSignIn.ChangePasswordAsync`, `RecordSignInAsync` і `RecordFailureAsync` (обгортки виклику аудиту), `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`, `IdentityAccountStore.CreateAsync` і `FindAsync`, `ApplyAsync` дій, що лише викликають один доменний метод чи метод `IAccountStore`, однорядкові `RenameAsync`, `DeactivateAsync`, `ActivateAsync`, `SetAdminAsync`, `ResetPasswordAsync`, `UnlockAsync` сервісу, `UserEndpoints.ToResponse` для користувача, властивості `Code` правил паролів, `RepetitiveOrSequentialRule.Steps`, `UserManagementService.CreateAsync` і `TargetOf`, `ScopeOf`, властивості цілей аудиту, `AuditDraft.Fail`, `AuditTrailExtensions.RunAsync`, `AuditTrail.RecordAsync` і `AddressFor`, властивості `HttpRequestOrigin`, `AuditEndpoints.ToResponse`, `AuditEntryConfiguration.Configure`, `UserAccountAction.AuditAction` і `AuditDetails` дій.
+Не враховано як тривіальні: `PasswordSignIn.ChangePasswordAsync`, `RecordSignInAsync` і `RecordFailureAsync` (обгортки виклику аудиту), `AuthenticationSetup.WriteStatus`, `BootstrapOptions.IsConfigured`, `AdminBootstrapper.StopAsync`, конструктор `AccountUser`, `IdentityAccountStore.CreateAsync` і `FindAsync`, `ApplyAsync` дій, що лише викликають один доменний метод чи метод `IAccountStore`, однорядкові `RenameAsync`, `DeactivateAsync`, `ActivateAsync`, `SetAdminAsync`, `ResetPasswordAsync`, `UnlockAsync` сервісу, `UserEndpoints.ToResponse` для користувача, властивості `Code` правил паролів, `RepetitiveOrSequentialRule.Steps`, `UserManagementService.CreateAsync` і `TargetOf`, `ScopeOf`, властивості цілей аудиту, `AuditDraft.Fail`, `AuditTrailExtensions.RunAsync`, `AuditTrail.RecordAsync` і `AddressFor`, властивості `HttpRequestOrigin`, `AuditEndpoints.ToResponse`, `AuditEntryConfiguration.Configure`, однорядковий запит `AuditLog.RemoveOlderThanAsync`, `AuditOptions.IsValid`, `UserAccountAction.AuditAction` і `AuditDetails` дій.
 
 #### Ієрархії успадкування
 
@@ -1010,12 +1014,12 @@
 
 #### Тести (не входять в облік)
 
-- `tests/Aggregator/Api/AuthTests.cs`, 11 тестів: вхід і `/api/me`, атрибути cookie, `RememberMe`, неправильний пароль, невідоме ім'я з тією самою відповіддю, деактивований користувач, lockout, logout, зміна пароля завершує інші сесії й лишає поточну, неправильний поточний пароль, закороткий новий пароль із причиною. Адміністратора тестів створює `AdminBootstrapper`.
+- `tests/Aggregator/Api/AuthTests.cs`, 12 тестів: вхід і `/api/me`, атрибути cookie, `RememberMe`, неправильний пароль, невідоме ім'я з тією самою відповіддю, деактивований користувач, lockout, logout, зміна пароля завершує інші сесії й лишає поточну, неправильний поточний пароль, закороткий новий пароль із причиною, ліміт спроб входу з однієї адреси. Адміністратора тестів створює `AdminBootstrapper`.
 - `tests/Aggregator/Application/Access/UserManagementServiceTests.cs`, 20 тестів: лише адміністратори, список із блокуваннями, створення й відкат при відхиленому паролі, зайняте ім'я, останній активний адміністратор, які дії завершують сесії, перейменування, розблокування, ролі на середовищі й стеку, одна роль на область, чужий стек і чуже призначення.
 - `tests/Aggregator/Infrastructure/Accounts/PasswordRulesTests.cs`, 19 тестів: повтори, послідовності й рядки клавіатури, звичайні паролі проходять, ім'я користувача й назва системи, короткі імена не шукаються, межа довжини, відмова правила → помилка Identity з кодом `Password…`.
 - `tests/Aggregator/Domain/Audit/AuditEntryTests.cs`, 7 тестів: розділ кожної дії, копія актора, область цілі стеку й контейнера, деталі одним рядком і з межею довжини, порожні деталі, невідомі значення відхиляються.
 - `tests/Aggregator/Application/Audit/AuditTrailTests.cs`, 8 тестів: успіх із ціллю, знайденою під час дії, відмова й повторний кидок, невідома помилка без повідомлення, невдача як результат дії, неавтентифікований запит не записується, канали токена й бота (бот без адреси), вхід без сесії, недоступний журнал не ламає дію. Нові тести в `UserManagementServiceTests` (кожна зміна під своєю дією, відмова), `ContainerCommandServiceTests` (відмовлена спроба з назвою контейнера) і `StackCommandServiceTests` (невдалий compose — «не вдалося»).
-- `tests/Aggregator/Api/AuditTests.cs`, 6 тестів через HTTP: входи й невдалі входи з наданим ім'ям і без паролів у журналі, хто керував користувачами, відмовлена спроба, журнал лише для адміністраторів, фільтри, пошук і сторінки, токен у журналі без самого токена й канал запиту з токеном.
+- `tests/Aggregator/Api/AuditTests.cs`, 7 тестів через HTTP: входи й невдалі входи з наданим ім'ям і без паролів у журналі, хто керував користувачами, відмовлена спроба, журнал лише для адміністраторів, фільтри, пошук і сторінки, токен у журналі без самого токена й канал запиту з токеном, видалення лише записів, старших за межу.
 - `tests/Aggregator/Api/UserManagementTests.cs`, 12 тестів через HTTP: легкий для вгадування пароль відхиляється з усіма причинами, створений користувач входить, 403 для не-адміністратора, 409 і 400 при створенні, останній адміністратор, деактивація й скидання пароля завершують сесію, перейменування, блокування й розблокування, роль відкриває приватне середовище і після відкликання ховає його.
 
 ### Лаба 2
