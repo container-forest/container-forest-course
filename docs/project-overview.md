@@ -86,21 +86,34 @@
 6. **База даних** — SQLite.
 
 ```mermaid
-flowchart LR
-  UI["Веб-панель (SPA)"] -->|"HTTPS REST + SignalR"| CA["Центральний агрегатор"]
-  Bot["Discord-бот"] -->|"gRPC"| CA
-  Cli["CLI forest"] -->|"HTTPS REST, API-токен"| CA
-  CA --- DB[("SQLite")]
-  CA -->|"git fetch"| Git[("Git-репозиторій")]
-  subgraph EnvA["Сервер A"]
-    EA1["Агент"] -->|"Unix socket"| D1["Docker Engine"]
+flowchart TB
+  subgraph Clients["Інтерфейси"]
+    Bot["Discord-бот"]
+    UI["Веб-панель (SPA)"]
+    Cli["CLI forest"]
+    Hooks["Git-сервер / CI"]
   end
   subgraph EnvB["Сервер B"]
     EA2["Агент"] -->|"Unix socket"| D2["Docker Engine"]
   end
-  EA1 -->|"gRPC, з'єднання ініціює агент"| CA
-  EA2 -->|"gRPC, з'єднання ініціює агент"| CA
-  D1 -->|"docker pull"| Reg[("Container registry")]
+  subgraph EnvA["Сервер A"]
+    EA1["Агент"] -->|"Unix socket"| D1["Docker Engine"]
+  end
+  subgraph Host["Хост ЦА"]
+    Caddy["Caddy<br/>єдиний вхід, TLS,<br/>роздає SPA веб-панелі"] --> CA["Центральний агрегатор<br/>права, пайплайн деплою, SOPS"]
+    CA --- DB[("SQLite")]
+  end
+  Git[("Git-репозиторій")]
+  Reg[("Container registry")]
+
+  Bot -->|"gRPC: команди, сповіщення"| Caddy
+  UI -->|"HTTPS REST + SignalR"| Caddy
+  Cli -->|"HTTPS REST, API-токен"| Caddy
+  Hooks -->|"webhook після push"| Caddy
+  EA1 -->|"gRPC, з'єднання ініціює агент"| Caddy
+  EA2 -->|"gRPC, з'єднання ініціює агент"| Caddy
+  CA -->|"git fetch (HTTPS)"| Git
+  D1 -->|"docker pull"| Reg
   D2 -->|"docker pull"| Reg
 ```
 
