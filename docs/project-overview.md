@@ -100,7 +100,7 @@ flowchart TB
     EA1["Агент"] -->|"Unix socket"| D1["Docker Engine"]
   end
   subgraph Host["Хост ЦА"]
-    Caddy["Caddy<br/>єдиний вхід, TLS"] --> CA["Центральний агрегатор<br/>права, пайплайн деплою, SOPS"]
+    Caddy["Caddy<br/>єдиний вхід, TLS,<br/>роздає SPA веб-панелі"] --> CA["Центральний агрегатор<br/>права, пайплайн деплою, SOPS"]
     CA --- DB[("SQLite")]
   end
   Git[("Git-репозиторій")]
