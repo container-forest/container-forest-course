@@ -1,7 +1,7 @@
 # Ретроспектива: ASP.NET Core Identity
 
 - Пакет: `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (і транзитивно `Microsoft.Extensions.Identity.Core` / `Stores`)
-- Чи зараховується в лабу 3, ще треба з'ясувати: це пакет від Microsoft (див. «Вимоги курсу» в `CLAUDE.md`).
+- Чи зараховується в лабу 3, ще треба з'ясувати: це пакет від Microsoft (див. `docs/course-requirements.md`).
 
 Кожен учасник, що працював із бібліотекою, пише свій розділ за питаннями з умови лаби 3.
 
