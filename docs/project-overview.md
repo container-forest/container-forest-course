@@ -278,7 +278,7 @@ classDiagram
 
 - **Лабораторна № 1 (базові ідеї ООП).** Класи, ієрархії та поліморфізм реалізуються в серверній частині на C# (розділ 7). Кожен учасник веде облік своїх класів, методів, ієрархій і випадків поліморфізму у файлі `CONTRIBUTIONS.md`.
 - **Лабораторна № 2 (графічний інтерфейс).** Реалізується у веб-панелі: екрани середовищ, контейнерів, логів, стеків, історії деплоїв, користувачів і прав, налаштувань сповіщень. Кожен учасник реалізує екрани своєї частини системи (див. розділ «Команда»). Discord-бот до цієї лабораторної не зараховується, тому учасник, відповідальний за бота, також реалізує екрани веб-панелі.
-- **Лабораторна № 3 (зовнішні бібліотеки).** Кандидати: Docker.DotNet, Discord.Net, gRPC для .NET, LibGit2Sharp, YamlDotNet, Quartz.NET, TanStack Query, TanStack Router, Monaco Editor, xterm.js; для CLI — System.CommandLine і Kiota, для входу через Discord — AspNet.Security.OAuth.Discord. Ретроспективи ведуться в `docs/retro/`.
+- **Лабораторна № 3 (зовнішні бібліотеки).** Кандидати: Docker.DotNet, Discord.Net, gRPC для .NET, LibGit2Sharp, YamlDotNet, Quartz.NET, TanStack Query, TanStack Router, Monaco Editor, xterm.js; для CLI — System.CommandLine і Kiota, для входу через Discord — AspNet.Security.OAuth.Discord; для бекапу — AWSSDK.S3. Ретроспективи ведуться в `docs/retro/`.
 
 ## 10. Ризики
 
