@@ -1066,7 +1066,7 @@
 | Обробники подій | ≥ 10 | 51 | ✅ |
 | Логіка окремо від GUI | так | так | ✅ |
 
-Код: `src/Web` — вхід (PR #30), керування користувачами й власний обліковий запис (PR #41), форма видачі ролі (PR #58), журнал аудиту, хвойна тема, сезонна анімація й PWA (PR «feat(web): conifer theme, seasonal backdrop and PWA»). Світла тема з перемикачем, увімкнення сезонного фону, тополиний пух, дощ за погодою (Open-Meteo) і кольорові теми за Catppuccin — PR «feat(web): theme toggle and backdrop settings». Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`, `table`, `dialog`, `alert-dialog`, `select`, `badge`) в облік не йдуть.
+Код: `src/Web` — вхід (PR #30), керування користувачами й власний обліковий запис (PR #41), форма видачі ролі (PR #58), журнал аудиту, хвойна тема, сезонна анімація й PWA (PR «feat(web): conifer theme, seasonal backdrop and PWA»). Новий логотип, світла тема з перемикачем, увімкнення сезонного фону, тополиний пух і дощ за погодою (Open-Meteo) — PR #113 «feat(web): theme toggle and backdrop settings»; кольорові теми («Луг» і теми за Catppuccin) — PR «feat(web): colour themes after Catppuccin». Згенеровані компоненти `src/components/ui` (`input`, `label`, `checkbox`, `card`, `table`, `dialog`, `alert-dialog`, `select`, `badge`) в облік не йдуть.
 
 - **Екрани:**
   1. вхід (`src/routes/login.tsx`, `/login`);
